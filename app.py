@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import urllib.request
 import urllib.error
 from flask import Flask, request, jsonify, send_from_directory
@@ -65,6 +66,41 @@ def get_cards():
         return jsonify({"cards": cards})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# ── MathJax helpers ──────────────────────────────────────────────────────────
+
+def has_mathjax(text):
+    """Return True if text contains MathJax delimiters \\(...\\) or \\[...\\]"""
+    return r'\(' in text or r'\[' in text
+
+def check_math_warning(change, card_map):
+    """
+    Return True if a change rewrites content and strips MathJax that was
+    present in the original card(s). Only applies to edit_card and merge_duplicate.
+    """
+    ctype = change.get("type")
+    if ctype not in ("edit_card", "merge_duplicate"):
+        return False
+
+    # Check if any original card involved had MathJax
+    original_has_math = False
+    for cid in change.get("card_ids", []):
+        card = card_map.get(str(cid)) or card_map.get(cid)
+        if card:
+            if has_mathjax(card.get("front", "")) or has_mathjax(card.get("back", "")):
+                original_has_math = True
+                break
+
+    if not original_has_math:
+        return False
+
+    # Check if the rewritten content still has MathJax
+    new_front = change.get("new_front", "")
+    new_back = change.get("new_back", "")
+    rewritten_has_math = has_mathjax(new_front) or has_mathjax(new_back)
+
+    return not rewritten_has_math
+
 
 # ── Routes: AI analysis ──────────────────────────────────────────────────────
 
@@ -150,6 +186,7 @@ Default rules (apply unless overridden by special instructions above):
 - If the special instructions ask you to add new cards, use the "add_card" type with empty card_ids [].
 - For basic cards: put the question in new_front and answer in new_back.
 - For cloze cards: put the full sentence with {{{{c1::hidden text}}}} syntax in new_front. You may use multiple cloze deletions (c1, c2, c3...). Leave new_back empty or use it for extra context.
+- CRITICAL — MathJax preservation: Some cards contain MathJax math notation using \\(...\\) for inline math and \\[...\\] for block math. You MUST copy these delimiters and their contents exactly as they appear. Do NOT convert them to $...$ or $$...$$. Do NOT strip, rewrite, or paraphrase any math expression. If you cannot preserve the math notation exactly, do not suggest an edit or merge for that card — suggest a retag only.
 - Return valid JSON only. No markdown fences. No preamble."""
 
     return jsonify({"prompt": prompt, "card_count": len(sample)})
@@ -163,11 +200,48 @@ def parse_response():
     # Strip markdown fences if present
     if raw.startswith("```"):
         raw = raw.split("\n", 1)[1].rsplit("```", 1)[0].strip()
-    try:
-        result = json.loads(raw)
-        return jsonify(result)
-    except json.JSONDecodeError as e:
-        return jsonify({"error": f"Could not parse response: {str(e)}. Make sure you copied the full response from Claude."}), 400
+    # ── Parse: try raw first, then apply escape fix for other LLMs ──────────
+    # Strategy: attempt json.loads() on the unmodified string first.
+    # Claude's output is already valid JSON and must never be pre-processed.
+    # Only if that fails do we apply the escape-fix regex, which corrects raw
+    # backslashes written by ChatGPT/Gemini (e.g. \( \[ \times instead of \\( \\[ \\times).
+    def _try_parse(s):
+        try:
+            return json.loads(s), None
+        except json.JSONDecodeError as e:
+            return None, e
+
+    result, err = _try_parse(raw)
+    if result is None:
+        # Fix bare backslashes not followed by a valid JSON escape char.
+        # The negative lookbehind (?<!\\) skips already-doubled backslashes.
+        fixed = re.sub(r'(?<!\\)\\(?!["\\/bfnrtu])', r'\\\\', raw)
+        # \f is a valid JSON escape (form feed) so Pass 1 skips it, but in
+        # card content \f almost always means LaTeX \frac, \fbox, etc.
+        # Re-double it when followed by a letter (only if still single).
+        fixed = re.sub(r'(?<!\\)\\f(?=[a-zA-Z])', r'\\\\f', fixed)
+        result, err = _try_parse(fixed)
+
+    if result is None:
+        return jsonify({"error": f"Could not parse response: {str(err)}. Make sure you copied the full response from Claude."}), 400
+
+    # ── MathJax safety check ──────────────────────────────────────────────
+    # Build a lookup from the original cards passed alongside the response
+    original_cards = data.get("cards", [])
+    card_map = {str(c["id"]): c for c in original_cards}
+
+    math_warning_count = 0
+    for change in result.get("changes", []):
+        if check_math_warning(change, card_map):
+            change["math_warning"] = True
+            math_warning_count += 1
+        else:
+            change["math_warning"] = False
+
+    if math_warning_count:
+        result["math_warning_count"] = math_warning_count
+
+    return jsonify(result)
 
 # ── Routes: apply changes ────────────────────────────────────────────────────
 

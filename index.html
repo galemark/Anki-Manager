@@ -129,6 +129,10 @@ main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .card-preview { background: var(--surface2); border-radius: 7px; padding: 10px 12px; font-size: 12px; line-height: 1.6; border: 1px solid var(--border); }
 .card-preview .front { color: var(--text); margin-bottom: 4px; }
 .card-preview .back { color: var(--muted); }
+.math-warning-banner { display: flex; align-items: flex-start; gap: 8px; background: rgba(217,119,6,0.08); border: 1px solid rgba(217,119,6,0.35); border-radius: 6px; padding: 8px 11px; margin-top: 10px; font-size: 11px; color: #d97706; line-height: 1.5; }
+.math-warning-banner .mw-icon { flex-shrink: 0; font-size: 13px; margin-top: 1px; }
+.change-card.math-risk { border-color: rgba(217,119,6,0.5); }
+.change-card.math-risk .change-header { background: rgba(217,119,6,0.04); }
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -453,13 +457,17 @@ function generatePromptForBatch(batchIndex) {
       fetch('/api/parse-response', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ response: raw })
+        body: JSON.stringify({ response: raw, cards: currentCards })
       }).then(function(r){ return r.json(); }).then(function(d){
         if (d.error) throw new Error(d.error);
         analysisResult = d;
         var thisBatch = batchIndex;
         renderAnalysis(d, thisBatch);
-        toast('Changes loaded! Review and apply below.', 'ok');
+        if (d.math_warning_count) {
+          toast('⚠ ' + d.math_warning_count + ' change(s) may strip MathJax — review warnings before applying.', 'err');
+        } else {
+          toast('Changes loaded! Review and apply below.', 'ok');
+        }
       }).catch(function(e){ toast('Error: ' + e.message, 'err'); });
     });
 
@@ -545,18 +553,30 @@ function renderAnalysis(data, batchIndex) {
 function renderChangeCard(change, index) {
   var labels = { merge_duplicate:'Merge', edit_card:'Edit', retag:'Retag', delete:'Delete', add_card:'Add' };
   var typeLabel = labels[change.type] || change.type;
+  var hasMathRisk = change.math_warning === true;
   var hasContent = change.new_front || change.new_back || (change.new_tags && change.new_tags.length)
     || change.type === 'merge_duplicate' || change.type === 'add_card' || change.type === 'delete';
-  var html = '<div class="change-card selected" id="card-'+index+'">'
+  var cardClass = 'change-card selected' + (hasMathRisk ? ' math-risk' : '');
+  var html = '<div class="'+cardClass+'" id="card-'+index+'">'
     + '<div class="change-header" data-index="'+index+'">'
     + '<input type="checkbox" class="change-checkbox" checked data-index="'+index+'">'
     + '<span class="change-type type-'+esc(change.type)+'">'+esc(typeLabel)+'</span>'
     + '<span class="change-reason">'+esc(change.reason||'')+'</span>'
+    + (hasMathRisk ? '<span style="font-size:13px;margin-right:2px;" title="MathJax may be stripped">⚠️</span>' : '')
     + (hasContent ? '<span class="expand-arrow">▼</span>' : '')
     + '</div>';
 
   if (hasContent) {
     html += '<div class="change-body">';
+
+    // ── MathJax warning banner ──
+    if (hasMathRisk) {
+      html += '<div class="math-warning-banner">'
+        + '<span class="mw-icon">⚠️</span>'
+        + '<span><strong>MathJax warning:</strong> The original card contains <code>\\(...\\)</code> or <code>\\[...\\]</code> math notation, but Claude\'s rewritten version appears to have removed it. '
+        + 'Expand to inspect the new content carefully. Consider unchecking this change and using a <strong>retag only</strong> instead.</span>'
+        + '</div>';
+    }
 
     // ── Add card: show new front/back as a preview ──
     if (change.type === 'add_card') {
@@ -650,13 +670,15 @@ function renderChangeCard(change, index) {
 }
 
 function toggleSelect(index) {
+  var isMathRisk = analysisResult && analysisResult.changes[index] && analysisResult.changes[index].math_warning;
+  var riskClass = isMathRisk ? ' math-risk' : '';
   if (selectedChanges.has(index)) {
     selectedChanges.delete(index);
-    document.getElementById('card-'+index).className = 'change-card deselected';
+    document.getElementById('card-'+index).className = 'change-card deselected' + riskClass;
     document.querySelector('.change-checkbox[data-index="'+index+'"]').checked = false;
   } else {
     selectedChanges.add(index);
-    document.getElementById('card-'+index).className = 'change-card selected';
+    document.getElementById('card-'+index).className = 'change-card selected' + riskClass;
     document.querySelector('.change-checkbox[data-index="'+index+'"]').checked = true;
   }
   updateApplyBar();
@@ -669,8 +691,9 @@ function toggleSelectAll() {
   for (var i = 0; i < changes.length; i++) {
     var card = document.getElementById('card-'+i);
     var chk = document.querySelector('.change-checkbox[data-index="'+i+'"]');
-    if (allSelected) { selectedChanges.add(i); card.className = 'change-card selected'; if(chk) chk.checked = true; }
-    else { selectedChanges.delete(i); card.className = 'change-card deselected'; if(chk) chk.checked = false; }
+    var riskClass = (changes[i] && changes[i].math_warning) ? ' math-risk' : '';
+    if (allSelected) { selectedChanges.add(i); card.className = 'change-card selected' + riskClass; if(chk) chk.checked = true; }
+    else { selectedChanges.delete(i); card.className = 'change-card deselected' + riskClass; if(chk) chk.checked = false; }
   }
   updateApplyBar();
 }
