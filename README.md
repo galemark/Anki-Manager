@@ -1,19 +1,21 @@
 # 🃏 Anki AI Manager
 
-A local web app that connects your Anki flashcard library to Claude AI for intelligent deck curation — finding duplicates, improving card quality, retagging, and adding new cards — all without leaving your machine.
+A local web app that connects your Anki flashcard library to an AI for intelligent deck curation — finding duplicates, improving card quality, retagging, and adding new cards — all without leaving your machine.
 
 ---
 
 ## What It Does
 
-Anki AI Manager acts as a bridge between your Anki decks and Claude. It reads your cards, generates a structured AI prompt, and then applies Claude's suggested changes directly back into Anki via AnkiConnect.
+Anki AI Manager acts as a bridge between your Anki decks and an AI of your choice. It reads your cards, generates a structured prompt, and then applies the AI's suggested changes directly back into Anki via AnkiConnect.
 
 **Supported operations:**
 - **Merge duplicates** — Combines redundant cards into one cleaner card
 - **Edit cards** — Improves clarity, atomicity, and recall precision
 - **Retag** — Applies hierarchical tags (e.g. `hematology::rbc`, `coagulation::factors`)
 - **Delete** — Removes truly redundant cards after merging
-- **Add cards** — Creates new Basic or Cloze cards suggested by Claude
+- **Add cards** — Creates new Basic or Cloze cards suggested by the AI
+
+**Compatible AI assistants:** Claude, ChatGPT, Gemini (and any LLM that can follow structured JSON instructions)
 
 ---
 
@@ -24,7 +26,7 @@ Anki AI Manager acts as a bridge between your Anki decks and Claude. It reads yo
 | **Python** | 3.8 or higher |
 | **Anki** | Desktop app (any recent version) |
 | **AnkiConnect** | Anki add-on (see setup below) |
-| **Claude.ai account** | Free or paid — used manually via copy-paste |
+| **AI account** | Claude, ChatGPT, Gemini, or similar — used manually via copy-paste |
 
 ---
 
@@ -136,8 +138,8 @@ Open your browser and go to **http://localhost:5050**.
 3. **Select a deck** from the sidebar — your cards will load
 4. *(Optional)* **Add custom instructions** using the panel or presets
 5. Click **✦ Generate Prompt** — this builds a structured prompt containing your cards
-6. Click **⧉ Copy Prompt** and paste it into [claude.ai](https://claude.ai) in a new chat
-7. Wait for Claude to respond, then **copy Claude's full reply**
+6. Click **⧉ Copy Prompt** and paste it into your AI assistant of choice in a new chat
+7. Wait for the AI to respond, then **copy its full reply**
 8. Paste the reply into the **Step 2 text area** and click **✦ Load Changes**
 9. Review the proposed changes — expand each card to inspect before/after
 10. Uncheck anything you don't want applied
@@ -165,6 +167,43 @@ Custom instructions override the default AI rules, so be specific.
 
 ---
 
+## MathJax Support
+
+If your cards contain MathJax math notation (inline `\(...\)` or block `\[...\]`), the app has two layers of protection:
+
+**Prompt-level:** Every prompt sent to the AI includes a strict instruction to preserve MathJax delimiters exactly as written and not convert them to `$...$` notation or strip them.
+
+**Detection layer:** When the AI's response is loaded, the app compares each rewritten card against its original. If a card originally contained MathJax but the rewritten version does not, that change is flagged with:
+- An amber border on the change card
+- A ⚠️ icon in the header row
+- A warning banner inside the expanded card explaining the risk
+
+Flagged changes are still loaded and selectable — you can inspect them and decide whether to apply or skip them individually.
+
+**Safe operations** (MathJax is never touched): `retag`, `delete`
+
+**Operations that carry risk** (AI rewrites the content): `edit_card`, `merge_duplicate`
+
+If you have many math-heavy cards, consider adding to your custom instructions:
+
+> *"Preserve all MathJax formatting exactly. If a card contains `\(...\)` or `\[...\]` notation, do not suggest an edit or merge — retag only."*
+
+---
+
+## Multi-LLM Compatibility
+
+The app is compatible with Claude, ChatGPT, and Gemini. Each AI handles JSON escaping differently — Claude correctly double-escapes backslashes in JSON strings (`\\(`), while ChatGPT and Gemini often write raw single backslashes (`\(`), which technically violates JSON spec and would normally cause a parse error.
+
+The parser handles this automatically with a **try-first strategy**:
+
+1. Attempt to parse the response as-is — Claude's output succeeds here immediately, and the raw string is never touched
+2. If that fails, apply a backslash-fixing pass and try again — this recovers ChatGPT and Gemini responses without corrupting Claude's already-correct output
+3. If still broken, return a helpful error message
+
+This means you never need to manually fix the AI's output before pasting it in, regardless of which AI you use.
+
+---
+
 ## API Endpoints (for reference)
 
 | Method | Endpoint | Description |
@@ -172,8 +211,8 @@ Custom instructions override the default AI rules, so be specific.
 | GET | `/api/status` | Check if Anki + AnkiConnect are reachable |
 | GET | `/api/decks` | List all Anki deck names |
 | GET | `/api/cards?deck=<name>` | Fetch all notes in a deck |
-| POST | `/api/export-prompt` | Generate the Claude prompt from card data |
-| POST | `/api/parse-response` | Parse Claude's JSON reply |
+| POST | `/api/export-prompt` | Generate the AI prompt from card data |
+| POST | `/api/parse-response` | Parse the AI's JSON reply |
 | POST | `/api/apply` | Apply a list of changes to Anki |
 
 ---
@@ -192,13 +231,13 @@ Custom instructions override the default AI rules, so be specific.
 - If not, click **Add** and choose **Cloze**
 
 **"Could not parse response"**
-- Make sure you copied Claude's *entire* response, not just part of it
-- Claude should return raw JSON — if it added markdown fences (```json) the app handles that automatically, but extra text before or after the JSON block can cause failures
-- If Claude added an explanation before the JSON, delete everything before the first `{`
+- Make sure you copied the AI's *entire* response, not just part of it
+- The app auto-handles markdown fences (` ```json `) and backslash escaping — but if the AI added freeform text before or after the JSON block, delete everything before the first `{` and after the last `}`
+- Try a different AI — Claude tends to produce the most reliably structured output
 
 **Cards not updating after apply**
-- Click on the deck name again in the sidebar to reload cards from Anki
-- Some changes (especially tag updates) may take a moment to reflect in Anki's UI — try pressing F5 in Anki
+- Click the deck name again in the sidebar to reload from Anki
+- Some changes (especially tag updates) may take a moment to reflect — try pressing F5 in Anki
 
 **Port 5050 already in use**
 - Change the port in the last line of `app.py`:
@@ -206,15 +245,19 @@ Custom instructions override the default AI rules, so be specific.
   app.run(port=5051, debug=False)  # use any free port
   ```
 
+**The `.bat` file opens and immediately closes**
+- The folder name in the `.bat` file doesn't match your actual folder name
+- Open the `.bat` in Notepad and update `anki-manager` to match your folder name
+
 ---
 
 ## Notes & Limitations
 
-- The app analyzes up to **80 cards per prompt** to stay within Claude's context limits. Use Batch Mode for larger decks.
-- Card content is truncated to 400 characters per field in the prompt. Very long cards may be trimmed.
+- The app analyzes up to **80 cards per prompt** to stay within AI context limits. Use Batch Mode for larger decks.
+- Card content is truncated to **400 characters per field** in the prompt. Very long cards may be trimmed.
 - Changes are applied **immediately and permanently** — there is no built-in undo. Use Anki's own **Edit → Undo** (Ctrl+Z) right after applying if you need to revert.
-- The app only reads `Front`/`Back` fields (or the first two fields for custom note types). Complex multi-field note types may not display all fields in the preview.
-- This app runs **entirely locally**. No card data is sent anywhere except to Claude.ai via your manual copy-paste.
+- The app reads the **first two fields** of each note type (treated as Front and Back). Complex multi-field note types may not display all fields in the preview.
+- This app runs **entirely locally**. No card data is sent anywhere except to your chosen AI via your manual copy-paste.
 
 ---
 
