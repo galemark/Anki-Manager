@@ -1,266 +1,242 @@
 # 🃏 Anki AI Manager
 
-A local web app that connects your Anki flashcard library to an AI for intelligent deck curation — finding duplicates, improving card quality, retagging, and adding new cards — all without leaving your machine.
+A local web app that connects your Anki deck to Claude AI for intelligent flashcard curation — merging duplicates, improving card quality, retagging, and adding new cards.
+
+![Anki AI Manager UI](https://img.shields.io/badge/version-1.0-gold) ![Python](https://img.shields.io/badge/python-3.8%2B-blue) ![Flask](https://img.shields.io/badge/flask-2.x-lightgrey) ![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
 
-## What It Does
+## What it does
 
-Anki AI Manager acts as a bridge between your Anki decks and an AI of your choice. It reads your cards, generates a structured prompt, and then applies the AI's suggested changes directly back into Anki via AnkiConnect.
+Anki AI Manager acts as a bridge between your Anki collection and Claude.ai. It exports your cards as a structured prompt, you paste that prompt into Claude, then paste Claude's JSON response back into the app — which parses it and applies the suggested changes directly to Anki via AnkiConnect.
 
-**Supported operations:**
-- **Merge duplicates** — Combines redundant cards into one cleaner card
-- **Edit cards** — Improves clarity, atomicity, and recall precision
-- **Retag** — Applies hierarchical tags (e.g. `hematology::rbc`, `coagulation::factors`)
-- **Delete** — Removes truly redundant cards after merging
-- **Add cards** — Creates new Basic or Cloze cards suggested by the AI
+**Supported change types:**
 
-**Compatible AI assistants:** Claude, ChatGPT, Gemini (and any LLM that can follow structured JSON instructions)
+| Type | Description |
+|---|---|
+| **Merge duplicate** | Identifies near-duplicate cards, merges them into one, deletes the redundant copy |
+| **Edit card** | Rewrites front/back for better clarity, atomicity, or accuracy |
+| **Retag** | Applies hierarchical tags (e.g. `hematology::rbc`) |
+| **Delete** | Removes genuinely redundant cards (typically post-merge) |
+| **Add card** | Creates new cards (Basic or Cloze) to fill gaps in the deck |
+
+**Additional features:**
+- **Batch mode** — splits large decks (100+ cards) into sequential batches for multi-turn Claude conversations
+- **Custom instructions** — override default AI behavior per session (e.g. "focus only on duplicates", "no deletions", "use Filipino medical terminology")
+- **Preset chips** — one-click common instruction templates
+- **MathJax safety check** — detects when AI rewrites may strip `\(...\)` or `\[...\]` math notation and flags those changes with a warning banner before you apply them
+- **Selective apply** — review every proposed change, check/uncheck individual items, then apply only what you approve
+- **Cloze ↔ Basic conversion** — automatically handles model-type mismatches when AI converts a card type
 
 ---
 
 ## Requirements
 
-| Requirement | Details |
-|---|---|
-| **Python** | 3.8 or higher |
-| **Anki** | Desktop app (any recent version) |
-| **AnkiConnect** | Anki add-on (see setup below) |
-| **AI account** | Claude, ChatGPT, Gemini, or similar — used manually via copy-paste |
+- **Python 3.8+**
+- **Anki** (desktop) with the [AnkiConnect](https://ankiweb.net/shared/info/2055492159) add-on installed
+- A **Claude.ai** account (free tier works; Pro recommended for large decks)
+- The following Python packages:
+  ```
+  flask
+  ```
 
 ---
 
-## Project Structure
+## Installation
 
-```
-anki-ai-manager/
-├── app.py                          # Flask backend — API routes + AnkiConnect bridge
-├── Launch Anki AI Manager.bat      # Windows one-click launcher
-├── static/
-│   └── index.html                  # Full frontend UI (single file)
-└── README.md
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/yourusername/anki-ai-manager.git
+cd anki-ai-manager
 ```
 
-> **Note:** The `static/` folder must exist and contain `index.html`. Create it if it doesn't exist yet.
+### 2. Install dependencies
 
----
+```bash
+pip install flask
+```
 
-## Setup
-
-### 1. Install the AnkiConnect add-on
+### 3. Install AnkiConnect in Anki
 
 1. Open Anki
-2. Go to **Tools → Add-ons → Get Add-ons…**
-3. Enter code: **`2055492159`**
+2. Go to **Tools → Add-ons → Get Add-ons**
+3. Enter code: `2055492159`
 4. Restart Anki
 
-AnkiConnect runs a local server at `http://127.0.0.1:8765` that this app communicates with. Anki must stay open while using the app.
+### 4. Set up the folder structure
 
-### 2. Place the files
+The app expects this layout:
 
 ```
 anki-ai-manager/
 ├── app.py
-├── Launch Anki AI Manager.bat
 └── static/
     └── index.html
 ```
 
-Create the `static` folder if it doesn't exist, and move `index.html` into it.
+Move `index.html` into a `static/` subfolder inside the project directory.
 
-### 3. Install Python dependencies
+---
 
-Flask is the only dependency:
+## Running the app
 
-```bash
-pip install flask
+### Option A — Windows (double-click launcher)
+
+Place `Launch Anki AI Manager.bat` one level above the `anki-ai-manager/` folder, then double-click it. It will open your browser and start the server.
+
+```
+your-folder/
+├── Launch Anki AI Manager.bat   ← double-click this
+└── anki-ai-manager/
+    ├── app.py
+    └── static/
+        └── index.html
 ```
 
-Or if you prefer a virtual environment:
+### Option B — Manual (any OS)
 
 ```bash
-python -m venv venv
-
-# macOS/Linux:
-source venv/bin/activate
-
-# Windows:
-venv\Scripts\activate
-
-pip install flask
-```
-
-### 4. Run the app
-
-**Windows (recommended) — double-click the launcher:**
-
-Just double-click `Launch Anki AI Manager.bat`. It will:
-1. Change into the `anki-manager` folder automatically
-2. Open `http://localhost:5050` in your browser
-3. Start the Flask server in the same window
-
-> **Important:** The `.bat` file expects your project folder to be named `anki-manager` and located in the same directory as the `.bat` file. If you named your folder differently, open the `.bat` file in a text editor and update this line:
-> ```bat
-> cd /d "%~dp0anki-manager"
-> ```
-> Change `anki-manager` to match your actual folder name.
-
-The `.bat` file contents for reference:
-```bat
-@echo off
-cd /d "%~dp0anki-manager"
-start "" http://localhost:5050
+# Make sure Anki is open first
+cd anki-ai-manager
 python app.py
 ```
 
-**macOS / Linux — run manually from terminal:**
+Then open [http://localhost:5050](http://localhost:5050) in your browser.
 
-```bash
-python app.py
+---
+
+## Usage
+
+### Basic flow (small deck, ≤ 100 cards)
+
+1. Open Anki (must be running in the background)
+2. Launch the app and navigate to [http://localhost:5050](http://localhost:5050)
+3. The green dot in the header confirms AnkiConnect is reachable
+4. Select a deck from the sidebar
+5. *(Optional)* Expand **Custom Instructions** and add specific guidance or select a preset
+6. Click **✦ Generate Prompt**
+7. Click **⧉ Copy Prompt** and paste it into a new [Claude.ai](https://claude.ai) conversation
+8. Wait for Claude's JSON response
+9. Copy Claude's full response and paste it into the **Step 2** textarea
+10. Click **✦ Load Changes**
+11. Review the proposed changes — uncheck anything you don't want
+12. Click **✓ Apply selected changes to Anki**
+
+### Batch mode (large deck, 100+ cards)
+
+For decks with more than 100 cards, use **⟳ Batch Mode** instead of Generate Prompt:
+
+1. Click **⟳ Batch Mode** — the app splits your deck into batches of 100
+2. For each **hold batch**: copy the prompt → paste into Claude → wait for the acknowledgement reply → click **Next Batch**
+3. For the **final batch**: copy the prompt → paste into Claude → Claude now analyzes the full deck and returns JSON
+4. Paste the final JSON response → Load Changes → Apply
+
+> ⚠️ All batches must be sent in **the same Claude conversation** so Claude has full context when producing the analysis.
+
+---
+
+## Custom instructions
+
+The custom instructions field lets you override the default AI behavior. Examples:
+
+- `Focus only on finding and merging duplicate cards. Do not suggest edits or retags.`
+- `Do not delete any cards. Only merge, edit, or retag.`
+- `Use Filipino medical terminology where applicable.`
+- `This deck has already been partially curated. Focus on remaining issues only.`
+
+Custom instructions take **strict priority** over the default rules in the prompt.
+
+---
+
+## MathJax warning system
+
+If your deck contains cards with LaTeX/MathJax notation (`\(...\)` inline, `\[...\]` block), the app automatically:
+
+1. Detects math in original cards
+2. Checks whether Claude's rewritten version preserved it
+3. Flags any change that appears to have stripped math with an **⚠️ warning banner** and an orange card border
+
+Changes with math warnings are still selectable, but you should expand and inspect them carefully before applying. When in doubt, uncheck the edit and use a **retag only** instead.
+
+---
+
+## Project structure
+
+```
+anki-ai-manager/
+├── app.py              # Flask backend — AnkiConnect bridge, prompt builder, parser
+└── static/
+    └── index.html      # Single-page frontend (vanilla JS, no build step)
+
+Launch Anki AI Manager.bat   # Windows one-click launcher (optional)
 ```
 
-You should see:
+### Key API endpoints
 
-```
-🃏 Anki AI Manager running → http://localhost:5050
-```
-
-Open your browser and go to **http://localhost:5050**.
-
----
-
-## How to Use
-
-### Basic workflow
-
-1. **Open Anki** (keep it open the whole time)
-2. **Open the app** at http://localhost:5050
-3. **Select a deck** from the sidebar — your cards will load
-4. *(Optional)* **Add custom instructions** using the panel or presets
-5. Click **✦ Generate Prompt** — this builds a structured prompt containing your cards
-6. Click **⧉ Copy Prompt** and paste it into your AI assistant of choice in a new chat
-7. Wait for the AI to respond, then **copy its full reply**
-8. Paste the reply into the **Step 2 text area** and click **✦ Load Changes**
-9. Review the proposed changes — expand each card to inspect before/after
-10. Uncheck anything you don't want applied
-11. Click **✓ Apply selected changes to Anki**
-
-### Batch mode
-
-For large decks (80+ cards), use **⟳ Batch Mode**. The app will split your deck into batches of 80 cards and walk you through each one. A progress indicator shows which batch you're on and how much of the deck has been covered.
-
-### Custom instructions
-
-Click **✦ Custom Instructions** to expand the panel. You can type freeform instructions or click a preset chip:
-
-| Preset | What it does |
-|---|---|
-| Only duplicates | Skips edits/retags, finds merges only |
-| Only retag | Focuses entirely on hierarchical tagging |
-| No deletions | Merges and edits only — nothing gets deleted |
-| Improve clarity | Makes each card test exactly one fact |
-| Coagulation focus | Prioritizes hemostasis/clotting factor cards |
-| Hematology focus | Prioritizes blood cell and CBC cards |
-| Transfusion focus | Prioritizes blood banking and transfusion cards |
-
-Custom instructions override the default AI rules, so be specific.
-
----
-
-## MathJax Support
-
-If your cards contain MathJax math notation (inline `\(...\)` or block `\[...\]`), the app has two layers of protection:
-
-**Prompt-level:** Every prompt sent to the AI includes a strict instruction to preserve MathJax delimiters exactly as written and not convert them to `$...$` notation or strip them.
-
-**Detection layer:** When the AI's response is loaded, the app compares each rewritten card against its original. If a card originally contained MathJax but the rewritten version does not, that change is flagged with:
-- An amber border on the change card
-- A ⚠️ icon in the header row
-- A warning banner inside the expanded card explaining the risk
-
-Flagged changes are still loaded and selectable — you can inspect them and decide whether to apply or skip them individually.
-
-**Safe operations** (MathJax is never touched): `retag`, `delete`
-
-**Operations that carry risk** (AI rewrites the content): `edit_card`, `merge_duplicate`
-
-If you have many math-heavy cards, consider adding to your custom instructions:
-
-> *"Preserve all MathJax formatting exactly. If a card contains `\(...\)` or `\[...\]` notation, do not suggest an edit or merge — retag only."*
-
----
-
-## Multi-LLM Compatibility
-
-The app is compatible with Claude, ChatGPT, and Gemini. Each AI handles JSON escaping differently — Claude correctly double-escapes backslashes in JSON strings (`\\(`), while ChatGPT and Gemini often write raw single backslashes (`\(`), which technically violates JSON spec and would normally cause a parse error.
-
-The parser handles this automatically with a **try-first strategy**:
-
-1. Attempt to parse the response as-is — Claude's output succeeds here immediately, and the raw string is never touched
-2. If that fails, apply a backslash-fixing pass and try again — this recovers ChatGPT and Gemini responses without corrupting Claude's already-correct output
-3. If still broken, return a helpful error message
-
-This means you never need to manually fix the AI's output before pasting it in, regardless of which AI you use.
-
----
-
-## API Endpoints (for reference)
-
-| Method | Endpoint | Description |
+| Endpoint | Method | Description |
 |---|---|---|
-| GET | `/api/status` | Check if Anki + AnkiConnect are reachable |
-| GET | `/api/decks` | List all Anki deck names |
-| GET | `/api/cards?deck=<name>` | Fetch all notes in a deck |
-| POST | `/api/export-prompt` | Generate the AI prompt from card data |
-| POST | `/api/parse-response` | Parse the AI's JSON reply |
-| POST | `/api/apply` | Apply a list of changes to Anki |
+| `/api/status` | GET | Check AnkiConnect connection |
+| `/api/decks` | GET | List all Anki decks |
+| `/api/cards` | GET | Fetch cards for a deck |
+| `/api/export-prompt` | POST | Generate the Claude prompt |
+| `/api/parse-response` | POST | Parse Claude's JSON response |
+| `/api/apply` | POST | Apply approved changes via AnkiConnect |
+
+---
+
+## How the AI analysis works
+
+The app builds a structured prompt containing:
+- Up to 100 cards (front, back, tags, ID) per batch
+- Your custom instructions (if any)
+- A strict JSON schema Claude must follow
+- Rules for MathJax preservation, cloze syntax, tag hierarchy, and card atomicity
+
+Claude returns a JSON object with a summary, stats, and a `changes` array. The backend parses this, runs the MathJax safety check, and renders the results in the UI for review before anything touches your deck.
 
 ---
 
 ## Troubleshooting
 
-**"Cannot reach AnkiConnect"**
-- Make sure Anki is open
+**Red dot / "Anki not found"**
+- Make sure Anki is open before launching the app
 - Confirm AnkiConnect is installed (Tools → Add-ons)
-- Check that nothing is blocking port 8765 (firewall, VPN, etc.)
-- Try visiting http://127.0.0.1:8765 in your browser — you should see a response
+- AnkiConnect runs on port 8765 by default — check nothing else is using it
 
-**"No Cloze note type found in Anki"**
-- Anki needs at least one Cloze note type in your collection
-- Go to **Tools → Manage Note Types** and verify a Cloze type exists
-- If not, click **Add** and choose **Cloze**
+**"Could not parse response" error**
+- Make sure you copied Claude's *entire* response, including the opening `{`
+- The app accepts raw JSON or JSON wrapped in ` ```json ``` ` fences
 
-**"Could not parse response"**
-- Make sure you copied the AI's *entire* response, not just part of it
-- The app auto-handles markdown fences (` ```json `) and backslash escaping — but if the AI added freeform text before or after the JSON block, delete everything before the first `{` and after the last `}`
-- Try a different AI — Claude tends to produce the most reliably structured output
+**Changes applied but cards look wrong**
+- Check the Anki undo history (Edit → Undo) immediately after applying
+- For cloze/basic conversion issues, make sure you have both a "Basic" and a "Cloze" note type in Anki (Tools → Manage Note Types)
 
-**Cards not updating after apply**
-- Click the deck name again in the sidebar to reload from Anki
-- Some changes (especially tag updates) may take a moment to reflect — try pressing F5 in Anki
-
-**Port 5050 already in use**
-- Change the port in the last line of `app.py`:
-  ```python
-  app.run(port=5051, debug=False)  # use any free port
-  ```
-
-**The `.bat` file opens and immediately closes**
-- The folder name in the `.bat` file doesn't match your actual folder name
-- Open the `.bat` in Notepad and update `anki-manager` to match your folder name
+**Batches getting confused**
+- Each batch session must stay in the **same Claude conversation**
+- If you accidentally close the tab, start over from Batch 1 in a new conversation
 
 ---
 
-## Notes & Limitations
+## Contributing
 
-- The app analyzes up to **80 cards per prompt** to stay within AI context limits. Use Batch Mode for larger decks.
-- Card content is truncated to **400 characters per field** in the prompt. Very long cards may be trimmed.
-- Changes are applied **immediately and permanently** — there is no built-in undo. Use Anki's own **Edit → Undo** (Ctrl+Z) right after applying if you need to revert.
-- The app reads the **first two fields** of each note type (treated as Front and Back). Complex multi-field note types may not display all fields in the preview.
-- This app runs **entirely locally**. No card data is sent anywhere except to your chosen AI via your manual copy-paste.
+Pull requests welcome. A few areas that could use improvement:
+
+- Diff view showing before/after for edit changes
+- Undo/rollback support for applied changes
+- Support for more than 2 card fields
+- Dark/light theme toggle
 
 ---
 
 ## License
 
 MIT — do whatever you want with it.
+
+---
+
+## Acknowledgements
+
+- [AnkiConnect](https://github.com/FooSoft/anki-connect) by FooSoft Productions — the add-on that makes programmatic Anki access possible
+- [Claude](https://claude.ai) by Anthropic — the AI doing the actual deck analysis
+- [Fraunces](https://github.com/undercasetype/Fraunces) & [DM Mono](https://fonts.google.com/specimen/DM+Mono) — fonts used in the UI

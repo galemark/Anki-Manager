@@ -151,7 +151,7 @@ main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
     <aside>
       <div class="sidebar-section">
         <div class="sidebar-label">How it works</div>
-        <p class="api-hint">1. Select a deck below<br>2. Set custom instructions (optional)<br>3. Click Generate Prompt<br>4. Paste into Claude.ai<br>5. Paste reply back &amp; apply</p>
+        <p class="api-hint">1. Select a deck below<br>2. Set custom instructions (optional)<br>3. Click Generate Prompt or Batch Mode<br>4. Paste each prompt into Claude.ai (same chat for batches)<br>5. After the final batch, paste Claude's JSON reply back &amp; apply</p>
       </div>
       <div class="sidebar-section" style="border-top:1px solid var(--border);padding-top:14px;">
         <div class="sidebar-label">Decks</div>
@@ -216,9 +216,7 @@ var PRESETS = [
   { label: 'Only retag', text: 'Focus only on retagging cards with proper hierarchical tags. Do not merge or delete anything.' },
   { label: 'No deletions', text: 'Do not suggest deleting any cards. Only merge, edit, or retag.' },
   { label: 'Improve clarity', text: 'Focus on improving card clarity and atomicity. Each card should test exactly one fact.' },
-  { label: 'Coagulation focus', text: 'Prioritize cards related to coagulation, clotting factors, and hemostasis.' },
-  { label: 'Hematology focus', text: 'Prioritize cards related to hematology, blood cells, and CBC interpretation.' },
-  { label: 'Transfusion focus', text: 'Prioritize cards related to transfusion medicine, blood banking, and blood components.' },
+  { label: 'Rerun — deck curated', text: 'This deck has already been partially curated in a previous session. Some duplicates have been merged, some cards retagged or deleted. Focus on remaining issues only. Do not re-suggest changes that would have already been addressed by a basic cleanup pass.' },
 ];
 
 function esc(str) {
@@ -378,7 +376,7 @@ function selectDeck(deck) {
 
 // ── Generate prompt ───────────────────────────────────────────────────────────
 // ── Batch mode state ─────────────────────────────────────────────────────
-var batchSize = 80;
+var batchSize = 100;
 var currentBatch = 0;
 var totalBatches = 0;
 
@@ -399,7 +397,7 @@ document.getElementById('batchModeBtn').addEventListener('click', function() {
 document.getElementById('generateBtn').addEventListener('click', function() {
   if (!selectedDeck || currentCards.length === 0) return;
   currentBatch = 0;
-  totalBatches = Math.ceil(currentCards.length / batchSize);
+  totalBatches = 1;
   generatePromptForBatch(0);
 });
 
@@ -420,28 +418,53 @@ function generatePromptForBatch(batchIndex) {
   }).then(function(r){ return r.json(); }).then(function(d){
     if (d.error) throw new Error(d.error);
     currentPrompt = d.prompt;
+    var isHoldBatch = d.is_hold_batch;
     var batchInfo = totalBatches > 1
       ? '<div style="background:rgba(124,159,212,0.08);border:1px solid rgba(124,159,212,0.2);border-radius:7px;padding:10px 14px;margin-bottom:12px;font-size:11px;color:var(--accent2);">'
         + '📦 Batch '+(batchIndex+1)+' of '+totalBatches+' · Cards '+(batchIndex*batchSize+1)+'–'+Math.min((batchIndex+1)*batchSize, currentCards.length)+' of '+currentCards.length
+        + (isHoldBatch ? ' &nbsp;·&nbsp; <strong>Hold batch — paste &amp; wait for acknowledgement, then click Next Batch</strong>' : ' &nbsp;·&nbsp; <strong style="color:var(--accent);">Final batch — paste &amp; get the full JSON analysis</strong>')
         + '</div>'
       : '';
-    var html = '<div class="summary-box" style="margin-bottom:20px;">'
+
+    var step1Box = '<div class="summary-box" style="margin-bottom:20px;">'
       + '<div class="summary-label">Step 1 — Copy this prompt</div>'
       + batchInfo
-      + '<p style="margin-bottom:12px;">This contains '+d.card_count+' cards. Copy it and paste into <a href="https://claude.ai" target="_blank" style="color:var(--accent2)">claude.ai</a> in a new chat.</p>'
+      + '<p style="margin-bottom:12px;">This contains '+d.card_count+' cards. Copy it and paste into <a href="https://claude.ai" target="_blank" style="color:var(--accent2)">claude.ai</a>'
+      + (totalBatches > 1 ? (isHoldBatch ? ' — continue the <strong>same conversation</strong> for each batch.' : ' — this final batch triggers the full analysis.') : ' in a new chat.')
+      + '</p>'
       + (customInstructions ? '<p style="margin-bottom:12px;color:var(--accent);font-size:11px;">✦ Custom instructions included: '+esc(customInstructions.substring(0,80))+(customInstructions.length>80?'…':'')+'</p>' : '')
       + '<button class="btn btn-primary" id="copyBtn">⧉ Copy Prompt</button>'
-      + '</div>'
-      + '<div class="summary-box" style="border-left-color:var(--accent2);">'
-      + '<div class="summary-label" style="color:var(--accent2);">Step 2 — Paste Claude\'s response here</div>'
-      + '<p style="margin-bottom:12px;">After Claude responds, copy its full reply and paste it below.</p>'
-      + '<textarea id="responseInput" placeholder="Paste Claude\'s full response here…" style="width:100%;height:160px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:\'DM Mono\',monospace;font-size:11px;padding:10px;outline:none;resize:vertical;line-height:1.6;"></textarea>'
-      + '<div style="display:flex;gap:8px;margin-top:10px;align-items:center;">'
-      + '<button class="btn btn-primary" id="loadChangesBtn">✦ Load Changes</button>'
-      + (totalBatches > 1 && batchIndex < totalBatches - 1 ? '<button class="btn btn-ghost" id="skipBatchBtn">Skip → Next Batch</button>' : '')
-      + (totalBatches > 1 ? '<span style="font-size:11px;color:var(--muted);">'+Math.round((batchIndex+1)/totalBatches*100)+'% of deck covered</span>' : '')
-      + '</div>'
       + '</div>';
+
+    var html = step1Box;
+
+    if (isHoldBatch) {
+      // Hold batch: show Next Batch button, no response textarea
+      html += '<div class="summary-box" style="border-left-color:var(--accent2);">'
+        + '<div class="summary-label" style="color:var(--accent2);">Step 2 — Paste into Claude and wait for acknowledgement</div>'
+        + '<p style="margin-bottom:12px;line-height:1.7;">Claude will reply with:<br>'
+        + '<code style="background:var(--surface2);padding:3px 7px;border-radius:4px;font-size:11px;color:var(--accent2);">Batch '+(batchIndex+1)+' of '+totalBatches+' received. Waiting for next batch.</code><br>'
+        + '<span style="color:var(--muted);">Once you see that reply, click the button below to load the next batch.</span></p>'
+        + '<div style="display:flex;gap:8px;align-items:center;">'
+        + '<button class="btn btn-primary" id="nextBatchBtn2">Next Batch → ('+(batchIndex+2)+' of '+totalBatches+')</button>'
+        + '<span style="font-size:11px;color:var(--muted);">'+Math.round((batchIndex+1)/totalBatches*100)+'% of deck sent</span>'
+        + '</div>'
+        + '</div>';
+    } else {
+      // Final batch: show response textarea
+      html += '<div class="summary-box" style="border-left-color:var(--accent2);">'
+        + '<div class="summary-label" style="color:var(--accent2);">Step 2 — Paste Claude\'s full JSON response here</div>'
+        + '<p style="margin-bottom:12px;">'
+        + (totalBatches > 1 ? 'Claude has all batches in context and will now produce the full analysis. ' : '')
+        + 'Copy its complete reply and paste it below.</p>'
+        + '<textarea id="responseInput" placeholder="Paste Claude\'s full response here…" style="width:100%;height:160px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:\'DM Mono\',monospace;font-size:11px;padding:10px;outline:none;resize:vertical;line-height:1.6;"></textarea>'
+        + '<div style="display:flex;gap:8px;margin-top:10px;align-items:center;">'
+        + '<button class="btn btn-primary" id="loadChangesBtn">✦ Load Changes</button>'
+        + (totalBatches > 1 ? '<span style="font-size:11px;color:var(--muted);">All '+totalBatches+' batches sent — 100% of deck covered</span>' : '')
+        + '</div>'
+        + '</div>';
+    }
+
     document.getElementById('content').innerHTML = html;
 
     document.getElementById('copyBtn').addEventListener('click', function(){
@@ -451,33 +474,30 @@ function generatePromptForBatch(batchIndex) {
       });
     });
 
-    document.getElementById('loadChangesBtn').addEventListener('click', function(){
-      var raw = document.getElementById('responseInput').value.trim();
-      if (!raw) { toast('Please paste Claude\'s response first', 'err'); return; }
-      fetch('/api/parse-response', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ response: raw, cards: currentCards })
-      }).then(function(r){ return r.json(); }).then(function(d){
-        if (d.error) throw new Error(d.error);
-        analysisResult = d;
-        var thisBatch = batchIndex;
-        renderAnalysis(d, thisBatch);
-        if (d.math_warning_count) {
-          toast('⚠ ' + d.math_warning_count + ' change(s) may strip MathJax — review warnings before applying.', 'err');
-        } else {
-          toast('Changes loaded! Review and apply below.', 'ok');
-        }
-      }).catch(function(e){ toast('Error: ' + e.message, 'err'); });
-    });
-
-    // Skip to next batch without loading response
-    var skipBtn = document.getElementById('skipBatchBtn');
-    if (skipBtn) {
-      skipBtn.addEventListener('click', function(){
-        currentBatch++;
+    if (isHoldBatch) {
+      document.getElementById('nextBatchBtn2').addEventListener('click', function(){
+        currentBatch = batchIndex + 1;
         updateBatchStatus();
         generatePromptForBatch(currentBatch);
+      });
+    } else {
+      document.getElementById('loadChangesBtn').addEventListener('click', function(){
+        var raw = document.getElementById('responseInput').value.trim();
+        if (!raw) { toast('Please paste Claude\'s response first', 'err'); return; }
+        fetch('/api/parse-response', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ response: raw, cards: currentCards })
+        }).then(function(r){ return r.json(); }).then(function(d){
+          if (d.error) throw new Error(d.error);
+          analysisResult = d;
+          renderAnalysis(d, batchIndex);
+          if (d.math_warning_count) {
+            toast('⚠ ' + d.math_warning_count + ' change(s) may strip MathJax — review warnings before applying.', 'err');
+          } else {
+            toast('Changes loaded! Review and apply below.', 'ok');
+          }
+        }).catch(function(e){ toast('Error: ' + e.message, 'err'); });
       });
     }
 
@@ -532,22 +552,6 @@ function renderAnalysis(data, batchIndex) {
 
   updateApplyBar();
   document.getElementById('applyBar').style.display = 'flex';
-  // Show next batch button if in batch mode
-  var nextBatchBar = document.getElementById('nextBatchBar');
-  if (nextBatchBar) nextBatchBar.remove();
-  if (totalBatches > 1 && batchIndex < totalBatches - 1) {
-    var bar = document.createElement('div');
-    bar.id = 'nextBatchBar';
-    bar.style.cssText = 'padding:10px 24px;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;';
-    bar.innerHTML = '<span style="font-size:11px;color:var(--muted);flex:1;">After applying, move to next batch — <strong style="color:var(--text)">Batch '+(batchIndex+2)+' of '+totalBatches+'</strong> (cards '+(((batchIndex+1)*batchSize)+1)+'–'+Math.min((batchIndex+2)*batchSize, currentCards.length)+')</span>'
-      + '<button class="btn btn-ghost" id="nextBatchBtn">Next Batch →</button>';
-    document.querySelector('main').appendChild(bar);
-    document.getElementById('nextBatchBtn').addEventListener('click', function(){
-      currentBatch = batchIndex + 1;
-      updateBatchStatus();
-      generatePromptForBatch(currentBatch);
-    });
-  }
 }
 
 function renderChangeCard(change, index) {

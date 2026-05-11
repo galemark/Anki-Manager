@@ -116,17 +116,40 @@ def export_prompt():
 
     batch_index = data.get('batchIndex', 0)
     total_batches = data.get('totalBatches', 1)
-    sample = cards[:80]
-    batch_note = f' (Batch {batch_index+1} of {total_batches})' if total_batches > 1 else ''
+    sample = cards[:100]
+    card_count = len(sample)
+    is_hold_batch = total_batches > 1 and batch_index < total_batches - 1
     cards_json = json.dumps([{
         "id": c["id"], "front": c["front"][:400], "back": c["back"][:400], "tags": c["tags"]
     } for c in sample], indent=2)
 
     custom = data.get("customInstructions", "").strip()
     custom_block = f"\n\nSPECIAL INSTRUCTIONS (follow these strictly, they override the default rules below):\n{custom}\n" if custom else ""
-    prompt = f"""You are an expert Anki deck curator. Analyze these {len(sample)} flashcards from the deck "{deck}"{batch_note} and produce a structured improvement plan.
+
+    if is_hold_batch:
+        prompt = f"""You are an expert Anki deck curator receiving card data in multiple batches before analysis.
+
+This is Batch {batch_index+1} of {total_batches} from the deck "{deck}". There are more batches to come.
+
+DO NOT analyze. DO NOT suggest changes. DO NOT produce any JSON.
+Simply acknowledge receipt and wait for the next batch.
+
+Reply ONLY with exactly this text (filling in the batch numbers):
+Batch {batch_index+1} of {total_batches} received. Waiting for next batch.
+
+CARDS IN THIS BATCH:
+{cards_json}"""
+    else:
+        batch_note = f' — Final batch ({batch_index+1} of {total_batches}). This completes the full deck.' if total_batches > 1 else ''
+        intro = (
+            f"You have now received all {total_batches} batches of cards from the deck \"{deck}\". "
+            f"Analyze ALL cards across ALL batches as a single unified deck and produce your improvement plan now."
+            if total_batches > 1 else
+            f"You are an expert Anki deck curator. Analyze these {card_count} flashcards from the deck \"{deck}\" and produce a structured improvement plan."
+        )
+        prompt = f"""{intro}{batch_note}
 {custom_block}
-CARDS:
+CARDS (this batch):
 {cards_json}
 
 Respond ONLY with a JSON object (no markdown, no explanation, just raw JSON) with this exact structure:
@@ -182,14 +205,14 @@ Default rules (apply unless overridden by special instructions above):
 - For duplicates: merge into the better card, mark the other for deletion.
 - For tagging: use hierarchical tags like "hematology::rbc" or "coagulation::factors".
 - For edits: improve clarity, atomicity, and recall precision.
-- Limit to the 25 most impactful changes.
+- Suggest as many changes as you find necessary, prioritizing the most impactful changes first. Stop when you have covered all genuine issues or when continuing would risk truncating your output — whichever comes first.
 - If the special instructions ask you to add new cards, use the "add_card" type with empty card_ids [].
 - For basic cards: put the question in new_front and answer in new_back.
 - For cloze cards: put the full sentence with {{{{c1::hidden text}}}} syntax in new_front. You may use multiple cloze deletions (c1, c2, c3...). Leave new_back empty or use it for extra context.
 - CRITICAL — MathJax preservation: Some cards contain MathJax math notation using \\(...\\) for inline math and \\[...\\] for block math. You MUST copy these delimiters and their contents exactly as they appear. Do NOT convert them to $...$ or $$...$$. Do NOT strip, rewrite, or paraphrase any math expression. If you cannot preserve the math notation exactly, do not suggest an edit or merge for that card — suggest a retag only.
 - Return valid JSON only. No markdown fences. No preamble."""
 
-    return jsonify({"prompt": prompt, "card_count": len(sample)})
+    return jsonify({"prompt": prompt, "card_count": card_count, "is_hold_batch": is_hold_batch})
 
 
 @app.route("/api/parse-response", methods=["POST"])
@@ -258,16 +281,64 @@ def apply_changes():
         try:
             if ctype in ("edit_card", "merge_duplicate", "retag"):
                 primary_id = card_ids[0]
-                update_fields = {}
                 note_info = anki("notesInfo", notes=[primary_id])[0]
                 field_names = list(note_info["fields"].keys())
+                current_model = note_info.get("modelName", "")
+
                 if ctype != "retag":
-                    if len(field_names) >= 1 and change.get("new_front"):
-                        update_fields[field_names[0]] = change["new_front"]
+                    new_front = change.get("new_front", "")
+                    is_cloze_target = "{{c" in new_front
+                    is_cloze_current = "cloze" in current_model.lower()
+
+                    if is_cloze_target != is_cloze_current:
+                        # Model type mismatch — create a new note with the correct type, delete the old one
+                        try:
+                            model_names = anki("modelNames")
+                        except Exception:
+                            model_names = []
+
+                        if is_cloze_target:
+                            cloze_model = next((m for m in model_names if "cloze" in m.lower()), None)
+                            if not cloze_model:
+                                raise RuntimeError("No Cloze note type found in Anki. Please add one first.")
+                            new_note = {
+                                "deckName": deck,
+                                "modelName": cloze_model,
+                                "fields": {
+                                    "Text": new_front,
+                                    "Back Extra": change.get("new_back", "")
+                                },
+                                "tags": change.get("new_tags", []),
+                                "options": {"allowDuplicate": True, "duplicateScope": "deck"}
+                            }
+                        else:
+                            model_name = "Basic" if "Basic" in model_names else (model_names[0] if model_names else "Basic")
+                            new_note = {
+                                "deckName": deck,
+                                "modelName": model_name,
+                                "fields": {
+                                    "Front": new_front,
+                                    "Back": change.get("new_back", "")
+                                },
+                                "tags": change.get("new_tags", []),
+                                "options": {"allowDuplicate": True, "duplicateScope": "deck"}
+                            }
+
+                        new_id = anki("addNote", note=new_note)
+                        # Delete old note and any secondary duplicates
+                        anki("deleteNotes", notes=card_ids)
+                        results.append({"id": new_id, "status": "ok", "type": ctype, "model_converted": True})
+                        continue
+
+                    # No model mismatch — update fields in place as normal
+                    update_fields = {}
+                    if len(field_names) >= 1 and new_front:
+                        update_fields[field_names[0]] = new_front
                     if len(field_names) >= 2 and change.get("new_back"):
                         update_fields[field_names[1]] = change["new_back"]
                     if update_fields:
                         anki("updateNoteFields", note={"id": primary_id, "fields": update_fields})
+
                 if change.get("new_tags"):
                     anki("updateNoteTags", note=primary_id, tags=" ".join(change["new_tags"]))
                 # Delete secondary duplicates
