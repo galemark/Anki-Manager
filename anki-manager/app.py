@@ -73,6 +73,19 @@ def has_mathjax(text):
     """Return True if text contains MathJax delimiters \\(...\\) or \\[...\\]"""
     return r'\(' in text or r'\[' in text
 
+def to_anki_html(text):
+    """Convert plain-text field content to Anki-compatible HTML.
+    Replaces newlines with <br> so bullet lists and multi-line backs
+    render correctly inside Anki's HTML card renderer.
+    Skips conversion if the text already contains HTML tags.
+    """
+    if not text:
+        return text
+    if '<' in text and '>' in text:
+        # Already contains HTML — don't double-convert
+        return text
+    return text.replace('\n', '<br>')
+
 def check_math_warning(change, card_map):
     """
     Return True if a change rewrites content and strips MathJax that was
@@ -305,8 +318,8 @@ def apply_changes():
                                 "deckName": deck,
                                 "modelName": cloze_model,
                                 "fields": {
-                                    "Text": new_front,
-                                    "Back Extra": change.get("new_back", "")
+                                    "Text": to_anki_html(new_front),
+                                    "Back Extra": to_anki_html(change.get("new_back", ""))
                                 },
                                 "tags": change.get("new_tags", []),
                                 "options": {"allowDuplicate": True, "duplicateScope": "deck"}
@@ -317,8 +330,8 @@ def apply_changes():
                                 "deckName": deck,
                                 "modelName": model_name,
                                 "fields": {
-                                    "Front": new_front,
-                                    "Back": change.get("new_back", "")
+                                    "Front": to_anki_html(new_front),
+                                    "Back": to_anki_html(change.get("new_back", ""))
                                 },
                                 "tags": change.get("new_tags", []),
                                 "options": {"allowDuplicate": True, "duplicateScope": "deck"}
@@ -333,9 +346,9 @@ def apply_changes():
                     # No model mismatch — update fields in place as normal
                     update_fields = {}
                     if len(field_names) >= 1 and new_front:
-                        update_fields[field_names[0]] = new_front
+                        update_fields[field_names[0]] = to_anki_html(new_front)
                     if len(field_names) >= 2 and change.get("new_back"):
-                        update_fields[field_names[1]] = change["new_back"]
+                        update_fields[field_names[1]] = to_anki_html(change["new_back"])
                     if update_fields:
                         anki("updateNoteFields", note={"id": primary_id, "fields": update_fields})
 
@@ -364,8 +377,8 @@ def apply_changes():
                         "deckName": deck,
                         "modelName": cloze_model,
                         "fields": {
-                            "Text": change.get("new_front", ""),
-                            "Back Extra": change.get("new_back", "")
+                            "Text": to_anki_html(change.get("new_front", "")),
+                            "Back Extra": to_anki_html(change.get("new_back", ""))
                         },
                         "tags": change.get("new_tags", []),
                         "options": {"allowDuplicate": True, "duplicateScope": "deck"}
@@ -376,8 +389,8 @@ def apply_changes():
                         "deckName": deck,
                         "modelName": model_name,
                         "fields": {
-                            "Front": change.get("new_front", ""),
-                            "Back": change.get("new_back", "")
+                            "Front": to_anki_html(change.get("new_front", "")),
+                            "Back": to_anki_html(change.get("new_back", ""))
                         },
                         "tags": change.get("new_tags", []),
                         "options": {"allowDuplicate": True, "duplicateScope": "deck"}
