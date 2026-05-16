@@ -41,6 +41,39 @@ def get_decks():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/deck-stats")
+def get_deck_stats():
+    deck = request.args.get("deck", "")
+    if not deck:
+        return jsonify({"error": "No deck specified"}), 400
+    try:
+        stats = anki("getDeckStats", decks=[deck])
+        # getDeckStats returns a dict keyed by deck id; grab the first (and only) value
+        deck_stat = next(iter(stats.values())) if stats else {}
+        return jsonify({
+            "new":     deck_stat.get("new_count", 0),
+            "learn":   deck_stat.get("learn_count", 0),
+            "due":     deck_stat.get("review_count", 0),
+            "total":   deck_stat.get("total_in_deck", 0),
+            "reviews": deck_stat.get("reviews_today", 0),
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/anki-browse", methods=["POST"])
+def anki_browse():
+    data = request.json
+    query = data.get("query", "")
+    if not query:
+        return jsonify({"error": "No query provided"}), 400
+    try:
+        anki("guiBrowse", query=query)
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/cards")
 def get_cards():
     deck = request.args.get("deck", "")

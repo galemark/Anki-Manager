@@ -430,7 +430,12 @@ function selectDeck(deck) {
   document.getElementById('filterBar').className = 'filter-bar';
   renderPlaceholder('Loading cards…', '');
 
-  fetch('/api/cards?deck=' + encodeURIComponent(deck)).then(function(r){ return r.json(); }).then(function(d){
+  var cardsPromise = fetch('/api/cards?deck=' + encodeURIComponent(deck)).then(function(r){ return r.json(); });
+  var statsPromise = fetch('/api/deck-stats?deck=' + encodeURIComponent(deck)).then(function(r){ return r.json(); }).catch(function(){ return null; });
+
+  Promise.all([cardsPromise, statsPromise]).then(function(results) {
+    var d     = results[0];
+    var stats = results[1];
     currentCards = d.cards || [];
     analysisResult = null;
     selectedChanges = new Set();
@@ -438,18 +443,88 @@ function selectDeck(deck) {
     document.getElementById('toolbarSub').textContent = count + ' cards loaded · ' + deck;
     document.getElementById('generateBtn').disabled = count === 0;
     document.getElementById('batchModeBtn').disabled = count === 0;
+
     if (count === 0) {
       renderPlaceholder('No cards found', 'This deck appears to be empty.');
-    } else {
-      var preview = currentCards.slice(0, 6);
-      var html = '<p style="color:var(--muted);font-size:12px;margin-bottom:14px;">Showing '+preview.length+' of '+count+' cards — click <strong style="color:var(--text)">Generate Prompt</strong> to begin.</p><div class="card-preview-list">';
-      for (var i = 0; i < preview.length; i++) {
-        html += '<div class="card-preview"><div class="front">'+esc(preview[i].front)+'</div><div class="back">'+esc(preview[i].back)+'</div></div>';
-      }
-      html += '</div>';
-      document.getElementById('content').innerHTML = html;
+      return;
     }
+
+    document.getElementById('content').innerHTML = renderDeckDashboard(deck, count, stats);
   });
+}
+
+function statCard(value, label, color) {
+  return '<div class="stat-card ' + color + '"><div class="num">' + value + '</div><div class="lbl">' + esc(label) + '</div></div>';
+}
+
+function renderDeckDashboard(deck, cardCount, stats) {
+  var newCount   = stats && stats.new   != null ? stats.new   : '—';
+  var learnCount = stats && stats.learn != null ? stats.learn : '—';
+  var dueCount   = stats && stats.due   != null ? stats.due   : '—';
+  var totalCount = stats && stats.total != null ? stats.total : cardCount;
+  var statsError = stats && stats.error;
+
+  // Stacked bar segments
+  var total    = (!statsError && typeof totalCount === 'number' && totalCount > 0) ? totalCount : null;
+  var duePct   = total ? Math.round((dueCount   / total) * 100) : 0;
+  var learnPct = total ? Math.round((learnCount / total) * 100) : 0;
+  var newPct   = total ? Math.round((newCount   / total) * 100) : 0;
+  var restPct  = Math.max(0, 100 - duePct - learnPct - newPct);
+
+  var barHtml = '';
+  if (total) {
+    var segs = [
+      { pct: duePct,   color: 'var(--accent2)', label: 'Due',      pctVal: duePct   },
+      { pct: learnPct, color: 'var(--merge)',    label: 'Learning', pctVal: learnPct },
+      { pct: newPct,   color: 'var(--accent)',   label: 'New',      pctVal: newPct   },
+      { pct: restPct,  color: 'var(--surface2)', label: 'Rested',   pctVal: restPct  },
+    ];
+    var segHtml = '';
+    for (var s = 0; s < segs.length; s++) {
+      if (segs[s].pct <= 0) continue;
+      segHtml += '<div title="' + segs[s].label + ': ' + segs[s].pct + '%"'
+        + ' style="flex:' + segs[s].pct + ';background:' + segs[s].color + ';height:100%;min-width:2px;"></div>';
+    }
+    barHtml = '<div style="margin-top:22px;">'
+      + '<div style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Card breakdown</div>'
+      + '<div style="display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--surface2);gap:1px;">' + segHtml + '</div>'
+      + '<div style="display:flex;gap:16px;margin-top:9px;flex-wrap:wrap;">'
+      + legend('var(--accent2)', 'Due',      duePct)
+      + legend('var(--merge)',   'Learning', learnPct)
+      + legend('var(--accent)',  'New',      newPct)
+      + legend('var(--border)',  'Rested',   restPct)
+      + '</div></div>';
+  }
+
+  var statCardsHtml = statsError
+    ? '<div style="color:var(--muted);font-size:11px;padding:6px 0 2px;">Could not load stats — make sure AnkiConnect supports getDeckStats.</div>'
+    : '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">'
+        + statCard(dueCount,   'Due today', 'blue')
+        + statCard(learnCount, 'Learning',  'purple')
+        + statCard(newCount,   'New',       'amber')
+        + statCard(totalCount, 'Total',     'green')
+      + '</div>';
+
+  return '<div style="max-width:680px;">'
+    + '<div style="font-family:\'Fraunces\',serif;font-size:22px;font-weight:300;margin-bottom:4px;">' + esc(deck.split('::').pop()) + '</div>'
+    + '<div style="font-size:11px;color:var(--muted);margin-bottom:22px;">' + esc(deck) + '</div>'
+    + '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 24px;">'
+    +   '<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;">Deck health</div>'
+    +   statCardsHtml
+    +   barHtml
+    + '</div>'
+    + '<div style="margin-top:14px;font-size:11px;color:var(--muted);line-height:1.9;">'
+    +   'Ready to analyze <strong style="color:var(--text);">' + cardCount + ' cards</strong>. '
+    +   'Click <strong style="color:var(--text);">Generate Prompt</strong> to begin, '
+    +   'or <strong style="color:var(--text);">Batch Mode</strong> for large decks.'
+    + '</div>'
+    + '</div>';
+}
+
+function legend(color, label, pct) {
+  return '<span style="font-size:10px;color:var(--muted);display:flex;align-items:center;gap:5px;">'
+    + '<span style="width:8px;height:8px;border-radius:2px;background:' + color + ';flex-shrink:0;display:inline-block;"></span>'
+    + label + ' <span style="opacity:0.6;">' + pct + '%</span></span>';
 }
 
 // ── Generate prompt ───────────────────────────────────────────────────────────
@@ -917,10 +992,45 @@ function renderChangeCard(change, index) {
       html += '</div></div>';
     }
 
+    // Open in Anki button(s)
+    html += '<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;">';
+    if (change.type === 'merge_duplicate' && change.card_ids && change.card_ids.length > 1) {
+      html += ankiBrowseBtn(change.card_ids[0], '⧉ Open kept card in Anki');
+      for (var ab = 1; ab < change.card_ids.length; ab++) {
+        html += ankiBrowseBtn(change.card_ids[ab], '⧉ Open card ' + (ab + 1) + ' in Anki');
+      }
+    } else if (change.card_ids && change.card_ids.length > 0 && change.type !== 'add_card') {
+      html += ankiBrowseBtn(change.card_ids[0], '⧉ Open in Anki');
+    }
+    html += '</div>';
+
     html += '</div>';
   }
   html += '</div>';
   return html;
+}
+
+function ankiBrowseBtn(noteId, label) {
+  return '<button class="btn btn-ghost" style="font-size:11px;padding:5px 12px;" onclick="openInAnki(' + noteId + ',this)">' + esc(label) + '</button>';
+}
+
+function openInAnki(noteId, btnEl) {
+  var orig = btnEl.textContent;
+  btnEl.disabled = true;
+  btnEl.textContent = '…';
+  fetch('/api/anki-browse', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ query: 'nid:' + noteId })
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if (d.error) throw new Error(d.error);
+    btnEl.textContent = '✓ Opened';
+    setTimeout(function(){ btnEl.textContent = orig; btnEl.disabled = false; }, 2000);
+  }).catch(function(e){
+    toast('Could not open Anki Browser: ' + e.message, 'err');
+    btnEl.textContent = orig;
+    btnEl.disabled = false;
+  });
 }
 
 function patchChange(index, field, value) {
