@@ -85,6 +85,9 @@ def get_cards():
         notes = anki("notesInfo", notes=ids)
         cards = []
         for n in notes:
+            # Exclude 00 Topic Map notes — these are reference cards, not study cards
+            if n.get("modelName") == "00 Topic Map":
+                continue
             fields = n.get("fields", {})
             front = next(iter(fields.values()), {}).get("value", "") if fields else ""
             back = list(fields.values())[1]["value"] if len(fields) > 1 else ""
@@ -170,11 +173,20 @@ def export_prompt():
     } for c in sample], indent=2)
 
     custom = data.get("customInstructions", "").strip()
+    obsidian_ref = data.get("obsidianRef", "").strip()
+
+    # Build obsidian block — injected before custom instructions
+    if obsidian_ref:
+        notes_list = ', '.join([f'"{n.strip()}"' for n in obsidian_ref.split(',') if n.strip()])
+        obsidian_block = f"\n\nOBSIDIAN REFERENCE (read these notes from the connected Obsidian vault via MCP before improving cards, use them as your factual reference):\n{notes_list}\n"
+    else:
+        obsidian_block = ""
+
     custom_block = f"\n\nSPECIAL INSTRUCTIONS (follow these strictly, they override the default rules below):\n{custom}\n" if custom else ""
 
     if is_hold_batch:
         prompt = f"""You are an expert Anki deck curator receiving card data in multiple batches before analysis.
-
+{obsidian_block}
 This is Batch {batch_index+1} of {total_batches} from the deck "{deck}". There are more batches to come.
 
 DO NOT analyze. DO NOT suggest changes. DO NOT produce any JSON.
@@ -194,7 +206,7 @@ CARDS IN THIS BATCH:
             f"You are an expert Anki deck curator. Analyze these {card_count} flashcards from the deck \"{deck}\" and produce a structured improvement plan."
         )
         prompt = f"""{intro}{batch_note}
-{custom_block}
+{obsidian_block}{custom_block}
 CARDS (this batch):
 {cards_json}
 
@@ -257,6 +269,97 @@ Default rules (apply unless overridden by special instructions above):
 - For cloze cards: put the full sentence with {{{{c1::hidden text}}}} syntax in new_front. You may use multiple cloze deletions (c1, c2, c3...). Leave new_back empty or use it for extra context.
 - CRITICAL — MathJax preservation: Some cards contain MathJax math notation using \\(...\\) for inline math and \\[...\\] for block math. You MUST copy these delimiters and their contents exactly as they appear. Do NOT convert them to $...$ or $$...$$. Do NOT strip, rewrite, or paraphrase any math expression. If you cannot preserve the math notation exactly, do not suggest an edit or merge for that card — suggest a retag only.
 - Return valid JSON only. No markdown fences. No preamble."""
+
+    return jsonify({"prompt": prompt, "card_count": card_count, "is_hold_batch": is_hold_batch})
+
+
+@app.route("/api/analyze-topics", methods=["POST"])
+def analyze_topics():
+    """Generate a topic-listing prompt — no card changes, just extract what subjects the deck covers.
+    Supports the same hold/final batch pattern as export_prompt so the full deck is always covered.
+    id and tags are intentionally omitted — topic mapping only needs front/back content.
+    """
+    data = request.json
+    cards = data.get("cards", [])
+    deck = data.get("deck", "selected deck")
+
+    if not cards:
+        return jsonify({"error": "No cards provided"}), 400
+
+    batch_index   = data.get("batchIndex", 0)
+    total_batches = data.get("totalBatches", 1)
+    batch_size    = 100
+    start         = batch_index * batch_size
+    batch_cards   = cards[start:start + batch_size]
+    card_count    = len(batch_cards)
+    is_hold_batch = total_batches > 1 and batch_index < total_batches - 1
+
+    # id and tags intentionally excluded — topic mapping only needs content
+    cards_json = json.dumps([{
+        "front": c["front"][:300], "back": c["back"][:300]
+    } for c in batch_cards], indent=2)
+
+    if is_hold_batch:
+        prompt = f"""You are analyzing an Anki flashcard deck to extract a structured topic map. You are receiving the card data in multiple batches before producing any output.
+
+This is Batch {batch_index+1} of {total_batches} from the deck "{deck}". There are more batches to come.
+
+DO NOT produce a topic map yet. DO NOT list topics. DO NOT produce any output other than the acknowledgement below.
+Simply store these cards in context and wait for the next batch.
+
+Reply ONLY with exactly this text (filling in the batch numbers):
+Batch {batch_index+1} of {total_batches} received. Waiting for next batch.
+
+CARDS IN THIS BATCH:
+{cards_json}"""
+    else:
+        batch_note = (
+            f" — Final batch ({batch_index+1} of {total_batches}). This completes the full deck."
+            if total_batches > 1 else ""
+        )
+        intro = (
+            f"You have now received all {total_batches} batches of cards from the deck \"{deck}\". "
+            f"Analyze ALL cards across ALL batches as a single unified deck and produce the topic map now."
+            if total_batches > 1 else
+            f"You are analyzing an Anki flashcard deck to extract a structured topic map."
+        )
+
+        prompt = f"""{intro}{batch_note}
+
+Deck: "{deck}"
+Total cards in this batch: {card_count}
+
+Your ONLY job is to list every topic and subtopic covered by these cards.
+Do NOT suggest improvements. Do NOT flag issues. Do NOT produce JSON.
+Just produce a clean, structured topic list.
+
+Format your response exactly like this example:
+───────────────────────────────
+TOPIC MAP — {deck}
+───────────────────────────────
+
+1. [Main Topic]
+   • [Subtopic]
+   • [Subtopic]
+
+2. [Main Topic]
+   • [Subtopic]
+   • [Subtopic]
+───────────────────────────────
+OBSIDIAN NOTES NEEDED
+───────────────────────────────
+List only the topics above that would benefit most from a reference note in Obsidian before card improvement. One line each. Be specific.
+
+Rules:
+- Group related cards into logical subject areas
+- Use the medical/scientific subject name as the main topic (e.g. "Coagulation Cascade", not "Blood stuff")
+- Subtopics should be specific enough to search in a textbook or NotebookLM
+- If a card's topic is already implied by the deck name, still list it explicitly
+- List topics in order of how many cards cover them (most covered first)
+- At the end, add the "OBSIDIAN NOTES NEEDED" section listing topics that are complex or foundational enough to warrant a reference note
+
+CARDS (this batch):
+{cards_json}"""
 
     return jsonify({"prompt": prompt, "card_count": card_count, "is_hold_batch": is_hold_batch})
 
@@ -435,6 +538,99 @@ def apply_changes():
             results.append({"ids": card_ids, "status": "error", "error": str(e), "type": ctype})
 
     return jsonify({"results": results})
+
+# ── Routes: topic map ────────────────────────────────────────────────────────
+
+@app.route("/api/save-topic-map", methods=["POST"])
+def save_topic_map():
+    """Create or update the '00 Topic Map' note for the selected deck.
+    The note is immediately suspended (never reviewed) and flagged purple (flag 7).
+    Only the topic list portion is saved — the Obsidian Notes Needed section is UI-only.
+    """
+    data = request.json
+    deck = data.get("deck", "")
+    content = data.get("content", "").strip()
+    generated = data.get("generated", "")
+
+    if not deck:
+        return jsonify({"error": "No deck specified"}), 400
+    if not content:
+        return jsonify({"error": "No content provided"}), 400
+
+    # ── Convert plain-text topic map to Anki-compatible HTML ─────────────────
+    # Newlines are ignored in Anki's HTML renderer; we convert the structured
+    # plain-text output (numbered topics, bullet subtopics, separator lines)
+    # into styled HTML so it renders cleanly inside the card viewer.
+    def topic_map_to_html(text):
+        lines = text.splitlines()
+        html_lines = []
+        for line in lines:
+            stripped = line.strip()
+            if not stripped:
+                html_lines.append('<br>')
+            elif all(c in '─—- ' for c in stripped) and len(stripped) > 3:
+                # Separator line
+                html_lines.append('<hr style="border:none;border-top:1px solid #2a2d35;margin:6px 0;">')
+            elif stripped.startswith('•'):
+                item = stripped[1:].strip()
+                html_lines.append(f'<div style="padding-left:1.4em;color:#b0b5c0;">&bull; {item}</div>')
+            elif len(stripped) > 1 and stripped[0].isdigit() and '.' in stripped[:4]:
+                html_lines.append(f'<div style="margin-top:0.7em;color:#c9a9f0;font-weight:500;">{stripped}</div>')
+            else:
+                html_lines.append(f'<div>{stripped}</div>')
+        return '\n'.join(html_lines)
+
+    content_html = topic_map_to_html(content)
+
+    # ── Find existing topic map note for this deck ────────────────────────────
+    existing_ids = anki("findNotes", query=f'note:"00 Topic Map" deck:"{deck}"')
+
+    if existing_ids:
+        # Update the existing note
+        note_id = existing_ids[0]
+        anki("updateNoteFields", note={
+            "id": note_id,
+            "fields": {
+                "Deck": deck,
+                "Generated": generated,
+                "Content": content_html
+            }
+        })
+        # Re-fetch the card id(s) for this note to suspend & flag
+        card_ids = anki("findCards", query=f'nid:{note_id}')
+        created = False
+    else:
+        # Create a new note
+        note_id = anki("addNote", note={
+            "deckName": deck,
+            "modelName": "00 Topic Map",
+            "fields": {
+                "Deck": deck,
+                "Generated": generated,
+                "Content": content_html
+            },
+            "options": {"allowDuplicate": False, "duplicateScope": "deck"}
+        })
+        card_ids = anki("findCards", query=f'nid:{note_id}')
+        created = True
+
+    if not card_ids:
+        return jsonify({"error": "Could not find card(s) for the saved note"}), 500
+
+    # ── Suspend the card so it never appears in reviews ───────────────────────
+    anki("suspend", cards=card_ids)
+
+    # ── Flag purple (flag 7) ──────────────────────────────────────────────────
+    for cid in card_ids:
+        anki("setSpecificValueOfCard", card=cid, keys=["flags"], newValues=[7])
+
+    return jsonify({
+        "ok": True,
+        "created": created,
+        "note_id": note_id,
+        "card_ids": card_ids
+    })
+
 
 # ── Static files ─────────────────────────────────────────────────────────────
 

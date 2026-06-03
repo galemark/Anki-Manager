@@ -155,6 +155,16 @@ main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .math-warning-banner .mw-icon { flex-shrink: 0; font-size: 13px; margin-top: 1px; }
 .change-card.math-risk { border-color: rgba(217,119,6,0.5); }
 .change-card.math-risk .change-header { background: rgba(217,119,6,0.04); }
+.btn-analyze { background: transparent; color: #7c9fd4; border: 1px solid #7c9fd4; }
+.btn-analyze:hover { background: rgba(124,159,212,0.1); }
+.btn-analyze:disabled { border-color: var(--border); color: var(--muted); cursor: not-allowed; background: transparent; }
+.obsidian-field { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.obsidian-input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 11px; padding: 7px 10px; outline: none; transition: border-color 0.2s; }
+.obsidian-input:focus { border-color: #7c9fd4; }
+.obsidian-label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.obsidian-hint { font-size: 10px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+.topic-output { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; font-size: 12px; line-height: 1.9; color: var(--text); white-space: pre-wrap; font-family: 'DM Mono', monospace; margin-top: 0; }
+.topic-section-header { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent2); margin-bottom: 10px; }
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -190,6 +200,7 @@ main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
           <div id="batchStatus" style="font-size:11px;color:var(--muted);"></div>
+          <button class="btn btn-analyze" id="analyzeTopicsBtn" disabled title="List all topics covered in this deck — no card changes">◎ Analyze Topics</button>
           <button class="btn btn-ghost" id="batchModeBtn" disabled title="Work through all cards in batches of 80">⟳ Batch Mode</button>
           <button class="btn btn-primary" id="generateBtn" disabled>✦ Generate Prompt</button>
         </div>
@@ -204,6 +215,11 @@ main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         <div class="custom-panel-body" id="customPanelBody">
           <textarea class="custom-textarea" id="customInstructions" placeholder="e.g. Focus only on duplicate detection. Use Filipino medical terminology where applicable. Prioritize coagulation-related cards."></textarea>
           <p class="custom-hint">These instructions will be added to the AI prompt. Toggle exclusions or pick a preset below, or write your own.</p>
+          <div class="obsidian-field" style="margin-top:12px;">
+            <span class="obsidian-label" style="color:#7c9fd4;">⬡ Obsidian ref</span>
+            <input class="obsidian-input" id="obsidianRef" type="text" placeholder="e.g. Hematology, Coagulation Cascade, Iron Deficiency Anemia" />
+          </div>
+          <p class="obsidian-hint">Note name(s) for Claude to read from your Obsidian vault via MCP before improving cards. Separate multiple notes with commas.</p>
           <div class="preset-row-label">Exclude from analysis</div>
           <div class="preset-row" id="excludeRow"></div>
           <div class="preset-row-label" style="margin-top:8px;">Quick presets</div>
@@ -443,6 +459,7 @@ function selectDeck(deck) {
     document.getElementById('toolbarSub').textContent = count + ' cards loaded · ' + deck;
     document.getElementById('generateBtn').disabled = count === 0;
     document.getElementById('batchModeBtn').disabled = count === 0;
+    document.getElementById('analyzeTopicsBtn').disabled = count === 0;
 
     if (count === 0) {
       renderPlaceholder('No cards found', 'This deck appears to be empty.');
@@ -539,6 +556,182 @@ function updateBatchStatus() {
   el.textContent = 'Batch ' + (currentBatch + 1) + ' of ' + totalBatches;
 }
 
+// ── Analyze Topics — batch state ─────────────────────────────────────────────
+var topicBatch = 0;
+var topicTotalBatches = 0;
+var topicCurrentPrompt = '';
+
+document.getElementById('analyzeTopicsBtn').addEventListener('click', function() {
+  if (!selectedDeck || currentCards.length === 0) return;
+  topicBatch = 0;
+  topicTotalBatches = Math.ceil(currentCards.length / batchSize);
+  generateTopicBatch(topicBatch);
+});
+
+function generateTopicBatch(batchIndex) {
+  var btn = document.getElementById('analyzeTopicsBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generating…';
+
+  fetch('/api/analyze-topics', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      cards: currentCards,
+      deck: selectedDeck,
+      batchIndex: batchIndex,
+      totalBatches: topicTotalBatches
+    })
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if (d.error) throw new Error(d.error);
+
+    topicCurrentPrompt = d.prompt;
+    var isHoldBatch = d.is_hold_batch;
+
+    document.getElementById('applyBar').style.display = 'none';
+    document.getElementById('filterBar').className = 'filter-bar';
+
+    var batchInfo = topicTotalBatches > 1
+      ? '<div style="background:rgba(124,159,212,0.08);border:1px solid rgba(124,159,212,0.2);border-radius:7px;padding:10px 14px;margin-bottom:12px;font-size:11px;color:var(--accent2);">'
+        + '📦 Batch '+(batchIndex+1)+' of '+topicTotalBatches
+        + ' · Cards '+(batchIndex*batchSize+1)+'–'+Math.min((batchIndex+1)*batchSize, currentCards.length)+' of '+currentCards.length
+        + (isHoldBatch
+            ? ' &nbsp;·&nbsp; <strong>Hold batch — paste &amp; wait for acknowledgement, then click Next Batch</strong>'
+            : ' &nbsp;·&nbsp; <strong style="color:var(--accent);">Final batch — paste &amp; get the full topic map</strong>')
+        + '</div>'
+      : '';
+
+    var step1Box = '<div class="summary-box" style="margin-bottom:16px;border-left-color:var(--accent2);">'
+      + '<div class="summary-label" style="color:var(--accent2);">Step 1 — Copy this prompt</div>'
+      + batchInfo
+      + '<p style="margin-bottom:12px;">Paste into <a href="https://claude.ai" target="_blank" style="color:var(--accent2);">claude.ai</a>.'
+      + (topicTotalBatches > 1
+          ? (isHoldBatch ? ' Continue the <strong>same conversation</strong> for each batch.' : ' This final batch triggers the full topic map.')
+          : ' Claude will return a structured topic map — no card changes, just topics.')
+      + '</p>'
+      + '<button class="btn btn-analyze" id="copyTopicBtn">⧉ Copy Prompt</button>'
+      + '</div>';
+
+    var html = '<div style="max-width:720px;">' + step1Box;
+
+    if (isHoldBatch) {
+      html += '<div class="summary-box" style="border-left-color:var(--accent2);">'
+        + '<div class="summary-label" style="color:var(--accent2);">Step 2 — Paste into Claude and wait for acknowledgement</div>'
+        + '<p style="margin-bottom:12px;line-height:1.7;">Claude will reply with:<br>'
+        + '<code style="background:var(--surface2);padding:3px 7px;border-radius:4px;font-size:11px;color:var(--accent2);">Batch '+(batchIndex+1)+' of '+topicTotalBatches+' received. Waiting for next batch.</code><br>'
+        + '<span style="color:var(--muted);">Once you see that, click the button below to load the next batch.</span></p>'
+        + '<div style="display:flex;gap:8px;align-items:center;">'
+        + '<button class="btn btn-analyze" id="nextTopicBatchBtn">Next Batch → ('+(batchIndex+2)+' of '+topicTotalBatches+')</button>'
+        + '<span style="font-size:11px;color:var(--muted);">'+Math.round((batchIndex+1)/topicTotalBatches*100)+'% of deck sent</span>'
+        + '</div>'
+        + '</div>';
+    } else {
+      html += '<div class="summary-box" style="border-left-color:var(--accent2);">'
+        + '<div class="summary-label" style="color:var(--accent2);">Step 2 — Paste Claude\'s topic map here</div>'
+        + '<p style="margin-bottom:10px;">'
+        + (topicTotalBatches > 1 ? 'Claude has all batches in context and will now produce the full topic map. ' : '')
+        + 'After Claude replies, paste it below to review.</p>'
+        + '<textarea id="topicResponseInput" placeholder="Paste Claude\'s topic map here…" style="width:100%;height:200px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:\'DM Mono\',monospace;font-size:11px;padding:10px;outline:none;resize:vertical;line-height:1.7;"></textarea>'
+        + '<div style="display:flex;gap:8px;margin-top:10px;">'
+        + '<button class="btn btn-analyze" id="renderTopicBtn">◎ Render Topic Map</button>'
+        + (topicTotalBatches > 1 ? '<span style="font-size:11px;color:var(--muted);">All '+topicTotalBatches+' batches sent — 100% of deck covered</span>' : '')
+        + '</div>'
+        + '</div>';
+    }
+
+    html += '</div>';
+    document.getElementById('content').innerHTML = html;
+
+    document.getElementById('copyTopicBtn').addEventListener('click', function(){
+      navigator.clipboard.writeText(topicCurrentPrompt).then(function(){
+        document.getElementById('copyTopicBtn').textContent = '✓ Copied!';
+        setTimeout(function(){ document.getElementById('copyTopicBtn').textContent = '⧉ Copy Prompt'; }, 2000);
+      });
+    });
+
+    if (isHoldBatch) {
+      document.getElementById('nextTopicBatchBtn').addEventListener('click', function(){
+        topicBatch = batchIndex + 1;
+        generateTopicBatch(topicBatch);
+      });
+    } else {
+      document.getElementById('renderTopicBtn').addEventListener('click', function(){
+        var raw = document.getElementById('topicResponseInput').value.trim();
+        if (!raw) { toast('Paste Claude\'s topic map first', 'err'); return; }
+
+        var parts = raw.split(/OBSIDIAN NOTES NEEDED/i);
+        var topicPart = parts[0].trim();
+        var obsidianPart = parts[1] ? parts[1].replace(/^[\s\-─]+/,'').trim() : '';
+
+        var outputHtml = '<div style="max-width:720px;">'
+          + '<div style="font-family:\'Fraunces\',serif;font-size:20px;font-weight:300;margin-bottom:16px;">Topic Map</div>'
+          + '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px;">'
+          + '<div style="padding:10px 16px;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2);">Topics covered in deck</div>'
+          + '<div style="padding:14px 18px;font-size:12px;line-height:1.9;color:var(--text);white-space:pre-wrap;font-family:\'DM Mono\',monospace;">'+esc(topicPart)+'</div>'
+          + '</div>';
+
+        if (obsidianPart) {
+          outputHtml += '<div style="background:var(--surface);border:1px solid rgba(124,159,212,0.4);border-radius:10px;overflow:hidden;margin-bottom:12px;">'
+            + '<div style="padding:10px 16px;border-bottom:1px solid rgba(124,159,212,0.2);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2);">⬡ Obsidian notes needed</div>'
+            + '<div style="padding:14px 18px;font-size:12px;line-height:1.9;color:var(--text);white-space:pre-wrap;font-family:\'DM Mono\',monospace;">'+esc(obsidianPart)+'</div>'
+            + '</div>';
+        }
+
+        outputHtml += '<div style="display:flex;align-items:center;gap:12px;margin-top:4px;padding:12px 2px 4px;border-top:1px solid var(--border);">'
+          + '<button class="btn btn-analyze" id="saveTopicMapBtn">⬡ Save to Anki</button>'
+          + '<span style="font-size:11px;color:var(--muted);line-height:1.6;">'
+          + 'Saves the topic list as a suspended, purple-flagged reference card in this deck.'
+          + '</span>'
+          + '</div>';
+
+        outputHtml += '<div style="font-size:11px;color:var(--muted);line-height:1.8;padding:8px 2px 4px;">'
+          + '→ Add missing notes to Obsidian, then come back and run <strong style="color:var(--text);">Generate Prompt</strong> with the Obsidian reference field filled in.'
+          + '</div></div>';
+
+        document.getElementById('content').innerHTML = outputHtml;
+        toast('Topic map rendered', 'ok');
+
+        // ── Save to Anki ──────────────────────────────────────────────────────
+        document.getElementById('saveTopicMapBtn').addEventListener('click', function() {
+          var btn = document.getElementById('saveTopicMapBtn');
+          btn.disabled = true;
+          btn.innerHTML = '<span class="spinner"></span> Saving…';
+
+          var now = new Date();
+          var generated = now.toISOString().slice(0,10)
+            + ' ' + now.toTimeString().slice(0,5);
+
+          fetch('/api/save-topic-map', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              deck: selectedDeck,
+              content: topicPart,
+              generated: generated
+            })
+          }).then(function(r){ return r.json(); }).then(function(d){
+            if (d.error) throw new Error(d.error);
+            btn.innerHTML = '✓ Saved';
+            btn.style.color = 'var(--success)';
+            btn.style.borderColor = 'var(--success)';
+            var action = d.created ? 'Created' : 'Updated';
+            toast('✓ ' + action + ' topic map card in Anki (suspended + purple flag)', 'ok');
+          }).catch(function(e){
+            toast('Save failed: ' + e.message, 'err');
+            btn.disabled = false;
+            btn.innerHTML = '⬡ Save to Anki';
+          });
+        });
+      }); // end renderTopicBtn click
+    }
+
+  }).catch(function(e){ toast('Error: ' + e.message, 'err'); })
+  .finally(function(){
+    btn.disabled = false;
+    btn.innerHTML = '◎ Analyze Topics';
+  });
+}
+
 document.getElementById('batchModeBtn').addEventListener('click', function() {
   if (!selectedDeck || currentCards.length === 0) return;
   currentBatch = 0;
@@ -561,13 +754,14 @@ function generatePromptForBatch(batchIndex) {
   batchBtn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Generating…';
   var customInstructions = document.getElementById('customInstructions').value.trim();
+  var obsidianRef = document.getElementById('obsidianRef').value.trim();
   var start = batchIndex * batchSize;
   var batchCards = currentCards.slice(start, start + batchSize);
 
   fetch('/api/export-prompt', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ cards: batchCards, deck: selectedDeck, customInstructions: customInstructions, batchIndex: batchIndex, totalBatches: totalBatches })
+    body: JSON.stringify({ cards: batchCards, deck: selectedDeck, customInstructions: customInstructions, obsidianRef: obsidianRef, batchIndex: batchIndex, totalBatches: totalBatches })
   }).then(function(r){ return r.json(); }).then(function(d){
     if (d.error) throw new Error(d.error);
     currentPrompt = d.prompt;
