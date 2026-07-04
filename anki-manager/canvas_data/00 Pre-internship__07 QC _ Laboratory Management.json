@@ -1,0 +1,896 @@
+{
+  "nodes": [
+    {
+      "id": "n_ri7qdmi",
+      "noteId": 1779883318786,
+      "x": 1316,
+      "y": 150,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_mye3xqo",
+      "noteId": 1779883318787,
+      "x": 1504,
+      "y": 152,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_vye3d1c",
+      "noteId": 1779883318788,
+      "x": 1312,
+      "y": 235,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_8ttld8k",
+      "noteId": 1779883318789,
+      "x": 1503,
+      "y": 230,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_gz95v5u",
+      "noteId": 1779883318790,
+      "x": 1976,
+      "y": 149,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_dc6xxkt",
+      "noteId": 1779883318791,
+      "x": 1985,
+      "y": 233,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_q8o0t8o",
+      "noteId": 1779883318792,
+      "x": 2169,
+      "y": 152,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_xn2wsa9",
+      "noteId": 1779883318793,
+      "x": 240,
+      "y": 140,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_b0cpyvb",
+      "noteId": 1779883318773,
+      "x": 440,
+      "y": 140,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_o06wo83",
+      "noteId": 1779883318774,
+      "x": 640,
+      "y": 140,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_b93sjg4",
+      "noteId": 1779883318775,
+      "x": 840,
+      "y": 140,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_7ii1pmc",
+      "noteId": 1779883318777,
+      "x": 2178,
+      "y": 233,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_zio7lpg",
+      "noteId": 1779883318778,
+      "x": 40,
+      "y": 240,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_dzh6n6y",
+      "noteId": 1779883318779,
+      "x": 240,
+      "y": 240,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_1v7jd21",
+      "noteId": 1779883318780,
+      "x": 440,
+      "y": 240,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_eqvygpc",
+      "noteId": 1779883318781,
+      "x": 640,
+      "y": 240,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_snflrh2",
+      "noteId": 1779883318782,
+      "x": 840,
+      "y": 240,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_vqogdyy",
+      "noteId": 1779883318783,
+      "x": 1040,
+      "y": 240,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_pynwcg9",
+      "noteId": 1779883318784,
+      "x": 40,
+      "y": 340,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_j8wa7o3",
+      "noteId": 1779883318785,
+      "x": 240,
+      "y": 340,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_xk67sl1",
+      "noteId": 1779883318794,
+      "x": 440,
+      "y": 340,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_j4rwtr9",
+      "noteId": 1779883318796,
+      "x": 640,
+      "y": 340,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_1r2j4kf",
+      "noteId": 1779883318798,
+      "x": 840,
+      "y": 340,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_zej4b94",
+      "noteId": 1779883318799,
+      "x": 1040,
+      "y": 340,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_nhnrrox",
+      "noteId": 1779883318800,
+      "x": 40,
+      "y": 440,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_zkxa81g",
+      "noteId": 1779883318801,
+      "x": 240,
+      "y": 440,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_bziiyf9",
+      "noteId": 1779883318802,
+      "x": 440,
+      "y": 440,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_j5zqf3c",
+      "noteId": 1779883318803,
+      "x": 640,
+      "y": 440,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_f1p2zcy",
+      "noteId": 1779883318813,
+      "x": 840,
+      "y": 440,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_0vrcnpw",
+      "noteId": 1779883318816,
+      "x": 1040,
+      "y": 440,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_0namdsm",
+      "noteId": 1779883318821,
+      "x": 40,
+      "y": 540,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_6edwxah",
+      "noteId": 1779887869195,
+      "x": 240,
+      "y": 540,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_euk64pa",
+      "noteId": 1779887869197,
+      "x": 440,
+      "y": 540,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_cgja9af",
+      "noteId": 1779887869198,
+      "x": 640,
+      "y": 540,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_xua5zuy",
+      "noteId": 1779887869199,
+      "x": 840,
+      "y": 540,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_iy7kug4",
+      "noteId": 1779887869200,
+      "x": 1040,
+      "y": 540,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_h6cwa4d",
+      "noteId": 1779887869201,
+      "x": 40,
+      "y": 640,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_dpnp3s9",
+      "noteId": 1779887869202,
+      "x": 240,
+      "y": 640,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_vxlz0il",
+      "noteId": 1779887869203,
+      "x": 440,
+      "y": 640,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_bu8u9sq",
+      "noteId": 1779887869204,
+      "x": 640,
+      "y": 640,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_56pmyoi",
+      "noteId": 1779887869205,
+      "x": 840,
+      "y": 640,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_bypuw9w",
+      "noteId": 1779883318762,
+      "x": 1040,
+      "y": 640,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_d2km5r2",
+      "noteId": 1779883318776,
+      "x": 40,
+      "y": 740,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_nqeabl9",
+      "noteId": 1779883318795,
+      "x": 240,
+      "y": 740,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_4e8mvl9",
+      "noteId": 1779883318797,
+      "x": 440,
+      "y": 740,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_k31o2u9",
+      "noteId": 1779883318804,
+      "x": 640,
+      "y": 740,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_e58td1x",
+      "noteId": 1779883318805,
+      "x": 840,
+      "y": 740,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_ulthcmb",
+      "noteId": 1779883318806,
+      "x": 1040,
+      "y": 740,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_2ehhibz",
+      "noteId": 1779883318807,
+      "x": 40,
+      "y": 840,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_6z98vkd",
+      "noteId": 1779883318808,
+      "x": 240,
+      "y": 840,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_apgjvlh",
+      "noteId": 1779883318809,
+      "x": 440,
+      "y": 840,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_jhhibio",
+      "noteId": 1779883318810,
+      "x": 640,
+      "y": 840,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_zlic2ez",
+      "noteId": 1779883318811,
+      "x": 840,
+      "y": 840,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_uarhbdn",
+      "noteId": 1779883318812,
+      "x": 1040,
+      "y": 840,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_scgr89w",
+      "noteId": 1779883318814,
+      "x": 40,
+      "y": 940,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_c47r9gc",
+      "noteId": 1779883318815,
+      "x": 240,
+      "y": 940,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_riaqlew",
+      "noteId": 1779883318817,
+      "x": 440,
+      "y": 940,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_et6czdt",
+      "noteId": 1779883318818,
+      "x": 640,
+      "y": 940,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_8bcg9af",
+      "noteId": 1779883318819,
+      "x": 840,
+      "y": 940,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_c5mp78i",
+      "noteId": 1779883318820,
+      "x": 1040,
+      "y": 940,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_b9v7jv1",
+      "noteId": 1779883318822,
+      "x": 40,
+      "y": 1040,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_9t0vgs9",
+      "noteId": 1779883318823,
+      "x": 240,
+      "y": 1040,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_e0vutd7",
+      "noteId": 1779884117234,
+      "x": 440,
+      "y": 1040,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_quu76fa",
+      "noteId": 1779884117235,
+      "x": 640,
+      "y": 1040,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_lo4gza9",
+      "noteId": 1779884117236,
+      "x": 840,
+      "y": 1040,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_t7seu4v",
+      "noteId": 1779884117237,
+      "x": 1040,
+      "y": 1040,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_woopj4y",
+      "noteId": 1779884117238,
+      "x": 40,
+      "y": 1140,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_8cv4lsf",
+      "noteId": 1779884117239,
+      "x": 240,
+      "y": 1140,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_rexgrdn",
+      "noteId": 1779884117240,
+      "x": 440,
+      "y": 1140,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_xr40vqr",
+      "noteId": 1779884117241,
+      "x": 640,
+      "y": 1140,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_5yw5oxf",
+      "noteId": 1779884117242,
+      "x": 840,
+      "y": 1140,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_6go8p16",
+      "noteId": 1779884117243,
+      "x": 1040,
+      "y": 1140,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_xidlta2",
+      "noteId": 1779884117244,
+      "x": 40,
+      "y": 1240,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_n5w6qyj",
+      "noteId": 1779884117245,
+      "x": 240,
+      "y": 1240,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_fp7pxog",
+      "noteId": 1779884117246,
+      "x": 440,
+      "y": 1240,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_6twgieu",
+      "noteId": 1779884117247,
+      "x": 640,
+      "y": 1240,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_7o99p1t",
+      "noteId": 1779884117248,
+      "x": 840,
+      "y": 1240,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_xlgn2or",
+      "noteId": 1779884117249,
+      "x": 1040,
+      "y": 1240,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_pe5nn9d",
+      "noteId": 1779884117250,
+      "x": 40,
+      "y": 1340,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_4iongd0",
+      "noteId": 1779884117251,
+      "x": 240,
+      "y": 1340,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_451yjd5",
+      "noteId": 1779884117252,
+      "x": 440,
+      "y": 1340,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_kqgunvi",
+      "noteId": 1779884117253,
+      "x": 640,
+      "y": 1340,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_am93l6k",
+      "noteId": 1779884117254,
+      "x": 840,
+      "y": 1340,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_t7ea8kk",
+      "noteId": 1779884117255,
+      "x": 1040,
+      "y": 1340,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_fjnuf08",
+      "noteId": 1779884117256,
+      "x": 40,
+      "y": 1440,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_xqcox2b",
+      "noteId": 1779884117257,
+      "x": 240,
+      "y": 1440,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_9ig8ioj",
+      "noteId": 1779884117258,
+      "x": 440,
+      "y": 1440,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_zqbgb3q",
+      "noteId": 1779884117259,
+      "x": 640,
+      "y": 1440,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_2na6epb",
+      "noteId": 1779884117260,
+      "x": 840,
+      "y": 1440,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_udavd27",
+      "noteId": 1779884117261,
+      "x": 1040,
+      "y": 1440,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_lyqpmb0",
+      "noteId": 1779884117262,
+      "x": 40,
+      "y": 1540,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_uahmte7",
+      "noteId": 1779884117263,
+      "x": 240,
+      "y": 1540,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_3to5m1v",
+      "noteId": 1779884117264,
+      "x": 440,
+      "y": 1540,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_gaslwak",
+      "noteId": 1779884117265,
+      "x": 640,
+      "y": 1540,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_8nbwwp8",
+      "noteId": 1779884117266,
+      "x": 840,
+      "y": 1540,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_o8zuzum",
+      "noteId": 1779884117267,
+      "x": 1040,
+      "y": 1540,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    },
+    {
+      "id": "n_2ybqfm5",
+      "noteId": 1779884117233,
+      "x": 40,
+      "y": 1640,
+      "width": 180,
+      "height": 70,
+      "groupId": null
+    }
+  ],
+  "groups": [
+    {
+      "id": "g_hiz730a",
+      "label": "Planning",
+      "x": 1295,
+      "y": 126,
+      "width": 436,
+      "height": 205
+    },
+    {
+      "id": "g_vcet4yj",
+      "label": "Organizing",
+      "x": 1957,
+      "y": 130,
+      "width": 429,
+      "height": 208
+    }
+  ],
+  "edges": []
+}

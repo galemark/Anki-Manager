@@ -1,13 +1,20 @@
 import json
 import os
 import re
+import html
+import textwrap
 import urllib.request
 import urllib.error
+from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory
 
 app = Flask(__name__, static_folder='static')
 
 ANKI_CONNECT_URL = "http://127.0.0.1:8765"
+
+# ── Deck Map (mind map) config ───────────────────────────────────────────────
+CANVAS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "canvas_data")
+DECK_MAP_MODEL = "00 Deck Map"
 
 # ── AnkiConnect helpers ──────────────────────────────────────────────────────
 
@@ -85,8 +92,8 @@ def get_cards():
         notes = anki("notesInfo", notes=ids)
         cards = []
         for n in notes:
-            # Exclude 00 Topic Map notes — these are reference cards, not study cards
-            if n.get("modelName") == "00 Topic Map":
+            # Exclude 00 Topic Map / 00 Deck Map notes — these are reference cards, not study cards
+            if n.get("modelName") in ("00 Topic Map", DECK_MAP_MODEL):
                 continue
             fields = n.get("fields", {})
             front = next(iter(fields.values()), {}).get("value", "") if fields else ""
@@ -632,11 +639,288 @@ def save_topic_map():
     })
 
 
+# ── Deck Map: canvas persistence ─────────────────────────────────────────────
+
+def _canvas_path(deck):
+    """One JSON file per deck, sanitized filename."""
+    os.makedirs(CANVAS_DIR, exist_ok=True)
+    safe = re.sub(r'[^A-Za-z0-9_.\- ]', '_', deck).replace("::", "__")
+    return os.path.join(CANVAS_DIR, f"{safe}.json")
+
+
+def _empty_canvas():
+    return {"nodes": [], "groups": [], "edges": []}
+
+
+@app.route("/api/canvas")
+def get_canvas():
+    deck = request.args.get("deck", "")
+    if not deck:
+        return jsonify({"error": "No deck specified"}), 400
+    path = _canvas_path(deck)
+    if not os.path.exists(path):
+        return jsonify(_empty_canvas())
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return jsonify(json.load(f))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/canvas", methods=["POST"])
+def save_canvas():
+    data = request.json or {}
+    deck = data.get("deck", "")
+    if not deck:
+        return jsonify({"error": "No deck specified"}), 400
+    canvas = {
+        "nodes": data.get("nodes", []),
+        "groups": data.get("groups", []),
+        "edges": data.get("edges", []),
+    }
+    try:
+        with open(_canvas_path(deck), "w", encoding="utf-8") as f:
+            json.dump(canvas, f, indent=2)
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ── Deck Map: SVG rendering + push to Anki ───────────────────────────────────
+
+GROUP_COLORS = ["#8b6fd4", "#4a90c0", "#4caf7d", "#d4a853", "#c0524a", "#7c9fd4"]
+
+def _strip_html(text):
+    text = text or ""
+    for _ in range(3):
+        decoded = html.unescape(text)
+        if decoded == text:
+            break
+        text = decoded
+    return re.sub(r'<[^>]+>', '', text).strip()
+
+def _wrap_lines(text, box_width_px, font_px=11, char_width_ratio=0.6, padding_px=16):
+    """Word-wrap the FULL text (no truncation) to fit a fixed box width.
+    Uses a monospace-width estimate since the map uses DM Mono."""
+    char_w = max(1, font_px * char_width_ratio)
+    avail = max(box_width_px - padding_px, 20)
+    max_chars = max(4, int(avail / char_w))
+    lines = []
+    for para in (text or "").split("\n"):
+        para = para.strip()
+        if not para:
+            lines.append("")
+            continue
+        wrapped = textwrap.wrap(para, width=max_chars, break_long_words=True, break_on_hyphens=False)
+        lines.extend(wrapped or [""])
+    return lines or [""]
+
+
+def render_map_svg(nodes, groups, edges, card_lookup):
+    """Render the canvas to a static, self-contained inline SVG string.
+    No external assets/JS — must work offline on AnkiMobile/AnkiDroid/desktop.
+    Card width is fixed to match the canvas; height grows to fit the FULL
+    front text (no truncation) since this is a static snapshot with no hover.
+    """
+    if not nodes and not groups:
+        return '<svg viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg"><text x="10" y="50" font-family="monospace" font-size="12" fill="#888">Empty map</text></svg>'
+
+    LINE_HEIGHT = 15
+    V_PADDING = 18
+    MIN_CARD_HEIGHT = 50
+
+    # ── Precompute actual rendered size per node (cards grow to fit full text) ──
+    rendered = {}  # id -> {x,y,w,h}
+    for n in nodes:
+        w = n.get("width", 180)
+        if n.get("type") == "note":
+            h = n.get("height", 90)
+        else:
+            card = card_lookup.get(n.get("noteId"))
+            front_text = _strip_html(card["front"]) if card else "(card not found)"
+            lines = _wrap_lines(front_text, w)
+            h = max(MIN_CARD_HEIGHT, V_PADDING + len(lines) * LINE_HEIGHT)
+        rendered[n["id"]] = {"x": n["x"], "y": n["y"], "w": w, "h": h}
+
+    for g in groups:
+        rendered[g["id"]] = {"x": g["x"], "y": g["y"], "w": g["width"], "h": g["height"]}
+
+    pad = 40
+    all_rects = list(rendered.values())
+    min_x = min(r["x"] for r in all_rects) - pad
+    min_y = min(r["y"] for r in all_rects) - pad
+    max_x = max(r["x"] + r["w"] for r in all_rects) + pad
+    max_y = max(r["y"] + r["h"] for r in all_rects) + pad
+    width, height = max_x - min_x, max_y - min_y
+
+    default_group_colors = ["#8b6fd4", "#4a90c0", "#4caf7d", "#d4a853", "#c0524a", "#7c9fd4", "#e0855c", "#5cc2c7"]
+
+    parts = [f'<svg viewBox="{min_x} {min_y} {width} {height}" xmlns="http://www.w3.org/2000/svg" '
+              f'font-family="DM Mono, monospace" style="background:#0e0f11;">']
+
+    defs = ['<defs>']
+
+    # Group frames
+    for i, g in enumerate(groups):
+        color = g.get("color") or default_group_colors[i % len(default_group_colors)]
+        parts.append(
+            f'<rect x="{g["x"]}" y="{g["y"]}" width="{g["width"]}" height="{g["height"]}" '
+            f'rx="10" fill="{color}" fill-opacity="0.06" stroke="{color}" stroke-width="1.5" stroke-dasharray="6,4"/>'
+        )
+        label_text = html.escape(g.get("label", "Group"))
+        text_w = max(30, len(g.get("label", "Group")) * 7 + 16)
+        label_x = g["x"] + 12
+        parts.append(
+            f'<rect x="{label_x - 6}" y="{g["y"] - 9}" width="{text_w}" height="18" rx="4" fill="#0e0f11"/>'
+            f'<text x="{label_x}" y="{g["y"] + 4}" font-size="12" font-weight="600" fill="{color}">{label_text}</text>'
+        )
+
+    def border_point(rect, toward_x, toward_y):
+        cx, cy = rect["x"] + rect["w"] / 2, rect["y"] + rect["h"] / 2
+        dx, dy = toward_x - cx, toward_y - cy
+        if dx == 0 and dy == 0:
+            return cx, cy
+        half_w, half_h = rect["w"] / 2, rect["h"] / 2
+        scale_x = (half_w / abs(dx)) if dx != 0 else float("inf")
+        scale_y = (half_h / abs(dy)) if dy != 0 else float("inf")
+        scale = min(scale_x, scale_y)
+        return cx + dx * scale, cy + dy * scale
+
+    DASH = {"dashed": "8,5", "dotted": "2,4"}
+
+    # Edges (+ optional labels + line style + direction arrows)
+    for idx, e in enumerate(edges):
+        ra = rendered.get(e.get("fromNode"))
+        rb = rendered.get(e.get("toNode"))
+        if not ra or not rb:
+            continue
+        acx, acy = ra["x"] + ra["w"] / 2, ra["y"] + ra["h"] / 2
+        bcx, bcy = rb["x"] + rb["w"] / 2, rb["y"] + rb["h"] / 2
+        ax, ay = border_point(ra, bcx, bcy)
+        bx, by = border_point(rb, acx, acy)
+        color = e.get("color") or "#7c9fd4"
+        line_style = e.get("lineStyle") or "solid"
+        direction = e.get("direction") or "none"
+        dash_attr = f' stroke-dasharray="{DASH[line_style]}"' if line_style in DASH else ''
+
+        marker_attrs = ''
+        if direction in ("forward", "both"):
+            mid = f'arrow_end_{idx}'
+            defs.append(f'<marker id="{mid}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="{color}"/></marker>')
+            marker_attrs += f' marker-end="url(#{mid})"'
+        if direction in ("backward", "both"):
+            mid = f'arrow_start_{idx}'
+            defs.append(f'<marker id="{mid}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="{color}"/></marker>')
+            marker_attrs += f' marker-start="url(#{mid})"'
+
+        parts.append(f'<line x1="{ax}" y1="{ay}" x2="{bx}" y2="{by}" stroke="{color}" stroke-width="1.5" stroke-opacity="0.75"{dash_attr}{marker_attrs}/>')
+
+        label = (e.get("label") or "").strip()
+        if label:
+            mx, my = (ax + bx) / 2, (ay + by) / 2
+            text_w = max(24, len(label) * 6 + 10)
+            parts.append(
+                f'<rect x="{mx - text_w/2}" y="{my - 9}" width="{text_w}" height="18" rx="4" '
+                f'fill="#16181c" stroke="#2a2d35" stroke-width="1"/>'
+                f'<text x="{mx}" y="{my + 3.5}" text-anchor="middle" font-size="10" fill="#7c9fd4">{html.escape(label)}</text>'
+            )
+
+    defs.append('</defs>')
+    parts.insert(1, ''.join(defs))
+
+    # Card + note nodes (drawn on top), using the precomputed rendered size
+    for n in nodes:
+        r = rendered[n["id"]]
+        w, h = r["w"], r["h"]
+        if n.get("type") == "note":
+            color = n.get("color") or "#2a2436"
+            parts.append(
+                f'<rect x="{n["x"]}" y="{n["y"]}" width="{w}" height="{h}" rx="8" '
+                f'fill="{color}" stroke="{color}" stroke-width="1"/>'
+                f'<foreignObject x="{n["x"]+8}" y="{n["y"]+8}" width="{w-16}" height="{h-16}">'
+                f'<div xmlns="http://www.w3.org/1999/xhtml" style="font-family: DM Mono, monospace; '
+                f'font-size:11px; line-height:1.5; color:#e8e9ec; overflow:hidden; white-space:pre-wrap;">'
+                f'{html.escape(n.get("text",""))}</div></foreignObject>'
+            )
+            continue
+
+        card = card_lookup.get(n.get("noteId"))
+        front = _strip_html(card["front"]) if card else "(card not found)"
+        parts.append(
+            f'<rect x="{n["x"]}" y="{n["y"]}" width="{w}" height="{h}" rx="8" '
+            f'fill="#1e2128" stroke="#2a2d35" stroke-width="1"/>'
+            f'<foreignObject x="{n["x"]+8}" y="{n["y"]+8}" width="{w-16}" height="{h-16}">'
+            f'<div xmlns="http://www.w3.org/1999/xhtml" style="font-family: DM Mono, monospace; '
+            f'font-size:11px; line-height:1.36; color:#e8e9ec; overflow:hidden; white-space:pre-wrap;">{html.escape(front)}</div>'
+            f'</foreignObject>'
+        )
+
+    parts.append('</svg>')
+    return ''.join(parts)
+
+
+@app.route("/api/push-map", methods=["POST"])
+def push_map():
+    """Render the current canvas to an inline SVG and create a NEW versioned
+    '00 Deck Map' note (never overwrites — each push is a fresh snapshot)."""
+    data = request.json or {}
+    deck = data.get("deck", "")
+    nodes = data.get("nodes", [])
+    groups = data.get("groups", [])
+    edges = data.get("edges", [])
+    snapshot_name = data.get("snapshotName", "").strip()
+
+    if not deck:
+        return jsonify({"error": "No deck specified"}), 400
+    if not nodes and not groups:
+        return jsonify({"error": "Canvas is empty — nothing to push"}), 400
+
+    try:
+        note_ids = anki("findNotes", query=f'deck:"{deck}"')
+        notes = anki("notesInfo", notes=note_ids) if note_ids else []
+        card_lookup = {}
+        for note_info in notes:
+            fields = note_info.get("fields", {})
+            front = next(iter(fields.values()), {}).get("value", "") if fields else ""
+            card_lookup[note_info["noteId"]] = {"front": front}
+
+        svg = render_map_svg(nodes, groups, edges, card_lookup)
+
+        today = datetime.now().strftime("%b %-d, %Y") if os.name != "nt" else datetime.now().strftime("%b %#d, %Y")
+        label = snapshot_name if snapshot_name else f"{deck.split('::')[-1]} — Map — {today}"
+
+        new_note = {
+            "deckName": deck,
+            "modelName": DECK_MAP_MODEL,
+            "fields": {
+                "DeckName": label,
+                "Snapshot": svg,
+                "PushedAt": datetime.now().isoformat(timespec="seconds"),
+            },
+            "options": {"allowDuplicate": True, "duplicateScope": "deck"},
+        }
+        note_id = anki("addNote", note=new_note)
+        card_ids = anki("findCards", query=f'nid:{note_id}')
+
+        if card_ids:
+            anki("suspend", cards=card_ids)
+            for cid in card_ids:
+                anki("setSpecificValueOfCard", card=cid, keys=["flags"], newValues=[7])
+
+        return jsonify({"ok": True, "note_id": note_id, "label": label})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 # ── Static files ─────────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
     return send_from_directory("static", "index.html")
+
+@app.route("/map")
+def deck_map_page():
+    return send_from_directory("static", "map.html")
 
 if __name__ == "__main__":
     print("🃏 Anki AI Manager running → http://localhost:5050")

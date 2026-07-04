@@ -200,6 +200,7 @@ main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
           <div id="batchStatus" style="font-size:11px;color:var(--muted);"></div>
+          <button class="btn btn-ghost" id="openMapBtn" disabled title="Open this deck as a visual mind map">🗺 Deck Map</button>
           <button class="btn btn-analyze" id="analyzeTopicsBtn" disabled title="List all topics covered in this deck — no card changes">◎ Analyze Topics</button>
           <button class="btn btn-ghost" id="batchModeBtn" disabled title="Work through all cards in batches of 80">⟳ Batch Mode</button>
           <button class="btn btn-primary" id="generateBtn" disabled>✦ Generate Prompt</button>
@@ -460,6 +461,7 @@ function selectDeck(deck) {
     document.getElementById('generateBtn').disabled = count === 0;
     document.getElementById('batchModeBtn').disabled = count === 0;
     document.getElementById('analyzeTopicsBtn').disabled = count === 0;
+    document.getElementById('openMapBtn').disabled = count === 0;
 
     if (count === 0) {
       renderPlaceholder('No cards found', 'This deck appears to be empty.');
@@ -560,6 +562,11 @@ function updateBatchStatus() {
 var topicBatch = 0;
 var topicTotalBatches = 0;
 var topicCurrentPrompt = '';
+
+document.getElementById('openMapBtn').addEventListener('click', function() {
+  if (!selectedDeck) return;
+  window.location.href = '/map?deck=' + encodeURIComponent(selectedDeck);
+});
 
 document.getElementById('analyzeTopicsBtn').addEventListener('click', function() {
   if (!selectedDeck || currentCards.length === 0) return;

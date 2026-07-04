@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deck Map — Anki AI Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Fraunces:opsz,wght@9..144,300;9..144,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0f11; --surface: #16181c; --surface2: #1e2128;
+  --border: #2a2d35; --text: #e8e9ec; --muted: #6b7280;
+  --accent: #d4a853; --accent2: #7c9fd4;
+  --danger: #c0524a; --success: #4caf7d; --merge: #8b6fd4;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Mono', monospace; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 13px; overflow: hidden; }
+.shell { display: flex; flex-direction: column; height: 100vh; }
+header { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+.header-left { display: flex; align-items: center; gap: 14px; }
+.back-link { color: var(--muted); text-decoration: none; font-size: 12px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; transition: all 0.15s; }
+.back-link:hover { color: var(--text); border-color: var(--muted); }
+.logo { font-family: 'Fraunces', serif; font-size: 18px; color: var(--accent); }
+.logo span { color: var(--muted); font-size: 11px; font-family: 'DM Mono', monospace; margin-left: 8px; }
+.deck-label { font-size: 11px; color: var(--muted); }
+.deck-label strong { color: var(--text); }
+.save-indicator { font-size: 10px; color: var(--muted); letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px; }
+.save-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); transition: background 0.2s; }
+.save-dot.saving { background: var(--accent); }
+.save-dot.saved { background: var(--success); }
+
+.toolbar { display: flex; align-items: center; gap: 8px; padding: 10px 24px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+.btn { border: none; cursor: pointer; border-radius: 6px; font-family: 'DM Mono', monospace; font-size: 12px; padding: 7px 14px; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--accent); color: #0e0f11; font-weight: 500; }
+.btn-primary:hover { background: #e0b960; }
+.btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+.btn-ghost.active { color: var(--accent2); border-color: var(--accent2); background: rgba(124,159,212,0.1); }
+.btn-success { background: var(--success); color: #0e0f11; font-weight: 500; }
+.btn-success:hover { background: #5cc88d; }
+.toolbar-divider { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+.toolbar-hint { font-size: 11px; color: var(--muted); }
+
+.body { display: flex; flex: 1; overflow: hidden; }
+
+/* Sidebar of unplaced cards */
+aside.card-sidebar { width: 240px; min-width: 160px; max-width: 480px; flex-shrink: 0; border-right: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; overflow: hidden; position: relative; }
+.sidebar-resize-handle { position: absolute; top: 0; right: -3px; width: 6px; height: 100%; cursor: ew-resize; z-index: 20; }
+.sidebar-resize-handle:hover, .sidebar-resize-handle.resizing { background: var(--accent2); opacity: 0.3; }
+.sidebar-header { padding: 12px 14px 8px; font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
+.sidebar-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.sidebar-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 10px 11px; font-size: 11.5px; line-height: 1.55; color: var(--text); cursor: grab; white-space: normal; word-break: break-word; overflow-wrap: break-word; }
+.sidebar-card:hover { border-color: var(--accent2); }
+.sidebar-empty { padding: 20px 12px; text-align: center; color: var(--muted); font-size: 11px; line-height: 1.7; }
+
+.canvas-wrap { flex: 1; position: relative; overflow: auto; background:
+  radial-gradient(circle, #1c1f26 1px, transparent 1px) 0 0 / 22px 22px, var(--bg); }
+#canvas { position: relative; width: 4000px; height: 3000px; }
+#canvas.drop-target { background-color: rgba(124,159,212,0.03); }
+
+.card-node { position: absolute; width: 180px; min-height: 70px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px; cursor: grab; font-size: 11px; line-height: 1.5; color: var(--text); user-select: none; transition: border-color 0.15s, box-shadow 0.15s; z-index: 5; }
+.card-node:hover { border-color: var(--accent2); }
+.card-node.dragging { cursor: grabbing; z-index: 50; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.card-front { overflow: hidden; white-space: normal; word-break: break-word; overflow-wrap: break-word; }
+.card-node .card-full { display: none; position: absolute; top: calc(100% + 6px); left: 0; width: 260px; background: var(--surface); border: 1px solid var(--accent2); border-radius: 8px; padding: 10px 12px; z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.5); font-size: 11px; line-height: 1.6; }
+.card-node:hover .card-full { display: block; }
+.card-full .cf-label { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--accent2); margin-bottom: 3px; }
+.card-full .cf-back { color: var(--muted); margin-top: 8px; }
+
+/* Note node — freeform sticky, not an Anki card */
+.note-node { position: absolute; width: 180px; min-height: 90px; border-radius: 8px; padding: 9px 11px; cursor: grab; font-size: 11px; line-height: 1.5; z-index: 5; border: 1px solid; }
+.note-node.dragging { cursor: grabbing; z-index: 50; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.note-node .note-text { outline: none; min-height: 60px; white-space: pre-wrap; word-break: break-word; }
+.note-resize { position: absolute; width: 14px; height: 14px; right: -6px; bottom: -6px; cursor: nwse-resize; z-index: 6; }
+
+.group-frame { position: absolute; border: 1.5px dashed; border-radius: 12px; z-index: 1; }
+.group-label { position: absolute; top: -11px; left: 12px; background: var(--bg); padding: 0 8px; font-size: 11px; font-weight: 500; cursor: text; border-radius: 4px; }
+.group-label:focus { outline: 1px solid var(--accent2); }
+.group-resize { position: absolute; width: 14px; height: 14px; right: -6px; bottom: -6px; cursor: nwse-resize; z-index: 6; }
+.group-drag-handle { position: absolute; top: 0; left: 0; right: 0; height: 20px; cursor: move; }
+
+.card-node.connect-hover, .note-node.connect-hover, .group-frame.connect-hover { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+svg.edge-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; overflow: visible; }
+svg.edge-layer line { pointer-events: stroke; stroke-width: 1.5; stroke-opacity: 0.55; cursor: pointer; }
+svg.edge-layer line:hover { stroke-opacity: 1; stroke-width: 2.5; }
+svg.edge-layer line.temp-connection { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 5,4; stroke-opacity: 0.9; }
+svg.edge-layer .edge-label-bg { fill: var(--surface); stroke: var(--border); stroke-width: 1; pointer-events: all; cursor: text; }
+svg.edge-layer .edge-label-text { fill: var(--accent2); font-size: 10px; font-family: 'DM Mono', monospace; pointer-events: none; }
+
+.color-palette { position: fixed; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px; z-index: 999; display: flex; gap: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+.color-swatch { width: 20px; height: 20px; border-radius: 5px; cursor: pointer; border: 2px solid transparent; }
+.color-swatch:hover { border-color: var(--text); }
+
+.context-menu { position: fixed; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 5px; z-index: 999; box-shadow: 0 8px 24px rgba(0,0,0,0.5); min-width: 170px; }
+.context-menu-item { padding: 7px 12px; font-size: 12px; color: var(--text); cursor: pointer; border-radius: 5px; }
+.context-menu-item:hover { background: var(--surface2); }
+.context-menu-item.danger { color: var(--danger); }
+
+.empty-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; color: var(--muted); z-index: 1; width: 320px; }
+.empty-hint h2 { font-family: 'Fraunces', serif; font-weight: 300; color: var(--text); font-size: 18px; margin-bottom: 8px; }
+.empty-hint p { line-height: 1.7; font-size: 12px; }
+
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
+.modal-backdrop.open { display: flex; }
+.modal { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; width: 360px; }
+.modal h3 { font-family: 'Fraunces', serif; font-weight: 400; font-size: 15px; margin-bottom: 12px; }
+.modal input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px; padding: 8px 10px; outline: none; margin-bottom: 6px; }
+.modal input:focus { border-color: var(--accent); }
+.modal .modal-hint { font-size: 10px; color: var(--muted); margin-bottom: 14px; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.modal-section-label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin: 12px 0 6px; }
+.option-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.option-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 6px 10px; font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.option-btn:hover { color: var(--text); border-color: var(--muted); }
+.option-btn.active { color: var(--accent2); border-color: var(--accent2); background: rgba(124,159,212,0.1); }
+.option-btn svg { display: block; }
+
+#toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px; font-size: 12px; color: var(--text); opacity: 0; pointer-events: none; transform: translateY(8px); transition: all 0.25s; z-index: 999; max-width: 320px; }
+#toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+#toast.toast-ok { border-left: 3px solid var(--success); }
+#toast.toast-err { border-left: 3px solid var(--danger); }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="header-left">
+      <a href="/" class="back-link">← Deck Manager</a>
+      <div class="logo">Deck Map <span>mind map</span></div>
+    </div>
+    <div class="deck-label">Deck: <strong id="deckLabel">—</strong></div>
+    <div class="save-indicator"><span class="save-dot" id="saveDot"></span><span id="saveText">All changes saved</span></div>
+  </header>
+
+  <div class="toolbar">
+    <button class="btn btn-ghost" id="newGroupBtn" draggable="true" title="Drag onto the canvas to place">▢ New Group</button>
+    <button class="btn btn-ghost" id="newNoteBtn" draggable="true" title="Drag onto the canvas to place">✎ New Note</button>
+    <div class="toolbar-divider"></div>
+    <button class="btn btn-primary" id="pushBtn">⇪ Push to Anki</button>
+    <span class="toolbar-hint" id="connectHint"></span>
+  </div>
+
+  <div class="body">
+    <aside class="card-sidebar" id="cardSidebar">
+      <div class="sidebar-header">Unplaced cards</div>
+      <div class="sidebar-list" id="sidebarList"></div>
+      <div class="sidebar-resize-handle" id="sidebarResizeHandle"></div>
+    </aside>
+    <div class="canvas-wrap" id="canvasWrap">
+      <div id="canvas">
+        <svg class="edge-layer" id="edgeLayer"></svg>
+        <div class="empty-hint" id="emptyHint" style="display:none;">
+          <h2>Blank canvas</h2>
+          <p>Drag cards in from the sidebar on the left, or add a note / group from the toolbar above.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="pushModal">
+  <div class="modal">
+    <h3>Push snapshot to Anki</h3>
+    <input type="text" id="snapshotNameInput" placeholder="Snapshot name (optional)">
+    <div class="modal-hint">Leave blank to auto-name it "<span id="autoNamePreview">Deck — Map — date</span>". Each push creates a new versioned card — nothing gets overwritten.</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="cancelPushBtn">Cancel</button>
+      <button class="btn btn-success" id="confirmPushBtn">⇪ Push</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="edgeModal">
+  <div class="modal">
+    <h3>Edit connection</h3>
+    <input type="text" id="edgeLabelInput" placeholder="Label (optional)">
+
+    <div class="modal-section-label">Line style</div>
+    <div class="option-row" id="lineStyleRow">
+      <div class="option-btn" data-style="solid"><svg width="28" height="10"><line x1="2" y1="5" x2="26" y2="5" stroke="currentColor" stroke-width="2"/></svg> Solid</div>
+      <div class="option-btn" data-style="dashed"><svg width="28" height="10"><line x1="2" y1="5" x2="26" y2="5" stroke="currentColor" stroke-width="2" stroke-dasharray="5,3"/></svg> Dashed</div>
+      <div class="option-btn" data-style="dotted"><svg width="28" height="10"><line x1="2" y1="5" x2="26" y2="5" stroke="currentColor" stroke-width="2" stroke-dasharray="1,3"/></svg> Dotted</div>
+    </div>
+
+    <div class="modal-section-label">Direction</div>
+    <div class="option-row" id="directionRow">
+      <div class="option-btn" data-direction="none">— None</div>
+      <div class="option-btn" data-direction="forward">→ Forward</div>
+      <div class="option-btn" data-direction="backward">← Backward</div>
+      <div class="option-btn" data-direction="both">↔ Both</div>
+    </div>
+
+    <div class="modal-section-label">Color</div>
+    <div class="option-row" id="edgeColorRow"></div>
+
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn btn-ghost" id="cancelEdgeBtn">Cancel</button>
+      <button class="btn btn-success" id="saveEdgeBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────
+var deck = new URLSearchParams(location.search).get('deck') || '';
+var cards = [];           // live card data from AnkiConnect: {id, front, back, tags}
+var nodes = [];           // {id, type:'card'|'note', noteId?, text?, color?, x, y, width, height, groupId}
+var groups = [];          // {id, label, x, y, width, height, color}
+var edges = [];           // {id, fromNode, toNode, label}  fromNode/toNode may be a node id (n_/note_) or a group id (g_)
+var saveTimer = null;
+var GROUP_COLORS = ['#8b6fd4', '#4a90c0', '#4caf7d', '#d4a853', '#c0524a', '#7c9fd4', '#e0855c', '#5cc2c7'];
+var NOTE_COLORS = ['#2a2436', '#1e2a36', '#243428', '#362e1e', '#361e1e'];
+var EDGE_COLORS = ['#7c9fd4', '#8b6fd4', '#4caf7d', '#d4a853', '#c0524a', '#e0855c', '#5cc2c7', '#e8e9ec'];
+var DEFAULT_EDGE_COLOR = '#7c9fd4';
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
+
+// ── Geometry: side-anchored connections (Obsidian-canvas style) ─────────
+function rectBorderPoint(rect, towardX, towardY) {
+  var cx = rect.x + rect.w/2, cy = rect.y + rect.h/2;
+  var dx = towardX - cx, dy = towardY - cy;
+  if (dx === 0 && dy === 0) return { x: cx, y: cy };
+  var halfW = rect.w/2, halfH = rect.h/2;
+  var scaleX = dx !== 0 ? halfW / Math.abs(dx) : Infinity;
+  var scaleY = dy !== 0 ? halfH / Math.abs(dy) : Infinity;
+  var scale = Math.min(scaleX, scaleY);
+  return { x: cx + dx*scale, y: cy + dy*scale };
+}
+
+function detectEdgeZone(rect, clientX, clientY, opts) {
+  var thickness = opts.thickness, cornerExclude = opts.cornerExclude;
+  var sides = opts.sides || ['top','right','bottom','left'];
+  var localX = clientX - rect.left, localY = clientY - rect.top;
+  if (localX < 0 || localY < 0 || localX > rect.width || localY > rect.height) return false;
+  var nearLeft = localX < cornerExclude, nearRight = localX > rect.width - cornerExclude;
+  var nearTop = localY < cornerExclude, nearBottom = localY > rect.height - cornerExclude;
+  if ((nearLeft||nearRight) && (nearTop||nearBottom)) return false; // corners excluded
+  if (sides.indexOf('top') >= 0 && localY < thickness) return true;
+  if (sides.indexOf('bottom') >= 0 && localY > rect.height - thickness) return true;
+  if (sides.indexOf('left') >= 0 && localX < thickness) return true;
+  if (sides.indexOf('right') >= 0 && localX > rect.width - thickness) return true;
+  return false;
+}
+
+var toastTimer;
+function toast(msg, type){
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show toast-' + (type||'ok');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ el.className = ''; }, 3500);
+}
+
+document.getElementById('deckLabel').textContent = deck ? deck.split('::').pop() : 'No deck selected';
+
+// ── Sidebar resize ────────────────────────────────────────────────────────
+(function(){
+  var handle = document.getElementById('sidebarResizeHandle');
+  var sidebar = document.getElementById('cardSidebar');
+  handle.addEventListener('mousedown', function(e){
+    e.preventDefault();
+    handle.classList.add('resizing');
+    var startX = e.clientX, startW = sidebar.getBoundingClientRect().width;
+    function onMove(ev){
+      var w = Math.min(480, Math.max(160, startW + (ev.clientX - startX)));
+      sidebar.style.width = w + 'px';
+    }
+    function onUp(){
+      handle.classList.remove('resizing');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+})();
+
+// ── Load cards + existing canvas ────────────────────────────────────────────
+function init() {
+  if (!deck) { toast('No deck specified — go back and open a deck first.', 'err'); return; }
+
+  Promise.all([
+    fetch('/api/cards?deck=' + encodeURIComponent(deck)).then(function(r){ return r.json(); }),
+    fetch('/api/canvas?deck=' + encodeURIComponent(deck)).then(function(r){ return r.json(); })
+  ]).then(function(results){
+    cards = results[0].cards || [];
+    var savedCanvas = results[1] || {};
+    groups = savedCanvas.groups || [];
+    edges = savedCanvas.edges || [];
+    nodes = (savedCanvas.nodes || []).map(function(n){
+      if (!n.type) n.type = 'card'; // backward-compat with pre-note-card saves
+      return n;
+    });
+
+    renderSidebar();
+    render();
+  }).catch(function(e){ toast('Failed to load: ' + e.message, 'err'); });
+}
+
+function placedNoteIds() {
+  var s = {};
+  nodes.forEach(function(n){ if (n.type === 'card') s[n.noteId] = true; });
+  return s;
+}
+
+function renderSidebar() {
+  var placed = placedNoteIds();
+  var unplaced = cards.filter(function(c){ return !placed[c.id]; });
+  var list = document.getElementById('sidebarList');
+  list.innerHTML = '';
+  if (unplaced.length === 0) {
+    list.innerHTML = '<div class="sidebar-empty">' + (cards.length ? 'All cards placed on the canvas.' : 'This deck has no cards.') + '</div>';
+    return;
+  }
+  unplaced.forEach(function(c){
+    var el = document.createElement('div');
+    el.className = 'sidebar-card';
+    el.draggable = true;
+    el.textContent = stripHtml(c.front);
+    el.addEventListener('dragstart', function(e){
+      e.dataTransfer.setData('text/plain', JSON.stringify({ kind: 'card', noteId: c.id, offsetX: e.offsetX, offsetY: e.offsetY }));
+    });
+    list.appendChild(el);
+  });
+  document.getElementById('emptyHint').style.display = (nodes.length === 0) ? 'block' : 'none';
+}
+
+// ── Canvas drop zone (sidebar → canvas) ─────────────────────────────────
+var canvasEl = document.getElementById('canvas');
+var canvasWrap = document.getElementById('canvasWrap');
+canvasEl.addEventListener('dragover', function(e){ e.preventDefault(); canvasEl.classList.add('drop-target'); });
+canvasEl.addEventListener('dragleave', function(){ canvasEl.classList.remove('drop-target'); });
+canvasEl.addEventListener('drop', function(e){
+  e.preventDefault();
+  canvasEl.classList.remove('drop-target');
+  var raw = e.dataTransfer.getData('text/plain');
+  if (!raw) return;
+  var data;
+  try { data = JSON.parse(raw); } catch(err){ return; }
+  var rect = canvasEl.getBoundingClientRect();
+  var x = e.clientX - rect.left;
+  var y = e.clientY - rect.top;
+
+  if (data.kind === 'card') {
+    // Use the exact point the card was grabbed at (captured on dragstart) so the
+    // spot under the cursor while dragging matches the spot under the cursor on drop —
+    // a flat constant broke down whenever you grabbed away from the top-left corner.
+    var offX = (typeof data.offsetX === 'number') ? data.offsetX : 10;
+    var offY = (typeof data.offsetY === 'number') ? data.offsetY : 10;
+    nodes.push({ id: uid('n'), type: 'card', noteId: data.noteId, x: Math.max(0, x - offX), y: Math.max(0, y - offY), width: 180, height: 70, groupId: null });
+    renderSidebar();
+    render();
+    scheduleSave();
+  } else if (data.kind === 'newGroup') {
+    var g = { id: uid('g'), label: 'New group', x: Math.max(0, x - 130), y: Math.max(0, y - 100), width: 260, height: 200, color: GROUP_COLORS[groups.length % GROUP_COLORS.length] };
+    groups.push(g);
+    render();
+    scheduleSave();
+    setTimeout(function(){
+      var lbl = document.querySelector('#' + g.id + ' .group-label');
+      if (lbl) { lbl.focus(); document.execCommand('selectAll', false, null); }
+    }, 50);
+  } else if (data.kind === 'newNote') {
+    var n = { id: uid('note'), type: 'note', text: '', color: NOTE_COLORS[0], x: Math.max(0, x - 90), y: Math.max(0, y - 45), width: 180, height: 90, groupId: null };
+    nodes.push(n);
+    render();
+    scheduleSave();
+    setTimeout(function(){
+      var t = document.querySelector('#' + n.id + ' .note-text');
+      if (t) t.focus();
+    }, 50);
+  }
+});
+
+// ── Render ────────────────────────────────────────────────────────────────
+function cardById(noteId) {
+  for (var i = 0; i < cards.length; i++) if (cards[i].id === noteId) return cards[i];
+  return null;
+}
+
+function render() {
+  Array.from(canvasEl.querySelectorAll('.card-node, .note-node, .group-frame')).forEach(function(el){ el.remove(); });
+  groups.forEach(function(g, i){ renderGroup(g, i); });
+  nodes.forEach(function(n){ n.type === 'note' ? renderNote(n) : renderNode(n); });
+  renderEdges();
+  document.getElementById('emptyHint').style.display = (nodes.length === 0 && groups.length === 0) ? 'block' : 'none';
+}
+
+function groupColor(g, index) { return g.color || GROUP_COLORS[index % GROUP_COLORS.length]; }
+
+function renderGroup(g, index) {
+  var color = groupColor(g, index);
+  var frame = document.createElement('div');
+  frame.className = 'group-frame';
+  frame.id = g.id;
+  frame.style.left = g.x + 'px';
+  frame.style.top = g.y + 'px';
+  frame.style.width = g.width + 'px';
+  frame.style.height = g.height + 'px';
+  frame.style.borderColor = color;
+  frame.style.background = color + '0f';
+
+  var handle = document.createElement('div');
+  handle.className = 'group-drag-handle';
+  handle.addEventListener('mousedown', function(e){ startGroupDrag(e, g); });
+  frame.appendChild(handle);
+
+  var label = document.createElement('div');
+  label.className = 'group-label';
+  label.contentEditable = true;
+  label.style.color = color;
+  label.textContent = g.label || 'Group';
+  label.addEventListener('mousedown', function(e){ e.stopPropagation(); });
+  label.addEventListener('blur', function(){ g.label = label.textContent.trim() || 'Group'; scheduleSave(); });
+  label.addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); label.blur(); } });
+  frame.appendChild(label);
+
+  var resize = document.createElement('div');
+  resize.className = 'group-resize';
+  resize.addEventListener('mousedown', function(e){ e.stopPropagation(); startGroupResize(e, g); });
+  frame.appendChild(resize);
+
+  // Hover a side (not the top handle, not the resize corner) and drag to connect
+  frame.addEventListener('mousedown', function(e){
+    if (e.target !== frame) return;
+    var rect = frame.getBoundingClientRect();
+    var zone = detectEdgeZone(rect, e.clientX, e.clientY, { thickness: 10, cornerExclude: 16, sides: ['left','right','bottom'] });
+    if (zone) startConnectionDrag(e, g.id);
+  });
+  frame.addEventListener('mousemove', function(e){
+    if (e.target !== frame) return;
+    var rect = frame.getBoundingClientRect();
+    var zone = detectEdgeZone(rect, e.clientX, e.clientY, { thickness: 10, cornerExclude: 16, sides: ['left','right','bottom'] });
+    frame.style.cursor = zone ? 'crosshair' : '';
+  });
+
+  frame.addEventListener('contextmenu', function(e){
+    e.preventDefault();
+    showContextMenu(e.clientX, e.clientY, [
+      { label: 'Change color', action: function(){ showColorPalette(e.clientX, e.clientY, function(c){ g.color = c; render(); scheduleSave(); }); } },
+      { label: 'Delete group (contents stay)', danger: true, action: function(){ deleteGroup(g.id); } }
+    ]);
+  });
+
+  canvasEl.appendChild(frame);
+}
+
+function renderNode(n) {
+  var card = cardById(n.noteId);
+  var el = document.createElement('div');
+  el.className = 'card-node';
+  el.id = n.id;
+  el.style.left = n.x + 'px';
+  el.style.top = n.y + 'px';
+  el.style.width = (n.width || 180) + 'px';
+
+  var front = document.createElement('div');
+  front.className = 'card-front';
+  front.textContent = card ? stripHtml(card.front) : '(card not found)';
+  el.appendChild(front);
+
+  if (card) {
+    var full = document.createElement('div');
+    full.className = 'card-full';
+    full.innerHTML = '<div class="cf-label">Front</div>' + esc(stripHtml(card.front))
+      + '<div class="cf-back">' + esc(stripHtml(card.back)) + '</div>';
+    el.appendChild(full);
+  }
+
+  el.addEventListener('mousedown', function(e){
+    var rect = el.getBoundingClientRect();
+    var zone = detectEdgeZone(rect, e.clientX, e.clientY, { thickness: 9, cornerExclude: 14 });
+    if (zone) { startConnectionDrag(e, n.id); return; }
+    startNodeDrag(e, n);
+  });
+  el.addEventListener('mousemove', function(e){
+    var rect = el.getBoundingClientRect();
+    var zone = detectEdgeZone(rect, e.clientX, e.clientY, { thickness: 9, cornerExclude: 14 });
+    el.style.cursor = zone ? 'crosshair' : 'grab';
+  });
+  el.addEventListener('contextmenu', function(e){
+    e.preventDefault();
+    var items = [];
+    if (n.groupId) items.push({ label: 'Remove from group', action: function(){ n.groupId = null; render(); scheduleSave(); } });
+    items.push({ label: 'Open in Anki', action: function(){ openInAnki(n.noteId); } });
+    items.push({ label: 'Return to sidebar', action: function(){ deleteNode(n.id); } });
+    showContextMenu(e.clientX, e.clientY, items);
+  });
+
+  canvasEl.appendChild(el);
+}
+
+function renderNote(n) {
+  var el = document.createElement('div');
+  el.className = 'note-node';
+  el.id = n.id;
+  el.style.left = n.x + 'px';
+  el.style.top = n.y + 'px';
+  el.style.width = (n.width || 180) + 'px';
+  el.style.height = (n.height || 90) + 'px';
+  var color = n.color || NOTE_COLORS[0];
+  el.style.background = color;
+  el.style.borderColor = color;
+
+  var text = document.createElement('div');
+  text.className = 'note-text';
+  text.contentEditable = true;
+  text.textContent = n.text || '';
+  text.addEventListener('mousedown', function(e){ e.stopPropagation(); });
+  text.addEventListener('blur', function(){ n.text = text.textContent; scheduleSave(); });
+  el.appendChild(text);
+
+  el.addEventListener('mousedown', function(e){
+    if (e.target === text) return;
+    var rect = el.getBoundingClientRect();
+    var zone = detectEdgeZone(rect, e.clientX, e.clientY, { thickness: 9, cornerExclude: 14 });
+    if (zone) { startConnectionDrag(e, n.id); return; }
+    startNodeDrag(e, n);
+  });
+  el.addEventListener('mousemove', function(e){
+    if (e.target === text) { el.style.cursor = ''; return; }
+    var rect = el.getBoundingClientRect();
+    var zone = detectEdgeZone(rect, e.clientX, e.clientY, { thickness: 9, cornerExclude: 14 });
+    el.style.cursor = zone ? 'crosshair' : 'grab';
+  });
+  el.addEventListener('contextmenu', function(e){
+    e.preventDefault();
+    showContextMenu(e.clientX, e.clientY, [
+      { label: 'Change color', action: function(){ showColorPalette(e.clientX, e.clientY, function(c){ n.color = c; render(); scheduleSave(); }, NOTE_COLORS); } },
+      { label: 'Delete note', danger: true, action: function(){ deleteNode(n.id); } }
+    ]);
+  });
+
+  var resize = document.createElement('div');
+  resize.className = 'note-resize';
+  resize.addEventListener('mousedown', function(e){ e.stopPropagation(); startNodeResize(e, n); });
+  el.appendChild(resize);
+
+  canvasEl.appendChild(el);
+}
+
+function stripHtml(s){ var d = document.createElement('div'); d.innerHTML = s || ''; return d.textContent || ''; }
+
+function openInAnki(noteId) {
+  fetch('/api/anki-browse', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ query: 'nid:' + noteId })
+  }).catch(function(){});
+}
+
+// ── Anchor resolution (node OR group) for edges ─────────────────────────
+function getAnchorRect(id) {
+  var n = nodes.find(function(x){ return x.id === id; });
+  if (n) {
+    var el = document.getElementById(id);
+    if (el) return { x: n.x, y: n.y, w: el.offsetWidth, h: el.offsetHeight };
+    return { x: n.x, y: n.y, w: n.width || 180, h: n.height || 70 };
+  }
+  var g = groups.find(function(x){ return x.id === id; });
+  if (g) return { x: g.x, y: g.y, w: g.width, h: g.height };
+  return null;
+}
+
+function makeArrowMarker(id, color) {
+  var marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+  marker.setAttribute('id', id);
+  marker.setAttribute('viewBox', '0 0 10 10');
+  marker.setAttribute('refX', '8');
+  marker.setAttribute('refY', '5');
+  marker.setAttribute('markerWidth', '6');
+  marker.setAttribute('markerHeight', '6');
+  marker.setAttribute('orient', 'auto-start-reverse');
+  var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', 'M0,0 L10,5 L0,10 z');
+  path.setAttribute('fill', color);
+  marker.appendChild(path);
+  return marker;
+}
+
+function renderEdges() {
+  var svg = document.getElementById('edgeLayer');
+  svg.innerHTML = '';
+  var defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  svg.appendChild(defs);
+
+  edges.forEach(function(e, idx){
+    var a = getAnchorRect(e.fromNode), b = getAnchorRect(e.toNode);
+    if (!a || !b) return;
+    var acx = a.x + a.w/2, acy = a.y + a.h/2;
+    var bcx = b.x + b.w/2, bcy = b.y + b.h/2;
+    var pa = rectBorderPoint(a, bcx, bcy);
+    var pb = rectBorderPoint(b, acx, acy);
+    var color = e.color || DEFAULT_EDGE_COLOR;
+    var lineStyle = e.lineStyle || 'solid';
+    var direction = e.direction || 'none';
+
+    var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', pa.x); line.setAttribute('y1', pa.y);
+    line.setAttribute('x2', pb.x); line.setAttribute('y2', pb.y);
+    line.style.stroke = color;
+    if (lineStyle === 'dashed') line.setAttribute('stroke-dasharray', '8,5');
+    else if (lineStyle === 'dotted') line.setAttribute('stroke-dasharray', '2,4');
+
+    if (direction === 'forward' || direction === 'both') {
+      var midEnd = 'arrow_end_' + idx;
+      defs.appendChild(makeArrowMarker(midEnd, color));
+      line.setAttribute('marker-end', 'url(#' + midEnd + ')');
+    }
+    if (direction === 'backward' || direction === 'both') {
+      var midStart = 'arrow_start_' + idx;
+      defs.appendChild(makeArrowMarker(midStart, color));
+      line.setAttribute('marker-start', 'url(#' + midStart + ')');
+    }
+
+    line.addEventListener('contextmenu', function(ev){
+      ev.preventDefault();
+      showContextMenu(ev.clientX, ev.clientY, [
+        { label: 'Edit connection', action: function(){ openEdgeModal(e); } },
+        { label: 'Delete connection', danger: true, action: function(){ deleteEdge(e.id); } }
+      ]);
+    });
+    line.addEventListener('dblclick', function(ev){
+      ev.preventDefault();
+      openEdgeModal(e);
+    });
+    svg.appendChild(line);
+
+    if (e.label) {
+      var mx = (pa.x+pb.x)/2, my = (pa.y+pb.y)/2;
+      var textW = Math.max(24, e.label.length * 6 + 10);
+      var bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bg.setAttribute('class', 'edge-label-bg');
+      bg.setAttribute('x', mx - textW/2); bg.setAttribute('y', my - 9);
+      bg.setAttribute('width', textW); bg.setAttribute('height', 18); bg.setAttribute('rx', 4);
+      bg.addEventListener('dblclick', function(ev){ ev.preventDefault(); openEdgeModal(e); });
+      svg.appendChild(bg);
+      var txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      txt.setAttribute('class', 'edge-label-text');
+      txt.setAttribute('x', mx); txt.setAttribute('y', my + 3.5);
+      txt.setAttribute('text-anchor', 'middle');
+      txt.textContent = e.label;
+      svg.appendChild(txt);
+    }
+  });
+}
+
+function promptEdgeLabel(e) {
+  var val = prompt('Connection label:', e.label || '');
+  if (val === null) return;
+  e.label = val.trim();
+  renderEdges();
+  scheduleSave();
+}
+
+// ── Edge editing modal ────────────────────────────────────────────────────
+var editingEdge = null;
+var editingEdgeOriginal = null;
+
+function updateOptionButtons(rowId, dataAttr, current) {
+  document.querySelectorAll('#' + rowId + ' .option-btn').forEach(function(btn){
+    btn.classList.toggle('active', btn.getAttribute('data-' + dataAttr) === current);
+  });
+}
+
+function renderEdgeColorRow(e) {
+  var row = document.getElementById('edgeColorRow');
+  row.innerHTML = '';
+  EDGE_COLORS.forEach(function(c){
+    var sw = document.createElement('div');
+    sw.className = 'option-btn';
+    sw.style.width = '24px'; sw.style.height = '24px'; sw.style.padding = '0';
+    sw.style.background = c;
+    sw.style.borderColor = ((e.color || DEFAULT_EDGE_COLOR) === c) ? '#e8e9ec' : 'transparent';
+    sw.addEventListener('click', function(){
+      editingEdge.color = c;
+      renderEdges();
+      renderEdgeColorRow(editingEdge);
+    });
+    row.appendChild(sw);
+  });
+}
+
+function openEdgeModal(e) {
+  editingEdge = e;
+  editingEdgeOriginal = Object.assign({}, e);
+  document.getElementById('edgeLabelInput').value = e.label || '';
+  updateOptionButtons('lineStyleRow', 'style', e.lineStyle || 'solid');
+  updateOptionButtons('directionRow', 'direction', e.direction || 'none');
+  renderEdgeColorRow(e);
+  document.getElementById('edgeModal').classList.add('open');
+}
+
+document.querySelectorAll('#lineStyleRow .option-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    editingEdge.lineStyle = btn.getAttribute('data-style');
+    updateOptionButtons('lineStyleRow', 'style', editingEdge.lineStyle);
+    renderEdges();
+  });
+});
+document.querySelectorAll('#directionRow .option-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    editingEdge.direction = btn.getAttribute('data-direction');
+    updateOptionButtons('directionRow', 'direction', editingEdge.direction);
+    renderEdges();
+  });
+});
+document.getElementById('edgeLabelInput').addEventListener('input', function(){
+  if (editingEdge) { editingEdge.label = this.value; renderEdges(); }
+});
+document.getElementById('cancelEdgeBtn').addEventListener('click', function(){
+  if (editingEdge && editingEdgeOriginal) Object.assign(editingEdge, editingEdgeOriginal);
+  document.getElementById('edgeModal').classList.remove('open');
+  renderEdges();
+  editingEdge = null;
+});
+document.getElementById('saveEdgeBtn').addEventListener('click', function(){
+  document.getElementById('edgeModal').classList.remove('open');
+  editingEdge = null;
+  scheduleSave();
+});
+
+// ── Dragging: card / note nodes ──────────────────────────────────────────
+function startNodeDrag(e, n) {
+  e.preventDefault();
+  var el = document.getElementById(n.id);
+  el.classList.add('dragging');
+  var startX = e.clientX, startY = e.clientY;
+  var origX = n.x, origY = n.y;
+
+  function onMove(ev) {
+    var dx = ev.clientX - startX, dy = ev.clientY - startY;
+    n.x = Math.max(0, origX + dx);
+    n.y = Math.max(0, origY + dy);
+    el.style.left = n.x + 'px';
+    el.style.top = n.y + 'px';
+    renderEdges();
+  }
+  function onUp(ev) {
+    el.classList.remove('dragging');
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    // Dragged back over the sidebar → remove from canvas
+    var sidebarRect = document.querySelector('.card-sidebar').getBoundingClientRect();
+    if (n.type === 'card' && ev.clientX >= sidebarRect.left && ev.clientX <= sidebarRect.right) {
+      deleteNode(n.id);
+      return;
+    }
+    if (n.type === 'card') assignGroupByOverlap(n);
+    scheduleSave();
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+function assignGroupByOverlap(n) {
+  var el = document.getElementById(n.id);
+  var found = null;
+  for (var i = 0; i < groups.length; i++) {
+    var g = groups[i];
+    var cx = n.x + el.offsetWidth / 2, cy = n.y + el.offsetHeight / 2;
+    if (cx >= g.x && cx <= g.x + g.width && cy >= g.y && cy <= g.y + g.height) { found = g.id; break; }
+  }
+  n.groupId = found;
+}
+
+// ── Dragging: groups (move + resize) ────────────────────────────────────
+function startGroupDrag(e, g) {
+  e.preventDefault(); e.stopPropagation();
+  var startX = e.clientX, startY = e.clientY;
+  var origX = g.x, origY = g.y;
+  var memberNodes = nodes.filter(function(n){ return n.groupId === g.id; });
+  var origPositions = memberNodes.map(function(n){ return {n:n, x:n.x, y:n.y}; });
+
+  function onMove(ev) {
+    var dx = ev.clientX - startX, dy = ev.clientY - startY;
+    g.x = Math.max(0, origX + dx);
+    g.y = Math.max(0, origY + dy);
+    origPositions.forEach(function(p){ p.n.x = p.x + (g.x - origX); p.n.y = p.y + (g.y - origY); });
+    render();
+  }
+  function onUp() {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    scheduleSave();
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+function startGroupResize(e, g) {
+  e.preventDefault(); e.stopPropagation();
+  var startX = e.clientX, startY = e.clientY;
+  var origW = g.width, origH = g.height;
+  function onMove(ev) {
+    g.width = Math.max(120, origW + (ev.clientX - startX));
+    g.height = Math.max(80, origH + (ev.clientY - startY));
+    render();
+  }
+  function onUp() {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    scheduleSave();
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+function startNodeResize(e, n) {
+  e.preventDefault(); e.stopPropagation();
+  var startX = e.clientX, startY = e.clientY;
+  var origW = n.width || 180, origH = n.height || 90;
+  function onMove(ev) {
+    n.width = Math.max(120, origW + (ev.clientX - startX));
+    n.height = Math.max(70, origH + (ev.clientY - startY));
+    var el = document.getElementById(n.id);
+    if (el) { el.style.width = n.width + 'px'; el.style.height = n.height + 'px'; }
+    renderEdges();
+  }
+  function onUp() {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    scheduleSave();
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+// ── Groups: create via drag from toolbar, delete via context menu ───────
+document.getElementById('newGroupBtn').addEventListener('dragstart', function(e){
+  e.dataTransfer.setData('text/plain', JSON.stringify({ kind: 'newGroup' }));
+});
+
+function deleteGroup(id) {
+  groups = groups.filter(function(g){ return g.id !== id; });
+  nodes.forEach(function(n){ if (n.groupId === id) n.groupId = null; });
+  edges = edges.filter(function(e){ return e.fromNode !== id && e.toNode !== id; });
+  render();
+  scheduleSave();
+}
+
+// ── Notes: create via drag from toolbar ──────────────────────────────────
+document.getElementById('newNoteBtn').addEventListener('dragstart', function(e){
+  e.dataTransfer.setData('text/plain', JSON.stringify({ kind: 'newNote' }));
+});
+
+// ── Drag-to-connect (hover a side, click+hold, drag to another card/note/group) ─
+function startConnectionDrag(e, sourceId) {
+  e.preventDefault();
+  e.stopPropagation();
+  var svg = document.getElementById('edgeLayer');
+  var tempLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  tempLine.setAttribute('class', 'temp-connection');
+  svg.appendChild(tempLine);
+  document.getElementById('connectHint').textContent = 'Drop on another card, note, or group to connect.';
+
+  function pointFromEvent(ev) {
+    var canvasRect = canvasEl.getBoundingClientRect();
+    return { x: ev.clientX - canvasRect.left, y: ev.clientY - canvasRect.top };
+  }
+
+  function hoverTarget(ev) {
+    var atPoint = document.elementFromPoint(ev.clientX, ev.clientY);
+    if (!atPoint) return null;
+    var el = atPoint.closest('.card-node, .note-node, .group-frame');
+    return (el && el.id !== sourceId) ? el : null;
+  }
+
+  function onMove(ev) {
+    var srcRect = getAnchorRect(sourceId);
+    var mouse = pointFromEvent(ev);
+    var p1 = srcRect ? rectBorderPoint(srcRect, mouse.x, mouse.y) : mouse;
+    tempLine.setAttribute('x1', p1.x); tempLine.setAttribute('y1', p1.y);
+    tempLine.setAttribute('x2', mouse.x); tempLine.setAttribute('y2', mouse.y);
+
+    document.querySelectorAll('.connect-hover').forEach(function(el){ el.classList.remove('connect-hover'); });
+    var target = hoverTarget(ev);
+    if (target) target.classList.add('connect-hover');
+  }
+
+  function onUp(ev) {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    tempLine.remove();
+    document.querySelectorAll('.connect-hover').forEach(function(el){ el.classList.remove('connect-hover'); });
+    document.getElementById('connectHint').textContent = 'Tip: hover a card/group edge, then click and drag to connect.';
+    var target = hoverTarget(ev);
+    if (target) toggleEdge(sourceId, target.id);
+  }
+
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+function toggleEdge(a, b) {
+  var existing = edges.findIndex(function(e){
+    return (e.fromNode === a && e.toNode === b) || (e.fromNode === b && e.toNode === a);
+  });
+  if (existing >= 0) {
+    edges.splice(existing, 1);
+    toast('Connection removed', 'ok');
+  } else {
+    edges.push({ id: uid('e'), fromNode: a, toNode: b, label: '', color: null, lineStyle: 'solid', direction: 'none' });
+    toast('Connected', 'ok');
+  }
+  renderEdges();
+  scheduleSave();
+}
+
+function deleteEdge(id) {
+  edges = edges.filter(function(e){ return e.id !== id; });
+  renderEdges();
+  scheduleSave();
+}
+
+function deleteNode(id) {
+  nodes = nodes.filter(function(n){ return n.id !== id; });
+  edges = edges.filter(function(e){ return e.fromNode !== id && e.toNode !== id; });
+  renderSidebar();
+  render();
+  scheduleSave();
+}
+
+// ── Color palette popover ────────────────────────────────────────────────
+function showColorPalette(x, y, onPick, palette) {
+  var existing = document.querySelector('.color-palette');
+  if (existing) existing.remove();
+  var pal = document.createElement('div');
+  pal.className = 'color-palette';
+  pal.style.left = x + 'px';
+  pal.style.top = y + 'px';
+  (palette || GROUP_COLORS).forEach(function(c){
+    var sw = document.createElement('div');
+    sw.className = 'color-swatch';
+    sw.style.background = c;
+    sw.addEventListener('click', function(ev){ ev.stopPropagation(); onPick(c); pal.remove(); });
+    pal.appendChild(sw);
+  });
+  document.body.appendChild(pal);
+  setTimeout(function(){
+    document.addEventListener('click', function closeP(){ pal.remove(); document.removeEventListener('click', closeP); });
+  }, 10);
+}
+
+// ── Context menu ──────────────────────────────────────────────────────────
+function showContextMenu(x, y, items) {
+  var existing = document.querySelector('.context-menu');
+  if (existing) existing.remove();
+  var menu = document.createElement('div');
+  menu.className = 'context-menu';
+  menu.style.left = x + 'px';
+  menu.style.top = y + 'px';
+  items.forEach(function(item){
+    var el = document.createElement('div');
+    el.className = 'context-menu-item' + (item.danger ? ' danger' : '');
+    el.textContent = item.label;
+    el.addEventListener('click', function(){ item.action(); menu.remove(); });
+    menu.appendChild(el);
+  });
+  document.body.appendChild(menu);
+  setTimeout(function(){
+    document.addEventListener('click', function closeMenu(){
+      menu.remove();
+      document.removeEventListener('click', closeMenu);
+    });
+  }, 10);
+}
+
+// ── Autosave (debounced) ────────────────────────────────────────────────
+function scheduleSave() {
+  var dot = document.getElementById('saveDot');
+  var text = document.getElementById('saveText');
+  dot.className = 'save-dot saving';
+  text.textContent = 'Saving…';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(doSave, 1000);
+}
+
+function doSave() {
+  fetch('/api/canvas', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ deck: deck, nodes: nodes, groups: groups, edges: edges })
+  }).then(function(r){ return r.json(); }).then(function(d){
+    var dot = document.getElementById('saveDot');
+    var text = document.getElementById('saveText');
+    if (d.error) throw new Error(d.error);
+    dot.className = 'save-dot saved';
+    text.textContent = 'All changes saved';
+  }).catch(function(e){
+    document.getElementById('saveText').textContent = 'Save failed';
+    toast('Autosave failed: ' + e.message, 'err');
+  });
+}
+
+// ── Push to Anki ──────────────────────────────────────────────────────────
+document.getElementById('pushBtn').addEventListener('click', function(){
+  if (nodes.length === 0 && groups.length === 0) { toast('Nothing to push — the canvas is empty.', 'err'); return; }
+  var today = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  var deckShort = deck.split('::').pop();
+  document.getElementById('autoNamePreview').textContent = deckShort + ' — Map — ' + today;
+  document.getElementById('snapshotNameInput').value = '';
+  document.getElementById('pushModal').classList.add('open');
+});
+document.getElementById('cancelPushBtn').addEventListener('click', function(){
+  document.getElementById('pushModal').classList.remove('open');
+});
+document.getElementById('confirmPushBtn').addEventListener('click', function(){
+  var btn = this;
+  var name = document.getElementById('snapshotNameInput').value.trim();
+  btn.disabled = true;
+  btn.textContent = 'Pushing…';
+  fetch('/api/push-map', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ deck: deck, nodes: nodes, groups: groups, edges: edges, snapshotName: name })
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if (d.error) throw new Error(d.error);
+    document.getElementById('pushModal').classList.remove('open');
+    toast('✓ Pushed "' + d.label + '" to Anki', 'ok');
+  }).catch(function(e){ toast('Push failed: ' + e.message, 'err'); })
+  .finally(function(){ btn.disabled = false; btn.textContent = '⇪ Push'; });
+});
+
+init();
+document.getElementById('connectHint').textContent = 'Tip: hover a card/group edge, then click and drag to connect.';
+</script>
+</body>
+</html>
