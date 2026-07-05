@@ -263,14 +263,34 @@
       "y": 333
     },
     {
+      "groupId": "g_yy9rxbd",
+      "height": 70,
       "id": "n_c2dj6xu",
-      "type": "card",
       "noteId": 1778062286091,
+      "type": "card",
+      "width": 180,
       "x": 73,
-      "y": 285,
+      "y": 285
+    },
+    {
+      "id": "n_ymt55ne",
+      "type": "card",
+      "noteId": 1778062286104,
+      "x": 671,
+      "y": 820,
       "width": 180,
       "height": 70,
-      "groupId": "g_yy9rxbd"
+      "groupId": null
+    },
+    {
+      "id": "n_5vyd2h2",
+      "type": "card",
+      "noteId": 1778062286083,
+      "x": 369,
+      "y": 943,
+      "width": 180,
+      "height": 70,
+      "groupId": null
     }
   ],
   "groups": [
@@ -432,13 +452,22 @@
       "toNode": "n_y14e18c"
     },
     {
-      "id": "e_kb4yh18",
-      "fromNode": "g_yy9rxbd",
-      "toNode": "n_ou9m4h8",
-      "label": "test",
       "color": "#e8e9ec",
+      "direction": "forward",
+      "fromNode": "g_yy9rxbd",
+      "id": "e_kb4yh18",
+      "label": "test",
       "lineStyle": "dashed",
-      "direction": "forward"
+      "toNode": "n_ou9m4h8"
+    },
+    {
+      "id": "e_gilz0dd",
+      "fromNode": "n_5vyd2h2",
+      "toNode": "n_ymt55ne",
+      "label": "",
+      "color": "#c0524a",
+      "lineStyle": "dotted",
+      "direction": "backward"
     }
   ]
 }

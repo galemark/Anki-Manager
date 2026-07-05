@@ -1,0 +1,2293 @@
+{
+  "nodes": [
+    {
+      "groupId": "g_p0txqw3",
+      "height": 70,
+      "id": "n_dum3mi7",
+      "noteId": 1778763380366,
+      "type": "card",
+      "width": 180,
+      "x": 70,
+      "y": 68.76851654052734
+    },
+    {
+      "groupId": "g_p0txqw3",
+      "height": 70,
+      "id": "n_wq7aauo",
+      "noteId": 1778763380375,
+      "type": "card",
+      "width": 180,
+      "x": 72,
+      "y": 177.76851654052734
+    },
+    {
+      "groupId": "g_p0txqw3",
+      "height": 70,
+      "id": "n_gcisi0w",
+      "noteId": 1778763380369,
+      "type": "card",
+      "width": 180,
+      "x": 71.99771118164062,
+      "y": 286.66666412353516
+    },
+    {
+      "groupId": "g_p0txqw3",
+      "height": 70,
+      "id": "n_9wtan8j",
+      "noteId": 1778763380383,
+      "type": "card",
+      "width": 180,
+      "x": 78,
+      "y": 385.76851654052734
+    },
+    {
+      "groupId": "g_0kx510p",
+      "height": 70,
+      "id": "n_8nld1yo",
+      "noteId": 1778763380380,
+      "type": "card",
+      "width": 180,
+      "x": 921,
+      "y": 69
+    },
+    {
+      "groupId": "g_p0txqw3",
+      "height": 70,
+      "id": "n_3mbgrbu",
+      "noteId": 1778763380385,
+      "type": "card",
+      "width": 180,
+      "x": 261.9977111816406,
+      "y": 71
+    },
+    {
+      "groupId": "g_p0txqw3",
+      "height": 70,
+      "id": "n_s5uzlzs",
+      "noteId": 1778763380386,
+      "type": "card",
+      "width": 180,
+      "x": 265.9977111816406,
+      "y": 153
+    },
+    {
+      "groupId": "g_p0txqw3",
+      "height": 70,
+      "id": "n_33audgg",
+      "noteId": 1778763380387,
+      "type": "card",
+      "width": 180,
+      "x": 271.9977111816406,
+      "y": 247
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_664pf7n",
+      "noteId": 1778763380338,
+      "type": "card",
+      "width": 180,
+      "x": 78,
+      "y": 687
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_jjbihec",
+      "noteId": 1778763380359,
+      "type": "card",
+      "width": 180,
+      "x": 81,
+      "y": 773
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_tnadefh",
+      "noteId": 1778763380339,
+      "type": "card",
+      "width": 180,
+      "x": 79,
+      "y": 870
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_3vpuw70",
+      "noteId": 1778763380358,
+      "type": "card",
+      "width": 180,
+      "x": 275,
+      "y": 688
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_7yl1pyu",
+      "noteId": 1778763380322,
+      "type": "card",
+      "width": 180,
+      "x": 278,
+      "y": 790
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_55t3vu1",
+      "noteId": 1778763380374,
+      "type": "card",
+      "width": 180,
+      "x": 279,
+      "y": 909
+    },
+    {
+      "groupId": "g_0kx510p",
+      "height": 70,
+      "id": "n_k1i00ec",
+      "noteId": 1778763380345,
+      "type": "card",
+      "width": 180,
+      "x": 921,
+      "y": 188
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_3gajlis",
+      "noteId": 1778763380352,
+      "type": "card",
+      "width": 180,
+      "x": 1257,
+      "y": 731
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_ffrd23e",
+      "noteId": 1778763380343,
+      "type": "card",
+      "width": 180,
+      "x": 1464,
+      "y": 724.6666641235352
+    },
+    {
+      "groupId": "g_0kx510p",
+      "height": 70,
+      "id": "n_3rdi4o1",
+      "noteId": 1778763380381,
+      "type": "card",
+      "width": 180,
+      "x": 920,
+      "y": 304.66666412353516
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_8dok7pf",
+      "noteId": 1778763380325,
+      "type": "card",
+      "width": 180,
+      "x": 69,
+      "y": 963.6666641235352
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_qosn3f0",
+      "noteId": 1778763380342,
+      "type": "card",
+      "width": 180,
+      "x": 1261,
+      "y": 816.6666641235352
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_7h0n360",
+      "noteId": 1778763380351,
+      "type": "card",
+      "width": 180,
+      "x": 1258,
+      "y": 933
+    },
+    {
+      "groupId": "g_0kx510p",
+      "height": 70,
+      "id": "n_8loumyf",
+      "noteId": 1778763380365,
+      "type": "card",
+      "width": 180,
+      "x": 920,
+      "y": 416
+    },
+    {
+      "groupId": "g_p0txqw3",
+      "height": 70,
+      "id": "n_h5qh63d",
+      "noteId": 1778763380336,
+      "type": "card",
+      "width": 180,
+      "x": 280.9977111816406,
+      "y": 338
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_yw8k4zd",
+      "noteId": 1778763380340,
+      "type": "card",
+      "width": 180,
+      "x": 281,
+      "y": 1010
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_l7xo3h5",
+      "noteId": 1778763380349,
+      "type": "card",
+      "width": 180,
+      "x": 475,
+      "y": 701
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_4ikixn3",
+      "noteId": 1778763380353,
+      "type": "card",
+      "width": 180,
+      "x": 1470,
+      "y": 821
+    },
+    {
+      "groupId": "g_hprpeke",
+      "height": 70,
+      "id": "n_x1t4gpj",
+      "noteId": 1778763380356,
+      "type": "card",
+      "width": 180,
+      "x": 100,
+      "y": 1555
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_hsk0bvl",
+      "noteId": 1778763380388,
+      "type": "card",
+      "width": 180,
+      "x": 476,
+      "y": 834
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_j47bryf",
+      "noteId": 1778763380362,
+      "type": "card",
+      "width": 180,
+      "x": 483,
+      "y": 984
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_2l5ijmh",
+      "noteId": 1778763380392,
+      "type": "card",
+      "width": 180,
+      "x": 1469,
+      "y": 910
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_omfgoqq",
+      "noteId": 1778763380344,
+      "type": "card",
+      "width": 180,
+      "x": 1264,
+      "y": 1030
+    },
+    {
+      "groupId": "g_p0txqw3",
+      "height": 70,
+      "id": "n_8u3twpo",
+      "noteId": 1778763380334,
+      "type": "card",
+      "width": 180,
+      "x": 270,
+      "y": 449
+    },
+    {
+      "groupId": "g_0kx510p",
+      "height": 70,
+      "id": "n_3a2jhb8",
+      "noteId": 1778763380364,
+      "type": "card",
+      "width": 180,
+      "x": 1121,
+      "y": 71
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_cw1rf9n",
+      "noteId": 1778763380341,
+      "type": "card",
+      "width": 180,
+      "x": 1667,
+      "y": 728
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_j34cjxm",
+      "noteId": 1778763380379,
+      "type": "card",
+      "width": 180,
+      "x": 1464,
+      "y": 1035
+    },
+    {
+      "groupId": "g_0kx510p",
+      "height": 70,
+      "id": "n_e1s6zrq",
+      "noteId": 1778763380332,
+      "type": "card",
+      "width": 180,
+      "x": 1120,
+      "y": 170
+    },
+    {
+      "groupId": "g_0kx510p",
+      "height": 70,
+      "id": "n_8cc831h",
+      "noteId": 1778763380363,
+      "type": "card",
+      "width": 180,
+      "x": 1118,
+      "y": 351
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_pnnkg9h",
+      "noteId": 1778763380360,
+      "type": "card",
+      "width": 180,
+      "x": 1662,
+      "y": 840
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_13qszbh",
+      "noteId": 1778763380368,
+      "type": "card",
+      "width": 180,
+      "x": 64,
+      "y": 1092
+    },
+    {
+      "groupId": "g_p0txqw3",
+      "height": 70,
+      "id": "n_ttljt2c",
+      "noteId": 1778763380382,
+      "type": "card",
+      "width": 180,
+      "x": 468,
+      "y": 78
+    },
+    {
+      "groupId": "g_0kx510p",
+      "height": 70,
+      "id": "n_8c5ayrx",
+      "noteId": 1778763380333,
+      "type": "card",
+      "width": 180,
+      "x": 1103,
+      "y": 483
+    },
+    {
+      "groupId": "g_p0txqw3",
+      "height": 70,
+      "id": "n_suh2uhx",
+      "noteId": 1778763380337,
+      "type": "card",
+      "width": 180,
+      "x": 469,
+      "y": 168
+    },
+    {
+      "groupId": "g_hprpeke",
+      "height": 70,
+      "id": "n_s3rnx40",
+      "noteId": 1778763380355,
+      "type": "card",
+      "width": 180,
+      "x": 298,
+      "y": 1569
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_jekkmva",
+      "noteId": 1778763380346,
+      "type": "card",
+      "width": 180,
+      "x": 274,
+      "y": 1113
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_7zrfpyr",
+      "noteId": 1778763380348,
+      "type": "card",
+      "width": 180,
+      "x": 1268,
+      "y": 1145
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_it6wl6a",
+      "noteId": 1778763380367,
+      "type": "card",
+      "width": 180,
+      "x": 79,
+      "y": 1228
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_akluy68",
+      "noteId": 1778763380390,
+      "type": "card",
+      "width": 180,
+      "x": 1659,
+      "y": 965
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_2u211l5",
+      "noteId": 1778763380350,
+      "type": "card",
+      "width": 180,
+      "x": 481,
+      "y": 1119
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_zf2a4z5",
+      "noteId": 1778763380373,
+      "type": "card",
+      "width": 180,
+      "x": 276,
+      "y": 1222
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_0kw1wp7",
+      "noteId": 1778763380395,
+      "type": "card",
+      "width": 180,
+      "x": 1469,
+      "y": 1141
+    },
+    {
+      "groupId": "g_p0txqw3",
+      "height": 70,
+      "id": "n_e1fpbze",
+      "noteId": 1778763380370,
+      "type": "card",
+      "width": 180,
+      "x": 484,
+      "y": 294
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_e5rc4r5",
+      "noteId": 1778763380376,
+      "type": "card",
+      "width": 180,
+      "x": 1683,
+      "y": 1080
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_nyhful4",
+      "noteId": 1778763380354,
+      "type": "card",
+      "width": 180,
+      "x": 1265,
+      "y": 1253
+    },
+    {
+      "groupId": "g_hprpeke",
+      "height": 70,
+      "id": "n_7n4mupj",
+      "noteId": 1778763380357,
+      "type": "card",
+      "width": 180,
+      "x": 102,
+      "y": 1653
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_u7vv5hw",
+      "noteId": 1778763380327,
+      "type": "card",
+      "width": 180,
+      "x": 501,
+      "y": 1243
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_xjxxqhe",
+      "noteId": 1778763380378,
+      "type": "card",
+      "width": 180,
+      "x": 78,
+      "y": 1351
+    },
+    {
+      "groupId": "g_0kx510p",
+      "height": 70,
+      "id": "n_09chtpq",
+      "noteId": 1778763380329,
+      "type": "card",
+      "width": 180,
+      "x": 1312,
+      "y": 78
+    },
+    {
+      "groupId": "g_0kx510p",
+      "height": 70,
+      "id": "n_6b300jv",
+      "noteId": 1778763380330,
+      "type": "card",
+      "width": 180,
+      "x": 1324,
+      "y": 178
+    },
+    {
+      "groupId": "g_0kx510p",
+      "height": 70,
+      "id": "n_fgnmqdy",
+      "noteId": 1778763380331,
+      "type": "card",
+      "width": 180,
+      "x": 1317,
+      "y": 333
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_gceftjz",
+      "noteId": 1778763380326,
+      "type": "card",
+      "width": 180,
+      "x": 286,
+      "y": 1306
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_qlr47gm",
+      "noteId": 1778763380328,
+      "type": "card",
+      "width": 180,
+      "x": 484,
+      "y": 1346
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_cpn2yxc",
+      "noteId": 1778769591560,
+      "type": "card",
+      "width": 180,
+      "x": 1651,
+      "y": 1624
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_emye80k",
+      "noteId": 1778769591537,
+      "type": "card",
+      "width": 180,
+      "x": 1659,
+      "y": 1723
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_rh3t9vg",
+      "noteId": 1778769591491,
+      "type": "card",
+      "width": 180,
+      "x": 1659,
+      "y": 1875
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_krw9adx",
+      "noteId": 1778769591500,
+      "type": "card",
+      "width": 180,
+      "x": 1660,
+      "y": 1979
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_sky1mpc",
+      "noteId": 1778769591502,
+      "type": "card",
+      "width": 180,
+      "x": 1864,
+      "y": 1629
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_liyx117",
+      "noteId": 1778769591506,
+      "type": "card",
+      "width": 180,
+      "x": 1857,
+      "y": 1814
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_n19kkxw",
+      "noteId": 1778769591512,
+      "type": "card",
+      "width": 180,
+      "x": 1870,
+      "y": 1904
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_u09wx96",
+      "noteId": 1778769591513,
+      "type": "card",
+      "width": 180,
+      "x": 1872,
+      "y": 2039
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_ydz5qkq",
+      "noteId": 1778769591524,
+      "type": "card",
+      "width": 180,
+      "x": 2063,
+      "y": 1643
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_l60dy4b",
+      "noteId": 1778769591526,
+      "type": "card",
+      "width": 180,
+      "x": 2065,
+      "y": 1780
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_88nzyqr",
+      "noteId": 1778769591527,
+      "type": "card",
+      "width": 180,
+      "x": 2064,
+      "y": 1877
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_so45yc9",
+      "noteId": 1778769591528,
+      "type": "card",
+      "width": 180,
+      "x": 2075,
+      "y": 1965
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_i5m881u",
+      "noteId": 1778769591540,
+      "type": "card",
+      "width": 180,
+      "x": 2074,
+      "y": 2074
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_jmgia3l",
+      "noteId": 1778769591546,
+      "type": "card",
+      "width": 180,
+      "x": 1659,
+      "y": 2148
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_v2lp5rm",
+      "noteId": 1778769591555,
+      "type": "card",
+      "width": 180,
+      "x": 1865,
+      "y": 2168
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_bzppw9j",
+      "noteId": 1778769591563,
+      "type": "card",
+      "width": 180,
+      "x": 2073,
+      "y": 2213
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_31ajh84",
+      "noteId": 1778769591504,
+      "type": "card",
+      "width": 180,
+      "x": 2268,
+      "y": 1648
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_jc9zzsw",
+      "noteId": 1778769591505,
+      "type": "card",
+      "width": 180,
+      "x": 2283,
+      "y": 1781
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_zul5y41",
+      "noteId": 1778769591507,
+      "type": "card",
+      "width": 180,
+      "x": 2297,
+      "y": 1933
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_dgjyaxn",
+      "noteId": 1778769591509,
+      "type": "card",
+      "width": 180,
+      "x": 2280,
+      "y": 2020
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_s0z8q16",
+      "noteId": 1778769591516,
+      "type": "card",
+      "width": 180,
+      "x": 2261,
+      "y": 2121
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_6yu97v3",
+      "noteId": 1778769591529,
+      "type": "card",
+      "width": 180,
+      "x": 2272,
+      "y": 2281
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_tvcqyva",
+      "noteId": 1778769591543,
+      "type": "card",
+      "width": 180,
+      "x": 2514,
+      "y": 1647
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_xpt8x85",
+      "noteId": 1778769591554,
+      "type": "card",
+      "width": 180,
+      "x": 2483,
+      "y": 1794
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_gb5yqdr",
+      "noteId": 1778769591557,
+      "type": "card",
+      "width": 180,
+      "x": 2485,
+      "y": 1931
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_wgh2vdg",
+      "noteId": 1778769591564,
+      "type": "card",
+      "width": 180,
+      "x": 2482,
+      "y": 2007
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_nm8lu83",
+      "noteId": 1778769591501,
+      "type": "card",
+      "width": 180,
+      "x": 2467,
+      "y": 2128
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_vf5vvl7",
+      "noteId": 1778769591508,
+      "type": "card",
+      "width": 180,
+      "x": 1656.4444580078125,
+      "y": 2275.111083984375
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_bafqqcm",
+      "noteId": 1778769591511,
+      "type": "card",
+      "width": 180,
+      "x": 1863.4444580078125,
+      "y": 2286.111083984375
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_gfmulth",
+      "noteId": 1778769591517,
+      "type": "card",
+      "width": 180,
+      "x": 2081.4444580078125,
+      "y": 2322.111083984375
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_8kg28dy",
+      "noteId": 1778769591522,
+      "type": "card",
+      "width": 180,
+      "x": 2490.4444580078125,
+      "y": 2245.111083984375
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_quw4qmn",
+      "noteId": 1778769591538,
+      "type": "card",
+      "width": 180,
+      "x": 1647.4444580078125,
+      "y": 2377.888916015625
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_h2srh4p",
+      "noteId": 1778769591565,
+      "type": "card",
+      "width": 180,
+      "x": 1865.4444580078125,
+      "y": 2428.888916015625
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_dpd21ld",
+      "noteId": 1778769591492,
+      "type": "card",
+      "width": 180,
+      "x": 2076.4444580078125,
+      "y": 2465.888916015625
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_9k0s5f8",
+      "noteId": 1778769591495,
+      "type": "card",
+      "width": 180,
+      "x": 2279.4444580078125,
+      "y": 2401.888916015625
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_0pzuz83",
+      "noteId": 1778769591523,
+      "type": "card",
+      "width": 180,
+      "x": 2261.4444580078125,
+      "y": 2503.888916015625
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_ukgcclv",
+      "noteId": 1778769591496,
+      "type": "card",
+      "width": 180,
+      "x": 2501.4444580078125,
+      "y": 2405.888916015625
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_k5msnbq",
+      "noteId": 1778769591568,
+      "type": "card",
+      "width": 180,
+      "x": 2489.4444580078125,
+      "y": 2505.888916015625
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_wmp0pxz",
+      "noteId": 1778769591556,
+      "type": "card",
+      "width": 180,
+      "x": 2680.7777709960938,
+      "y": 1799.2222900390625
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_kxvfere",
+      "noteId": 1778769591562,
+      "type": "card",
+      "width": 180,
+      "x": 2683.7777709960938,
+      "y": 1925.2222900390625
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_aa56j01",
+      "noteId": 1778769591558,
+      "type": "card",
+      "width": 180,
+      "x": 2718.7777709960938,
+      "y": 1647.5555419921875
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_ao0v1kl",
+      "noteId": 1778769591534,
+      "type": "card",
+      "width": 180,
+      "x": 2669.7777709960938,
+      "y": 2021.5555419921875
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_u4wds4l",
+      "noteId": 1778769591547,
+      "type": "card",
+      "width": 180,
+      "x": 2889.7777709960938,
+      "y": 2185.5555419921875
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_x01ktm3",
+      "noteId": 1778769591561,
+      "type": "card",
+      "width": 180,
+      "x": 2702.7777709960938,
+      "y": 2266.5555419921875
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_qmewvft",
+      "noteId": 1778769591498,
+      "type": "card",
+      "width": 180,
+      "x": 2726.7777709960938,
+      "y": 2390.888916015625
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_ggqew2s",
+      "noteId": 1778769591519,
+      "type": "card",
+      "width": 180,
+      "x": 2705,
+      "y": 2499.888916015625
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_9czs35x",
+      "noteId": 1778769591525,
+      "type": "card",
+      "width": 180,
+      "x": 2275,
+      "y": 2595.888916015625
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_4f0fkkj",
+      "noteId": 1778769591510,
+      "type": "card",
+      "width": 180,
+      "x": 1854,
+      "y": 2557.888916015625
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_wy2rrqg",
+      "noteId": 1778769591499,
+      "type": "card",
+      "width": 180,
+      "x": 1649.3333435058594,
+      "y": 2531.888916015625
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_gb4jhyd",
+      "noteId": 1778769591520,
+      "type": "card",
+      "width": 180,
+      "x": 2907.3333740234375,
+      "y": 1646.3333740234375
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_c47xuf1",
+      "noteId": 1778769591493,
+      "type": "card",
+      "width": 180,
+      "x": 2908.3333740234375,
+      "y": 1783.3333740234375
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_t9dhiz9",
+      "noteId": 1778769591573,
+      "type": "card",
+      "width": 180,
+      "x": 2913.3333740234375,
+      "y": 1927.3333740234375
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_wscpfyt",
+      "noteId": 1778769591570,
+      "type": "card",
+      "width": 180,
+      "x": 2877.3333740234375,
+      "y": 2061.3333740234375
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_874se0a",
+      "noteId": 1778769591541,
+      "type": "card",
+      "width": 180,
+      "x": 2665.3333740234375,
+      "y": 2139.3333740234375
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_4z72rxo",
+      "noteId": 1778769591514,
+      "type": "card",
+      "width": 180,
+      "x": 2940.3333740234375,
+      "y": 2309.3333740234375
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_kvonbkb",
+      "noteId": 1778769591515,
+      "type": "card",
+      "width": 180,
+      "x": 2941.3333740234375,
+      "y": 2433.3333740234375
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_5q0up1h",
+      "noteId": 1778769591544,
+      "type": "card",
+      "width": 180,
+      "x": 2932.3333740234375,
+      "y": 2593.3333740234375
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_zh77su8",
+      "noteId": 1778769591530,
+      "type": "card",
+      "width": 180,
+      "x": 2492.3333740234375,
+      "y": 2609.3333740234375
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_0vvy7bs",
+      "noteId": 1778769591552,
+      "type": "card",
+      "width": 180,
+      "x": 2282.3333740234375,
+      "y": 2703.3333740234375
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_exgz0wg",
+      "noteId": 1778769591553,
+      "type": "card",
+      "width": 180,
+      "x": 2702.3333740234375,
+      "y": 2642.3333740234375
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_76elgfe",
+      "noteId": 1778769591539,
+      "type": "card",
+      "width": 180,
+      "x": 2474.3333740234375,
+      "y": 2710.3333740234375
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_j0mw796",
+      "noteId": 1778769591542,
+      "type": "card",
+      "width": 180,
+      "x": 2704.3333740234375,
+      "y": 2759.3333740234375
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_gai9agn",
+      "noteId": 1778769591545,
+      "type": "card",
+      "width": 180,
+      "x": 2069.3333740234375,
+      "y": 2608.3333740234375
+    },
+    {
+      "groupId": "g_8bi6l5j",
+      "height": 70,
+      "id": "n_votp6vz",
+      "noteId": 1778928982061,
+      "type": "card",
+      "width": 180,
+      "x": 2077.3333740234375,
+      "y": 2731.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_ryzpxc9",
+      "noteId": 1778928982020,
+      "type": "card",
+      "width": 180,
+      "x": 116,
+      "y": 1902.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_zlahyuu",
+      "noteId": 1778928982018,
+      "type": "card",
+      "width": 180,
+      "x": 120,
+      "y": 1999.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_vutma0a",
+      "noteId": 1778928982026,
+      "type": "card",
+      "width": 180,
+      "x": 117,
+      "y": 2110.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_fwlav45",
+      "noteId": 1778928982036,
+      "type": "card",
+      "width": 180,
+      "x": 117,
+      "y": 2194.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_57gapr9",
+      "noteId": 1778928982037,
+      "type": "card",
+      "width": 180,
+      "x": 103,
+      "y": 2323.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_ylkcbv0",
+      "noteId": 1778928982038,
+      "type": "card",
+      "width": 180,
+      "x": 100,
+      "y": 2414.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_obw4och",
+      "noteId": 1778928982042,
+      "type": "card",
+      "width": 180,
+      "x": 100,
+      "y": 2518.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_0m99kdg",
+      "noteId": 1778928982060,
+      "type": "card",
+      "width": 180,
+      "x": 320,
+      "y": 1892.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_guozlgb",
+      "noteId": 1778928982019,
+      "type": "card",
+      "width": 180,
+      "x": 322,
+      "y": 1976.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_cc7lxrp",
+      "noteId": 1778928982021,
+      "type": "card",
+      "width": 180,
+      "x": 315,
+      "y": 2074.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_4nqv5cx",
+      "noteId": 1778928982024,
+      "type": "card",
+      "width": 180,
+      "x": 313,
+      "y": 2180.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_5armj0a",
+      "noteId": 1778928982027,
+      "type": "card",
+      "width": 180,
+      "x": 319,
+      "y": 2299.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_xmuwi5q",
+      "noteId": 1778928982030,
+      "type": "card",
+      "width": 180,
+      "x": 306,
+      "y": 2394.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_1rq1w58",
+      "noteId": 1778928982033,
+      "type": "card",
+      "width": 180,
+      "x": 309,
+      "y": 2499.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_40qvz9z",
+      "noteId": 1778928982039,
+      "type": "card",
+      "width": 180,
+      "x": 514,
+      "y": 1885.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_xvp6u7z",
+      "noteId": 1778928982043,
+      "type": "card",
+      "width": 180,
+      "x": 517,
+      "y": 1981.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_k9w9k2q",
+      "noteId": 1778928982007,
+      "type": "card",
+      "width": 180,
+      "x": 512,
+      "y": 2078.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_08zq7u2",
+      "noteId": 1778928982041,
+      "type": "card",
+      "width": 180,
+      "x": 512,
+      "y": 2177.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_0xkhy70",
+      "noteId": 1778928982016,
+      "type": "card",
+      "width": 180,
+      "x": 506,
+      "y": 2280.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_6cbgp20",
+      "noteId": 1778928982017,
+      "type": "card",
+      "width": 180,
+      "x": 496,
+      "y": 2424.666748046875
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_no19y1u",
+      "noteId": 1778928982028,
+      "type": "card",
+      "width": 180,
+      "x": 513,
+      "y": 2553.666748046875
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_frki10r",
+      "noteId": 1778928982031,
+      "type": "card",
+      "width": 180,
+      "x": 98,
+      "y": 2616.666748046875
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_o4h9pd9",
+      "noteId": 1778928982040,
+      "type": "card",
+      "width": 180,
+      "x": 312,
+      "y": 2623.666748046875
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_3xctssp",
+      "noteId": 1778928982067,
+      "type": "card",
+      "width": 180,
+      "x": 517,
+      "y": 2635.666748046875
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_qm9m1ey",
+      "noteId": 1778928982055,
+      "type": "card",
+      "width": 180,
+      "x": 713,
+      "y": 1890.666748046875
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_6isq3oi",
+      "noteId": 1778928982048,
+      "type": "card",
+      "width": 180,
+      "x": 713,
+      "y": 1972.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_wvj34qe",
+      "noteId": 1778928982015,
+      "type": "card",
+      "width": 180,
+      "x": 714,
+      "y": 2086.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_3by0wlm",
+      "noteId": 1778928982046,
+      "type": "card",
+      "width": 180,
+      "x": 710,
+      "y": 2200.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_eg990oc",
+      "noteId": 1778928982047,
+      "type": "card",
+      "width": 180,
+      "x": 703,
+      "y": 2302.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_oq9n04s",
+      "noteId": 1778928982049,
+      "type": "card",
+      "width": 180,
+      "x": 696,
+      "y": 2417.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_qfc0mkp",
+      "noteId": 1778928982063,
+      "type": "card",
+      "width": 180,
+      "x": 715,
+      "y": 2537.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_j7sv4ew",
+      "noteId": 1778928982025,
+      "type": "card",
+      "width": 180,
+      "x": 717,
+      "y": 2674.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_j624x3z",
+      "noteId": 1778928982056,
+      "type": "card",
+      "width": 180,
+      "x": 510,
+      "y": 2718.3333740234375
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_99k9xdg",
+      "noteId": 1778928982054,
+      "type": "card",
+      "width": 180,
+      "x": 314,
+      "y": 2740
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_edo7ntj",
+      "noteId": 1778928982065,
+      "type": "card",
+      "width": 180,
+      "x": 101,
+      "y": 2800
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_gpdml9j",
+      "noteId": 1778928982064,
+      "type": "card",
+      "width": 180,
+      "x": 724,
+      "y": 2764
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_5y8299n",
+      "noteId": 1778928982059,
+      "type": "card",
+      "width": 180,
+      "x": 513,
+      "y": 2818
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_u2c34y1",
+      "noteId": 1778928982052,
+      "type": "card",
+      "width": 180,
+      "x": 905,
+      "y": 1896
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_oylqtnr",
+      "noteId": 1778928982022,
+      "type": "card",
+      "width": 180,
+      "x": 918,
+      "y": 2033
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_ejebq2y",
+      "noteId": 1778928982032,
+      "type": "card",
+      "width": 180,
+      "x": 916,
+      "y": 2187
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_9vds4u9",
+      "noteId": 1778928982029,
+      "type": "card",
+      "width": 180,
+      "x": 1118,
+      "y": 1912
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_1vj55hr",
+      "noteId": 1778928982050,
+      "type": "card",
+      "width": 180,
+      "x": 1121,
+      "y": 2015
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_31u03xx",
+      "noteId": 1778928982035,
+      "type": "card",
+      "width": 180,
+      "x": 1120,
+      "y": 2135
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_j0us67z",
+      "noteId": 1778928982045,
+      "type": "card",
+      "width": 180,
+      "x": 911,
+      "y": 2316
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_sm7elze",
+      "noteId": 1778928982053,
+      "type": "card",
+      "width": 180,
+      "x": 906,
+      "y": 2436
+    },
+    {
+      "groupId": null,
+      "height": 70,
+      "id": "n_qb44pcr",
+      "noteId": 1778928982023,
+      "type": "card",
+      "width": 180,
+      "x": 917,
+      "y": 2550
+    },
+    {
+      "groupId": "g_j99zt7g",
+      "height": 70,
+      "id": "n_moh98ar",
+      "noteId": 1778928982051,
+      "type": "card",
+      "width": 180,
+      "x": 1121,
+      "y": 2233
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_imx4fbq",
+      "noteId": 1779001078702,
+      "type": "card",
+      "width": 180,
+      "x": 1670,
+      "y": 1197
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_mbpl94g",
+      "noteId": 1779001078720,
+      "type": "card",
+      "width": 180,
+      "x": 1864,
+      "y": 736
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_sc2g9vm",
+      "noteId": 1779001078718,
+      "type": "card",
+      "width": 180,
+      "x": 1867,
+      "y": 845
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_qx5dhyl",
+      "noteId": 1779001078719,
+      "type": "card",
+      "width": 180,
+      "x": 1880,
+      "y": 949
+    },
+    {
+      "groupId": "g_o4ewjjn",
+      "height": 70,
+      "id": "n_i1zhf1o",
+      "noteId": 1779001078654,
+      "type": "card",
+      "width": 180,
+      "x": 1799,
+      "y": 65
+    },
+    {
+      "groupId": "g_o4ewjjn",
+      "height": 70,
+      "id": "n_j4yeixq",
+      "noteId": 1779001078666,
+      "type": "card",
+      "width": 180,
+      "x": 1791,
+      "y": 164
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_lrlbhej",
+      "noteId": 1779001078670,
+      "type": "card",
+      "width": 180,
+      "x": 1882,
+      "y": 1076
+    },
+    {
+      "groupId": null,
+      "height": 70,
+      "id": "n_f9vx92v",
+      "noteId": 1779001078671,
+      "type": "card",
+      "width": 180,
+      "x": 1880,
+      "y": 1178
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_lakfldr",
+      "noteId": 1779001078672,
+      "type": "card",
+      "width": 180,
+      "x": 1891,
+      "y": 1318
+    },
+    {
+      "groupId": "g_zagap0f",
+      "height": 70,
+      "id": "n_w615hcg",
+      "noteId": 1779001078681,
+      "type": "card",
+      "width": 180,
+      "x": 2404,
+      "y": 58
+    },
+    {
+      "groupId": "g_zagap0f",
+      "height": 70,
+      "id": "n_ij0zxcg",
+      "noteId": 1779001078684,
+      "type": "card",
+      "width": 180,
+      "x": 2402,
+      "y": 183
+    },
+    {
+      "groupId": "g_zagap0f",
+      "height": 70,
+      "id": "n_y2s7b5c",
+      "noteId": 1779001078685,
+      "type": "card",
+      "width": 180,
+      "x": 2397,
+      "y": 300
+    },
+    {
+      "groupId": "g_hprpeke",
+      "height": 70,
+      "id": "n_i9p2c89",
+      "noteId": 1779001078696,
+      "type": "card",
+      "width": 180,
+      "x": 307,
+      "y": 1670
+    },
+    {
+      "groupId": "g_dmcix51",
+      "height": 70,
+      "id": "n_eg00r7e",
+      "noteId": 1779001078711,
+      "type": "card",
+      "width": 180,
+      "x": 3111,
+      "y": 68
+    },
+    {
+      "groupId": "g_m8jk502",
+      "height": 70,
+      "id": "n_v4bc0ij",
+      "noteId": 1779001078724,
+      "type": "card",
+      "width": 180,
+      "x": 679,
+      "y": 703
+    },
+    {
+      "groupId": "g_zagap0f",
+      "height": 70,
+      "id": "n_h1tw2y0",
+      "noteId": 1779001078726,
+      "type": "card",
+      "width": 180,
+      "x": 2395,
+      "y": 415
+    },
+    {
+      "groupId": "g_zagap0f",
+      "height": 70,
+      "id": "n_f3hegn4",
+      "noteId": 1779001078729,
+      "type": "card",
+      "width": 180,
+      "x": 2600,
+      "y": 53
+    },
+    {
+      "groupId": "g_dmcix51",
+      "height": 70,
+      "id": "n_tbfekwk",
+      "noteId": 1779001078653,
+      "type": "card",
+      "width": 180,
+      "x": 3094,
+      "y": 186
+    },
+    {
+      "groupId": "g_dmcix51",
+      "height": 70,
+      "id": "n_38b65er",
+      "noteId": 1779001078655,
+      "type": "card",
+      "width": 180,
+      "x": 3102,
+      "y": 266
+    },
+    {
+      "groupId": "g_o4ewjjn",
+      "height": 70,
+      "id": "n_zcnvilr",
+      "noteId": 1779001078661,
+      "type": "card",
+      "width": 180,
+      "x": 1804,
+      "y": 278
+    },
+    {
+      "groupId": "g_o4ewjjn",
+      "height": 70,
+      "id": "n_n9e4ovs",
+      "noteId": 1779001078662,
+      "type": "card",
+      "width": 180,
+      "x": 1797,
+      "y": 392
+    },
+    {
+      "groupId": "g_o4ewjjn",
+      "height": 70,
+      "id": "n_zy9fqyt",
+      "noteId": 1779001078663,
+      "type": "card",
+      "width": 180,
+      "x": 1995,
+      "y": 65
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_heq0h02",
+      "noteId": 1779001078673,
+      "type": "card",
+      "width": 180,
+      "x": 2104,
+      "y": 1195
+    },
+    {
+      "groupId": "g_3tz2f1h",
+      "height": 70,
+      "id": "n_8fd0tbo",
+      "noteId": 1779001078700,
+      "type": "card",
+      "width": 180,
+      "x": 2067,
+      "y": 737
+    },
+    {
+      "groupId": "g_lq635ux",
+      "height": 70,
+      "id": "n_k4yd32g",
+      "noteId": 1779001078649,
+      "type": "card",
+      "width": 180,
+      "x": 2440,
+      "y": 731
+    },
+    {
+      "groupId": "g_lq635ux",
+      "height": 70,
+      "id": "n_t3hcvxn",
+      "noteId": 1779001078651,
+      "type": "card",
+      "width": 180,
+      "x": 2453,
+      "y": 836
+    },
+    {
+      "groupId": "g_lq635ux",
+      "height": 70,
+      "id": "n_sdsrdv6",
+      "noteId": 1779001078658,
+      "type": "card",
+      "width": 180,
+      "x": 2446,
+      "y": 936
+    },
+    {
+      "groupId": "g_zagap0f",
+      "height": 70,
+      "id": "n_va06qhw",
+      "noteId": 1779001078699,
+      "type": "card",
+      "width": 180,
+      "x": 2614,
+      "y": 202
+    },
+    {
+      "groupId": "g_dmcix51",
+      "height": 70,
+      "id": "n_3h4vpl7",
+      "noteId": 1779001078706,
+      "type": "card",
+      "width": 180,
+      "x": 3100,
+      "y": 351
+    },
+    {
+      "groupId": "g_dmcix51",
+      "height": 70,
+      "id": "n_jvu71v4",
+      "noteId": 1779001078707,
+      "type": "card",
+      "width": 180,
+      "x": 3097,
+      "y": 469
+    },
+    {
+      "groupId": "g_zagap0f",
+      "height": 70,
+      "id": "n_ieqwgv3",
+      "noteId": 1779001078710,
+      "type": "card",
+      "width": 180,
+      "x": 2619.3333740234375,
+      "y": 302.66666412353516
+    },
+    {
+      "groupId": "g_zagap0f",
+      "height": 70,
+      "id": "n_do03rzo",
+      "noteId": 1779001078714,
+      "type": "card",
+      "width": 180,
+      "x": 2620.3333740234375,
+      "y": 423
+    },
+    {
+      "groupId": "g_zagap0f",
+      "height": 70,
+      "id": "n_bugw4xk",
+      "noteId": 1779001078716,
+      "type": "card",
+      "width": 180,
+      "x": 2391.3333740234375,
+      "y": 540.6666641235352
+    },
+    {
+      "id": "n_ml8hky8",
+      "type": "card",
+      "noteId": 1779001078646,
+      "x": 2447.4444580078125,
+      "y": 1021.7777709960938,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_lq635ux"
+    },
+    {
+      "id": "n_8j5t31e",
+      "type": "card",
+      "noteId": 1779001078656,
+      "x": 2456.4444580078125,
+      "y": 1110.7777709960938,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_lq635ux"
+    },
+    {
+      "id": "n_onv70g7",
+      "type": "card",
+      "noteId": 1779001078659,
+      "x": 2653.4444580078125,
+      "y": 745.7777709960938,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_lq635ux"
+    },
+    {
+      "id": "n_kxlb2mz",
+      "type": "card",
+      "noteId": 1779001078665,
+      "x": 1999.111083984375,
+      "y": 182.1111068725586,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_o4ewjjn"
+    },
+    {
+      "id": "n_1b8d0ob",
+      "type": "card",
+      "noteId": 1779001078669,
+      "x": 2004.111083984375,
+      "y": 321.1111068725586,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_o4ewjjn"
+    },
+    {
+      "id": "n_uo23rnu",
+      "type": "card",
+      "noteId": 1779001078678,
+      "x": 2615.111083984375,
+      "y": 546.1111068725586,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_zagap0f"
+    },
+    {
+      "id": "n_b7pvmlw",
+      "type": "card",
+      "noteId": 1779001078713,
+      "x": 3300.77783203125,
+      "y": 71.1111068725586,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_dmcix51"
+    },
+    {
+      "id": "n_y1caztq",
+      "type": "card",
+      "noteId": 1779001078712,
+      "x": 3303.77783203125,
+      "y": 161.1111068725586,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_dmcix51"
+    },
+    {
+      "id": "n_bd1m5bv",
+      "type": "card",
+      "noteId": 1779001078683,
+      "x": 2800.111083984375,
+      "y": 75.1111068725586,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_zagap0f"
+    },
+    {
+      "id": "n_2i6lux7",
+      "type": "card",
+      "noteId": 1779001078715,
+      "x": 2808.111083984375,
+      "y": 195.66666412353516,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_zagap0f"
+    }
+  ],
+  "groups": [
+    {
+      "color": "#8b6fd4",
+      "height": 532,
+      "id": "g_p0txqw3",
+      "label": "POCT",
+      "width": 807,
+      "x": 50,
+      "y": 55.768516540527344
+    },
+    {
+      "color": "#4a90c0",
+      "height": 548,
+      "id": "g_0kx510p",
+      "label": "Diabetes",
+      "width": 827,
+      "x": 899.0022888183594,
+      "y": 51.768516540527344
+    },
+    {
+      "color": "#4caf7d",
+      "height": 817,
+      "id": "g_m8jk502",
+      "label": "OGTT",
+      "width": 951,
+      "x": 52,
+      "y": 667
+    },
+    {
+      "color": "#d4a853",
+      "height": 735,
+      "id": "g_3tz2f1h",
+      "label": "Other markers to measure blood glucose",
+      "width": 1086,
+      "x": 1230,
+      "y": 712
+    },
+    {
+      "color": "#c0524a",
+      "height": 280,
+      "id": "g_hprpeke",
+      "label": "Gestational DM",
+      "width": 657,
+      "x": 84,
+      "y": 1534
+    },
+    {
+      "color": "#7c9fd4",
+      "height": 1373,
+      "id": "g_8bi6l5j",
+      "label": "Quality Control",
+      "width": 1704,
+      "x": 1614,
+      "y": 1598
+    },
+    {
+      "color": "#e0855c",
+      "height": 1119,
+      "id": "g_j99zt7g",
+      "label": "Pipettes",
+      "width": 1408,
+      "x": 69,
+      "y": 1861.3333740234375
+    },
+    {
+      "color": "#5cc2c7",
+      "height": 616,
+      "id": "g_o4ewjjn",
+      "label": "Hormones",
+      "width": 553,
+      "x": 1773,
+      "y": 49
+    },
+    {
+      "color": "#8b6fd4",
+      "height": 639,
+      "id": "g_zagap0f",
+      "label": "Tests",
+      "width": 629,
+      "x": 2368,
+      "y": 36
+    },
+    {
+      "color": "#4a90c0",
+      "height": 573,
+      "id": "g_dmcix51",
+      "label": "Diseases",
+      "width": 416,
+      "x": 3075,
+      "y": 56
+    },
+    {
+      "color": "#4caf7d",
+      "height": 542,
+      "id": "g_lq635ux",
+      "label": "Carbohydrates",
+      "width": 537,
+      "x": 2415,
+      "y": 716
+    }
+  ],
+  "edges": [
+    {
+      "color": "#e8e9ec",
+      "direction": "none",
+      "fromNode": "n_cw1rf9n",
+      "id": "e_rndc9f1",
+      "label": "",
+      "lineStyle": "dashed",
+      "toNode": "g_0kx510p"
+    },
+    {
+      "color": "#4caf7d",
+      "direction": "none",
+      "fromNode": "n_lakfldr",
+      "id": "e_qe0o4i7",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_f9vx92v"
+    },
+    {
+      "color": "#4caf7d",
+      "direction": "none",
+      "fromNode": "n_lakfldr",
+      "id": "e_apay1pc",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_heq0h02"
+    },
+    {
+      "color": "#4caf7d",
+      "direction": "none",
+      "fromNode": "n_f9vx92v",
+      "id": "e_oj1v3vl",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_heq0h02"
+    }
+  ]
+}

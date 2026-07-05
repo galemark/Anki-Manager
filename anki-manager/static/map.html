@@ -50,6 +50,7 @@ aside.card-sidebar { width: 240px; min-width: 160px; max-width: 480px; flex-shri
 .sidebar-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
 .sidebar-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 10px 11px; font-size: 11.5px; line-height: 1.55; color: var(--text); cursor: grab; white-space: normal; word-break: break-word; overflow-wrap: break-word; }
 .sidebar-card:hover { border-color: var(--accent2); }
+.sidebar-card.suspended { border: 2px solid var(--accent); padding: 9px 10px; }
 .sidebar-empty { padding: 20px 12px; text-align: center; color: var(--muted); font-size: 11px; line-height: 1.7; }
 
 .canvas-wrap { flex: 1; position: relative; overflow: auto; background:
@@ -317,11 +318,18 @@ function renderSidebar() {
   }
   unplaced.forEach(function(c){
     var el = document.createElement('div');
-    el.className = 'sidebar-card';
+    el.className = 'sidebar-card' + (c.suspended ? ' suspended' : '');
     el.draggable = true;
     el.textContent = stripHtml(c.front);
     el.addEventListener('dragstart', function(e){
       e.dataTransfer.setData('text/plain', JSON.stringify({ kind: 'card', noteId: c.id, offsetX: e.offsetX, offsetY: e.offsetY }));
+    });
+    el.addEventListener('contextmenu', function(e){
+      e.preventDefault();
+      showContextMenu(e.clientX, e.clientY, [
+        { label: c.suspended ? 'Unsuspend' : 'Suspend', action: function(){ toggleSuspend(c.id, !c.suspended); } },
+        { label: 'Delete from Anki', danger: true, action: function(){ deleteCardFromAnki(c.id); } }
+      ]);
     });
     list.appendChild(el);
   });
@@ -350,9 +358,11 @@ canvasEl.addEventListener('drop', function(e){
     // a flat constant broke down whenever you grabbed away from the top-left corner.
     var offX = (typeof data.offsetX === 'number') ? data.offsetX : 10;
     var offY = (typeof data.offsetY === 'number') ? data.offsetY : 10;
-    nodes.push({ id: uid('n'), type: 'card', noteId: data.noteId, x: Math.max(0, x - offX), y: Math.max(0, y - offY), width: 180, height: 70, groupId: null });
+    var newNode = { id: uid('n'), type: 'card', noteId: data.noteId, x: Math.max(0, x - offX), y: Math.max(0, y - offY), width: 180, height: 70, groupId: null };
+    nodes.push(newNode);
     renderSidebar();
     render();
+    assignGroupByOverlap(newNode); // was missing here — sidebar drops never joined a group until manually nudged
     scheduleSave();
   } else if (data.kind === 'newGroup') {
     var g = { id: uid('g'), label: 'New group', x: Math.max(0, x - 130), y: Math.max(0, y - 100), width: 260, height: 200, color: GROUP_COLORS[groups.length % GROUP_COLORS.length] };
@@ -486,7 +496,9 @@ function renderNode(n) {
     var items = [];
     if (n.groupId) items.push({ label: 'Remove from group', action: function(){ n.groupId = null; render(); scheduleSave(); } });
     items.push({ label: 'Open in Anki', action: function(){ openInAnki(n.noteId); } });
+    items.push({ label: (card && card.suspended) ? 'Unsuspend' : 'Suspend', action: function(){ toggleSuspend(n.noteId, !(card && card.suspended)); } });
     items.push({ label: 'Return to sidebar', action: function(){ deleteNode(n.id); } });
+    items.push({ label: 'Delete from Anki', danger: true, action: function(){ deleteCardFromAnki(n.noteId); } });
     showContextMenu(e.clientX, e.clientY, items);
   });
 
@@ -549,6 +561,37 @@ function openInAnki(noteId) {
     method: 'POST', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ query: 'nid:' + noteId })
   }).catch(function(){});
+}
+
+function toggleSuspend(noteId, suspend) {
+  fetch('/api/suspend-cards', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ noteIds: [noteId], suspend: suspend })
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if (d.error) throw new Error(d.error);
+    var card = cardById(noteId);
+    if (card) card.suspended = suspend;
+    renderSidebar();
+    toast(suspend ? 'Card suspended' : 'Card unsuspended', 'ok');
+  }).catch(function(e){ toast('Failed: ' + e.message, 'err'); });
+}
+
+function deleteCardFromAnki(noteId) {
+  if (!confirm('Permanently delete this card from Anki? This cannot be undone.')) return;
+  fetch('/api/delete-notes', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ noteIds: [noteId] })
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if (d.error) throw new Error(d.error);
+    cards = cards.filter(function(c){ return c.id !== noteId; });
+    var removedNodeIds = nodes.filter(function(n){ return n.type === 'card' && n.noteId === noteId; }).map(function(n){ return n.id; });
+    nodes = nodes.filter(function(n){ return !(n.type === 'card' && n.noteId === noteId); });
+    edges = edges.filter(function(e){ return removedNodeIds.indexOf(e.fromNode) === -1 && removedNodeIds.indexOf(e.toNode) === -1; });
+    renderSidebar();
+    render();
+    scheduleSave();
+    toast('Card deleted from Anki', 'ok');
+  }).catch(function(e){ toast('Failed: ' + e.message, 'err'); });
 }
 
 // ── Anchor resolution (node OR group) for edges ─────────────────────────

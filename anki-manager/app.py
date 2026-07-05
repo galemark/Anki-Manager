@@ -81,6 +81,39 @@ def anki_browse():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/suspend-cards", methods=["POST"])
+def suspend_cards():
+    """Suspend or unsuspend all cards belonging to the given note IDs."""
+    data = request.json or {}
+    note_ids = data.get("noteIds", [])
+    suspend = data.get("suspend", True)
+    if not note_ids:
+        return jsonify({"error": "No cards specified"}), 400
+    try:
+        query = " OR ".join(f'nid:{nid}' for nid in note_ids)
+        card_ids = anki("findCards", query=query)
+        if not card_ids:
+            return jsonify({"error": "No matching cards found in Anki"}), 404
+        anki("suspend" if suspend else "unsuspend", cards=card_ids)
+        return jsonify({"ok": True, "count": len(card_ids)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/delete-notes", methods=["POST"])
+def delete_notes():
+    """Permanently delete notes (and their cards) from Anki."""
+    data = request.json or {}
+    note_ids = data.get("noteIds", [])
+    if not note_ids:
+        return jsonify({"error": "No cards specified"}), 400
+    try:
+        anki("deleteNotes", notes=note_ids)
+        return jsonify({"ok": True, "count": len(note_ids)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/cards")
 def get_cards():
     deck = request.args.get("deck", "")
@@ -90,6 +123,21 @@ def get_cards():
         if not ids:
             return jsonify({"cards": []})
         notes = anki("notesInfo", notes=ids)
+
+        # Bulk-fetch suspension status. Suspension is a per-CARD property in Anki,
+        # not per-note, so a note counts as suspended if any of its cards are.
+        suspended_by_note = {}
+        try:
+            card_ids = anki("findCards", query=query)
+            if card_ids:
+                card_infos = anki("cardsInfo", cards=card_ids)
+                for ci in card_infos:
+                    nid = ci.get("note")
+                    is_susp = ci.get("queue") == -1
+                    suspended_by_note[nid] = suspended_by_note.get(nid, False) or is_susp
+        except Exception:
+            pass  # non-fatal — cards just won't show a suspended flag
+
         cards = []
         for n in notes:
             # Exclude 00 Topic Map / 00 Deck Map notes — these are reference cards, not study cards
@@ -104,7 +152,8 @@ def get_cards():
                 "back": back,
                 "tags": n.get("tags", []),
                 "deck": deck or "unknown",
-                "modelName": n.get("modelName", "")
+                "modelName": n.get("modelName", ""),
+                "suspended": suspended_by_note.get(n["noteId"], False)
             })
         return jsonify({"cards": cards})
     except Exception as e:
