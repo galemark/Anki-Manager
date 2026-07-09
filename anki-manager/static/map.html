@@ -46,8 +46,12 @@ header { display: flex; align-items: center; justify-content: space-between; pad
 aside.card-sidebar { width: 240px; min-width: 160px; max-width: 480px; flex-shrink: 0; border-right: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; overflow: hidden; position: relative; }
 .sidebar-resize-handle { position: absolute; top: 0; right: -3px; width: 6px; height: 100%; cursor: ew-resize; z-index: 20; }
 .sidebar-resize-handle:hover, .sidebar-resize-handle.resizing { background: var(--accent2); opacity: 0.3; }
-.sidebar-header { padding: 12px 14px 8px; font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
+.sidebar-header { padding: 12px 14px 8px; font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sidebar-sort { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10px; text-transform: none; letter-spacing: 0; border-radius: 5px; padding: 3px 5px; outline: none; }
+.sidebar-sort:hover { color: var(--text); border-color: var(--muted); }
 .sidebar-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.sidebar-group-header { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--accent2); padding: 10px 2px 2px; margin-top: 2px; border-top: 1px solid var(--border); }
+.sidebar-group-header:first-child { border-top: none; margin-top: 0; padding-top: 2px; }
 .sidebar-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 10px 11px; font-size: 11.5px; line-height: 1.55; color: var(--text); cursor: grab; white-space: normal; word-break: break-word; overflow-wrap: break-word; }
 .sidebar-card:hover { border-color: var(--accent2); }
 .sidebar-card.suspended { border: 2px solid var(--accent); padding: 9px 10px; }
@@ -145,7 +149,15 @@ svg.edge-layer .edge-label-text { fill: var(--accent2); font-size: 10px; font-fa
 
   <div class="body">
     <aside class="card-sidebar" id="cardSidebar">
-      <div class="sidebar-header">Unplaced cards</div>
+      <div class="sidebar-header">
+        <span>Unplaced cards</span>
+        <select class="sidebar-sort" id="sidebarSort" title="Sort unplaced cards">
+          <option value="default">Deck order</option>
+          <option value="created">Date created</option>
+          <option value="alpha">Alphabetical</option>
+          <option value="tag">By tag</option>
+        </select>
+      </div>
       <div class="sidebar-list" id="sidebarList"></div>
       <div class="sidebar-resize-handle" id="sidebarResizeHandle"></div>
     </aside>
@@ -330,6 +342,57 @@ function placedNoteIds() {
   return s;
 }
 
+// ── Sidebar sorting ──────────────────────────────────────────────────────
+var currentSort = 'default';
+var UNTAGGED_LABEL = 'Untagged';
+
+document.getElementById('sidebarSort').addEventListener('change', function(){
+  currentSort = this.value;
+  renderSidebar();
+});
+
+// Returns { list: [cards in sort order], groups: [{label, cards}] | null }
+// groups is only populated for the 'tag' sort, so renderSidebar can inject headers.
+function sortCards(list) {
+  var arr = list.slice();
+  if (currentSort === 'created') {
+    // Anki note IDs are epoch-millisecond creation timestamps, so a numeric
+    // sort on id doubles as a date-created sort with no extra data needed.
+    arr.sort(function(a, b){ return a.id - b.id; });
+    return { list: arr, groups: null };
+  }
+  if (currentSort === 'alpha') {
+    arr.sort(function(a, b){
+      var fa = stripHtml(a.front).trim().toLowerCase();
+      var fb = stripHtml(b.front).trim().toLowerCase();
+      if (fa < fb) return -1;
+      if (fa > fb) return 1;
+      return 0;
+    });
+    return { list: arr, groups: null };
+  }
+  if (currentSort === 'tag') {
+    // Group by first tag (alphabetically); untagged cards form their own
+    // group, sorted last. Cards with multiple tags key off the first one —
+    // simplest rule, and matches how Anki's own browser sidebar treats
+    // multi-tag notes.
+    var buckets = {};
+    arr.forEach(function(c){
+      var key = (c.tags && c.tags.length) ? c.tags[0] : UNTAGGED_LABEL;
+      if (!buckets[key]) buckets[key] = [];
+      buckets[key].push(c);
+    });
+    var tagKeys = Object.keys(buckets).filter(function(k){ return k !== UNTAGGED_LABEL; }).sort();
+    if (buckets[UNTAGGED_LABEL]) tagKeys.push(UNTAGGED_LABEL);
+    var groups = tagKeys.map(function(k){ return { label: k, cards: buckets[k] }; });
+    var flat = [];
+    groups.forEach(function(g){ flat = flat.concat(g.cards); });
+    return { list: flat, groups: groups };
+  }
+  // 'default' — deck-native order, unchanged
+  return { list: arr, groups: null };
+}
+
 document.getElementById('sidebarList').addEventListener('click', function(e){
   if (e.target === e.currentTarget && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
     clearSelection();
@@ -339,20 +402,43 @@ document.getElementById('sidebarList').addEventListener('click', function(e){
 
 function renderSidebar() {
   var placed = placedNoteIds();
-  var unplaced = cards.filter(function(c){ return !placed[c.id]; });
+  var unplacedRaw = cards.filter(function(c){ return !placed[c.id]; });
   var list = document.getElementById('sidebarList');
   list.innerHTML = '';
-  if (unplaced.length === 0) {
+  if (unplacedRaw.length === 0) {
     list.innerHTML = '<div class="sidebar-empty">' + (cards.length ? 'All cards placed on the canvas.' : 'This deck has no cards.') + '</div>';
     return;
   }
   // Drop selections for cards that are no longer in the unplaced list
   // (e.g. placed on canvas, deleted, or filtered out by a refresh).
   var unplacedIds = {};
-  unplaced.forEach(function(c){ unplacedIds[c.id] = true; });
+  unplacedRaw.forEach(function(c){ unplacedIds[c.id] = true; });
   selectedCardIds = selectedCardIds.filter(function(id){ return unplacedIds[id]; });
 
+  var sorted = sortCards(unplacedRaw);
+  var unplaced = sorted.list;
+  // Map card id -> group label, so a header can be dropped in right before
+  // the first card of each new tag group as we iterate in sorted order.
+  var groupLabelByCardId = null;
+  if (sorted.groups) {
+    groupLabelByCardId = {};
+    sorted.groups.forEach(function(g){
+      g.cards.forEach(function(c){ groupLabelByCardId[c.id] = g.label; });
+    });
+  }
+  var lastGroupLabel = null;
+
   unplaced.forEach(function(c, idx){
+    if (groupLabelByCardId) {
+      var label = groupLabelByCardId[c.id];
+      if (label !== lastGroupLabel) {
+        var header = document.createElement('div');
+        header.className = 'sidebar-group-header';
+        header.textContent = label;
+        list.appendChild(header);
+        lastGroupLabel = label;
+      }
+    }
     var el = document.createElement('div');
     el.className = 'sidebar-card' + (c.suspended ? ' suspended' : '') + (isSelected(c.id) ? ' selected' : '');
     el.draggable = true;
