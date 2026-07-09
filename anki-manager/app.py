@@ -928,12 +928,14 @@ def render_map_svg(nodes, groups, edges, card_lookup):
         w, h = r["w"], r["h"]
         if n.get("type") == "note":
             color = n.get("color") or "#2a2436"
+            text_align = n.get("textAlign") or "center"
             parts.append(
                 f'<rect x="{n["x"]}" y="{n["y"]}" width="{w}" height="{h}" rx="8" '
                 f'fill="{color}" stroke="{color}" stroke-width="1"/>'
                 f'<foreignObject x="{n["x"]+8}" y="{n["y"]+8}" width="{w-16}" height="{h-16}">'
                 f'<div xmlns="http://www.w3.org/1999/xhtml" style="font-family: DM Mono, monospace; '
-                f'font-size:11px; line-height:1.5; color:#e8e9ec; overflow:hidden; white-space:pre-wrap;">'
+                f'font-size:11px; line-height:1.5; color:#e8e9ec; overflow:hidden; white-space:pre-wrap; '
+                f'text-align:{text_align};">'
                 f'{html.escape(n.get("text",""))}</div></foreignObject>'
             )
             continue

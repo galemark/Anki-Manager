@@ -1,0 +1,711 @@
+{
+  "nodes": [
+    {
+      "groupId": "g_kre9zfo",
+      "height": 70,
+      "id": "n_typdvm3",
+      "noteId": 1783561182208,
+      "type": "card",
+      "width": 180,
+      "x": 181,
+      "y": 1183.375
+    },
+    {
+      "groupId": "g_kre9zfo",
+      "height": 70,
+      "id": "n_l54e500",
+      "noteId": 1783561182212,
+      "type": "card",
+      "width": 180,
+      "x": 377,
+      "y": 1183.375
+    },
+    {
+      "groupId": "g_kre9zfo",
+      "height": 70,
+      "id": "n_04y9se8",
+      "noteId": 1783561182213,
+      "type": "card",
+      "width": 180,
+      "x": 573,
+      "y": 1183.375
+    },
+    {
+      "groupId": "g_kre9zfo",
+      "height": 70,
+      "id": "n_2p2xryt",
+      "noteId": 1783561182214,
+      "type": "card",
+      "width": 180,
+      "x": 181,
+      "y": 1318.375
+    },
+    {
+      "groupId": "g_kre9zfo",
+      "height": 70,
+      "id": "n_59wq0fi",
+      "noteId": 1783561182217,
+      "type": "card",
+      "width": 180,
+      "x": 377,
+      "y": 1318.375
+    },
+    {
+      "groupId": "g_kre9zfo",
+      "height": 70,
+      "id": "n_m1unxy5",
+      "noteId": 1783561182218,
+      "type": "card",
+      "width": 180,
+      "x": 573,
+      "y": 1318.375
+    },
+    {
+      "groupId": "g_kre9zfo",
+      "height": 70,
+      "id": "n_r0e54qa",
+      "noteId": 1783561182219,
+      "type": "card",
+      "width": 180,
+      "x": 181,
+      "y": 1453.375
+    },
+    {
+      "groupId": "g_kre9zfo",
+      "height": 70,
+      "id": "n_hb2i6un",
+      "noteId": 1783561182220,
+      "type": "card",
+      "width": 180,
+      "x": 377,
+      "y": 1453.375
+    },
+    {
+      "groupId": "g_kre9zfo",
+      "height": 70,
+      "id": "n_2ic1dhj",
+      "noteId": 1783561182221,
+      "type": "card",
+      "width": 180,
+      "x": 573,
+      "y": 1453.375
+    },
+    {
+      "groupId": "g_kre9zfo",
+      "height": 70,
+      "id": "n_d4a0e9i",
+      "noteId": 1783561182222,
+      "type": "card",
+      "width": 180,
+      "x": 181,
+      "y": 1588.375
+    },
+    {
+      "groupId": "g_9ly5iz3",
+      "height": 70,
+      "id": "n_j743cve",
+      "noteId": 1783561182215,
+      "type": "card",
+      "width": 180,
+      "x": 466,
+      "y": 633.375
+    },
+    {
+      "groupId": "g_9ly5iz3",
+      "height": 70,
+      "id": "n_ohmnb8g",
+      "noteId": 1783561182216,
+      "type": "card",
+      "width": 180,
+      "x": 270,
+      "y": 768.375
+    },
+    {
+      "groupId": "g_63d5h68",
+      "height": 70,
+      "id": "n_b41xcta",
+      "noteId": 1783561182223,
+      "type": "card",
+      "width": 180,
+      "x": 916,
+      "y": 584.375
+    },
+    {
+      "groupId": "g_63d5h68",
+      "height": 70,
+      "id": "n_8y9dnjp",
+      "noteId": 1783561182224,
+      "type": "card",
+      "width": 180,
+      "x": 1112,
+      "y": 584.375
+    },
+    {
+      "groupId": "g_63d5h68",
+      "height": 70,
+      "id": "n_74mt6dk",
+      "noteId": 1783561182225,
+      "type": "card",
+      "width": 180,
+      "x": 916,
+      "y": 719.375
+    },
+    {
+      "groupId": "g_63d5h68",
+      "height": 70,
+      "id": "n_hvtn0dm",
+      "noteId": 1783561182226,
+      "type": "card",
+      "width": 180,
+      "x": 1112,
+      "y": 719.375
+    },
+    {
+      "groupId": "g_unqgfqr",
+      "height": 70,
+      "id": "n_cfb082c",
+      "noteId": 1783561182231,
+      "type": "card",
+      "width": 180,
+      "x": 1404,
+      "y": 830.375
+    },
+    {
+      "groupId": "g_sxb2nga",
+      "height": 70,
+      "id": "n_2yowrue",
+      "noteId": 1783561182232,
+      "type": "card",
+      "width": 180,
+      "x": 1666,
+      "y": 831.375
+    },
+    {
+      "groupId": "g_sxb2nga",
+      "height": 70,
+      "id": "n_bsx4v1x",
+      "noteId": 1783561182233,
+      "type": "card",
+      "width": 180,
+      "x": 1672,
+      "y": 976.375
+    },
+    {
+      "groupId": "g_inbw099",
+      "height": 70,
+      "id": "n_k30473k",
+      "noteId": 1783561182234,
+      "type": "card",
+      "width": 180,
+      "x": 1414,
+      "y": 1031.375
+    },
+    {
+      "groupId": "g_mixmb16",
+      "height": 70,
+      "id": "n_5a2ju87",
+      "noteId": 1783561182235,
+      "type": "card",
+      "width": 180,
+      "x": 1389,
+      "y": 1207.375
+    },
+    {
+      "groupId": "g_mixmb16",
+      "height": 70,
+      "id": "n_krianws",
+      "noteId": 1783561182236,
+      "type": "card",
+      "width": 180,
+      "x": 1581,
+      "y": 1207.375
+    },
+    {
+      "groupId": "g_b9an6kw",
+      "height": 70,
+      "id": "n_n4shr9m",
+      "noteId": 1783561182237,
+      "type": "card",
+      "width": 180,
+      "x": 913,
+      "y": 1035.375
+    },
+    {
+      "groupId": "g_9ly5iz3",
+      "height": 70,
+      "id": "n_3q3pwsi",
+      "noteId": 1783561182227,
+      "type": "card",
+      "width": 180,
+      "x": 465,
+      "y": 765.375
+    },
+    {
+      "groupId": "g_b9an6kw",
+      "height": 70,
+      "id": "n_fzzr9id",
+      "noteId": 1783561182228,
+      "type": "card",
+      "width": 180,
+      "x": 910,
+      "y": 930.375
+    },
+    {
+      "groupId": "g_b9an6kw",
+      "height": 70,
+      "id": "n_c50ddyy",
+      "noteId": 1783561182229,
+      "type": "card",
+      "width": 180,
+      "x": 1119,
+      "y": 1022.375
+    },
+    {
+      "groupId": "g_b9an6kw",
+      "height": 70,
+      "id": "n_gzjqmyx",
+      "noteId": 1783561182230,
+      "type": "card",
+      "width": 180,
+      "x": 1119,
+      "y": 936.375
+    },
+    {
+      "groupId": "g_1n1ru74",
+      "height": 70,
+      "id": "n_hewyw2y",
+      "noteId": 1783561182238,
+      "type": "card",
+      "width": 180,
+      "x": 928,
+      "y": 1334.375
+    },
+    {
+      "groupId": "g_1n1ru74",
+      "height": 70,
+      "id": "n_5959gty",
+      "noteId": 1783561182239,
+      "type": "card",
+      "width": 180,
+      "x": 1124,
+      "y": 1334.375
+    },
+    {
+      "groupId": "g_1n1ru74",
+      "height": 70,
+      "id": "n_3pqhcia",
+      "noteId": 1783561182240,
+      "type": "card",
+      "width": 180,
+      "x": 928,
+      "y": 1452.375
+    },
+    {
+      "groupId": "g_1n1ru74",
+      "height": 70,
+      "id": "n_9u7g9ou",
+      "noteId": 1783561182241,
+      "type": "card",
+      "width": 180,
+      "x": 1124,
+      "y": 1452.375
+    },
+    {
+      "groupId": "g_5tsreas",
+      "height": 70,
+      "id": "n_0mgpsde",
+      "noteId": 1783561182243,
+      "type": "card",
+      "width": 180,
+      "x": 1983,
+      "y": 704.375
+    },
+    {
+      "groupId": "g_5tsreas",
+      "height": 70,
+      "id": "n_w2nckee",
+      "noteId": 1783561182244,
+      "type": "card",
+      "width": 180,
+      "x": 2179,
+      "y": 704.375
+    },
+    {
+      "groupId": "g_5tsreas",
+      "height": 70,
+      "id": "n_4pxdja7",
+      "noteId": 1783561182245,
+      "type": "card",
+      "width": 180,
+      "x": 2375,
+      "y": 704.375
+    },
+    {
+      "groupId": "g_5tsreas",
+      "height": 70,
+      "id": "n_p2jodss",
+      "noteId": 1783561182246,
+      "type": "card",
+      "width": 180,
+      "x": 1983,
+      "y": 855.375
+    },
+    {
+      "groupId": "g_5tsreas",
+      "height": 70,
+      "id": "n_ulox8sq",
+      "noteId": 1783561182247,
+      "type": "card",
+      "width": 180,
+      "x": 2179,
+      "y": 855.375
+    },
+    {
+      "groupId": "g_5tsreas",
+      "height": 70,
+      "id": "n_7r2i40a",
+      "noteId": 1783561182248,
+      "type": "card",
+      "width": 180,
+      "x": 2375,
+      "y": 855.375
+    },
+    {
+      "groupId": "g_5tsreas",
+      "height": 70,
+      "id": "n_tal9p9o",
+      "noteId": 1783561182242,
+      "type": "card",
+      "width": 180,
+      "x": 1980,
+      "y": 1012.375
+    },
+    {
+      "groupId": "g_5tsreas",
+      "height": 70,
+      "id": "n_h48j3tk",
+      "noteId": 1783561182252,
+      "type": "card",
+      "width": 180,
+      "x": 2176,
+      "y": 1012.375
+    },
+    {
+      "groupId": "g_5tsreas",
+      "height": 70,
+      "id": "n_33iiq4z",
+      "noteId": 1783561182253,
+      "type": "card",
+      "width": 180,
+      "x": 2372,
+      "y": 1012.375
+    },
+    {
+      "groupId": "g_5tsreas",
+      "height": 70,
+      "id": "n_1fu0ttb",
+      "noteId": 1783561182254,
+      "type": "card",
+      "width": 180,
+      "x": 1980,
+      "y": 1147.375
+    },
+    {
+      "groupId": "g_5tsreas",
+      "height": 70,
+      "id": "n_1lyu3l1",
+      "noteId": 1783561182255,
+      "type": "card",
+      "width": 180,
+      "x": 2176,
+      "y": 1147.375
+    },
+    {
+      "groupId": "g_5tsreas",
+      "height": 70,
+      "id": "n_860iihm",
+      "noteId": 1783561182256,
+      "type": "card",
+      "width": 180,
+      "x": 2372,
+      "y": 1147.375
+    },
+    {
+      "groupId": "g_5tsreas",
+      "height": 70,
+      "id": "n_ch6ctxq",
+      "noteId": 1783561182257,
+      "type": "card",
+      "width": 180,
+      "x": 1980,
+      "y": 1265.375
+    },
+    {
+      "groupId": "g_5tsreas",
+      "height": 70,
+      "id": "n_vzf3ijm",
+      "noteId": 1783561182258,
+      "type": "card",
+      "width": 180,
+      "x": 2176,
+      "y": 1265.375
+    },
+    {
+      "groupId": "g_xcardvw",
+      "height": 70,
+      "id": "n_snzjyfn",
+      "noteId": 1783561182249,
+      "type": "card",
+      "width": 180,
+      "x": 1535,
+      "y": 1492.375
+    },
+    {
+      "groupId": "g_xcardvw",
+      "height": 70,
+      "id": "n_hkpp771",
+      "noteId": 1783561182250,
+      "type": "card",
+      "width": 180,
+      "x": 1731,
+      "y": 1492.375
+    },
+    {
+      "groupId": "g_xcardvw",
+      "height": 70,
+      "id": "n_xe0lkox",
+      "noteId": 1783561182251,
+      "type": "card",
+      "width": 180,
+      "x": 1927,
+      "y": 1492.375
+    },
+    {
+      "groupId": "g_xcardvw",
+      "height": 70,
+      "id": "n_ahxc93n",
+      "noteId": 1783561182259,
+      "type": "card",
+      "width": 180,
+      "x": 1535,
+      "y": 1610.375
+    },
+    {
+      "groupId": "g_xcardvw",
+      "height": 70,
+      "id": "n_3s224oa",
+      "noteId": 1783561182260,
+      "type": "card",
+      "width": 180,
+      "x": 1731,
+      "y": 1610.375
+    },
+    {
+      "groupId": "g_xcardvw",
+      "height": 70,
+      "id": "n_w5o98u7",
+      "noteId": 1783561182261,
+      "type": "card",
+      "width": 180,
+      "x": 1927,
+      "y": 1610.375
+    },
+    {
+      "groupId": "g_xcardvw",
+      "height": 70,
+      "id": "n_fxxbzpx",
+      "noteId": 1783561182262,
+      "type": "card",
+      "width": 180,
+      "x": 1535,
+      "y": 1728.375
+    },
+    {
+      "groupId": "g_xcardvw",
+      "height": 70,
+      "id": "n_jpurtal",
+      "noteId": 1783561182263,
+      "type": "card",
+      "width": 180,
+      "x": 1731,
+      "y": 1728.375
+    },
+    {
+      "groupId": "g_xcardvw",
+      "height": 70,
+      "id": "n_llxmt7e",
+      "noteId": 1783561182264,
+      "type": "card",
+      "width": 180,
+      "x": 1927,
+      "y": 1728.375
+    },
+    {
+      "groupId": "g_9ly5iz3",
+      "height": 70,
+      "id": "n_hldb8be",
+      "noteId": 1783561182211,
+      "type": "card",
+      "width": 180,
+      "x": 264,
+      "y": 634
+    }
+  ],
+  "groups": [
+    {
+      "color": "#8b6fd4",
+      "height": 593,
+      "id": "g_kre9zfo",
+      "label": "Vascular anatomy",
+      "width": 632,
+      "x": 151,
+      "y": 1127.375
+    },
+    {
+      "color": "#4caf7d",
+      "height": 340,
+      "id": "g_63d5h68",
+      "label": "RAAS",
+      "width": 436,
+      "x": 886,
+      "y": 528.375
+    },
+    {
+      "color": "#d4a853",
+      "height": 227,
+      "id": "g_b9an6kw",
+      "label": "Tubule physiology",
+      "width": 427,
+      "x": 893,
+      "y": 910.375
+    },
+    {
+      "color": "#c0524a",
+      "height": 290,
+      "id": "g_1n1ru74",
+      "label": "Acid-base balance",
+      "width": 436,
+      "x": 898,
+      "y": 1278.375
+    },
+    {
+      "color": "#7c9fd4",
+      "height": 744,
+      "id": "g_5tsreas",
+      "label": "Renal Tests",
+      "width": 633,
+      "x": 1953,
+      "y": 648.375
+    },
+    {
+      "color": "#e0855c",
+      "height": 408,
+      "id": "g_xcardvw",
+      "label": "Renal Disorders",
+      "width": 632,
+      "x": 1505,
+      "y": 1436.375
+    },
+    {
+      "color": "#5cc2c7",
+      "height": 125,
+      "id": "g_unqgfqr",
+      "label": "Proximal Convoluted Tubules",
+      "width": 225,
+      "x": 1386,
+      "y": 815
+    },
+    {
+      "color": "#5cc2c7",
+      "height": 275,
+      "id": "g_sxb2nga",
+      "label": "Loops of Henle",
+      "width": 237,
+      "x": 1643,
+      "y": 803
+    },
+    {
+      "color": "#5cc2c7",
+      "height": 124,
+      "id": "g_mixmb16",
+      "label": "Collecting ducts",
+      "width": 412,
+      "x": 1368,
+      "y": 1185
+    },
+    {
+      "color": "#5cc2c7",
+      "height": 132,
+      "id": "g_inbw099",
+      "label": "Distal Convoluted Tubules",
+      "width": 225,
+      "x": 1390,
+      "y": 1007
+    },
+    {
+      "color": "#8b6fd4",
+      "height": 320,
+      "id": "g_9ly5iz3",
+      "label": "Numerical Facts",
+      "width": 448,
+      "x": 241,
+      "y": 582.6666641235352
+    }
+  ],
+  "edges": [
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "g_b9an6kw",
+      "id": "e_ccivnki",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_unqgfqr"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "g_b9an6kw",
+      "id": "e_vllcs6h",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_sxb2nga"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "g_b9an6kw",
+      "id": "e_3uj46eh",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_mixmb16"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "g_b9an6kw",
+      "id": "e_oz5n9j4",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_inbw099"
+    },
+    {
+      "color": null,
+      "direction": "forward",
+      "fromNode": "g_mixmb16",
+      "id": "e_qcxf6p4",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_1n1ru74"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "g_kre9zfo",
+      "id": "e_0fmkxqo",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_9ly5iz3"
+    }
+  ]
+}

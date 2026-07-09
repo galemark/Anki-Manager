@@ -67,6 +67,9 @@ aside.card-sidebar { width: 240px; min-width: 160px; max-width: 480px; flex-shri
 .card-node:hover { border-color: var(--accent2); }
 .card-node.dragging { cursor: grabbing; z-index: 50; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
 .card-node.canvas-selected { border-color: var(--accent2); box-shadow: 0 0 0 2px var(--accent2); }
+.group-frame.canvas-selected { box-shadow: 0 0 0 2px var(--accent2); }
+.note-node.canvas-selected { box-shadow: 0 0 0 2px var(--accent2); }
+svg.edge-layer line.edge-selected { stroke-width: 3.5; stroke-opacity: 1; }
 .card-front { overflow: hidden; white-space: normal; word-break: break-word; overflow-wrap: break-word; }
 .card-node .card-full { display: none; position: absolute; top: calc(100% + 6px); left: 0; width: 260px; background: var(--surface); border: 1px solid var(--accent2); border-radius: 8px; padding: 10px 12px; z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.5); font-size: 11px; line-height: 1.6; }
 .card-node:hover .card-full { display: block; }
@@ -142,6 +145,9 @@ svg.edge-layer .edge-label-text { fill: var(--accent2); font-size: 10px; font-fa
   <div class="toolbar">
     <button class="btn btn-ghost" id="newGroupBtn" draggable="true" title="Drag onto the canvas to place">▢ New Group</button>
     <button class="btn btn-ghost" id="newNoteBtn" draggable="true" title="Drag onto the canvas to place">✎ New Note</button>
+    <div class="toolbar-divider"></div>
+    <button class="btn btn-ghost" id="undoBtn" title="Undo (Ctrl+Z)" disabled>↶ Undo</button>
+    <button class="btn btn-ghost" id="redoBtn" title="Redo (Ctrl+Shift+Z)" disabled>↷ Redo</button>
     <div class="toolbar-divider"></div>
     <button class="btn btn-primary" id="pushBtn">⇪ Push to Anki</button>
     <span class="toolbar-hint" id="connectHint"></span>
@@ -233,6 +239,76 @@ var DEFAULT_EDGE_COLOR = '#7c9fd4';
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
 
+// ── Undo / redo ───────────────────────────────────────────────────────────
+// Snapshot-based: nodes/groups/edges are already the full serializable canvas
+// state (the same shape POSTed to /api/canvas), so a deep clone of the three
+// arrays before each mutating action is enough to reconstruct any prior state.
+// In-memory only — does not survive a page reload.
+var undoStack = [];
+var redoStack = [];
+var UNDO_LIMIT = 50;
+
+function snapshotState() {
+  return { nodes: JSON.parse(JSON.stringify(nodes)), groups: JSON.parse(JSON.stringify(groups)), edges: JSON.parse(JSON.stringify(edges)) };
+}
+
+// Call this BEFORE a mutation, not after — it captures the state being left behind.
+function pushUndoSnapshot() {
+  undoStack.push(snapshotState());
+  if (undoStack.length > UNDO_LIMIT) undoStack.shift();
+  redoStack = []; // a fresh action invalidates any redo branch
+  updateUndoRedoButtons();
+}
+
+function restoreSnapshot(snap) {
+  nodes = snap.nodes;
+  groups = snap.groups;
+  edges = snap.edges;
+}
+
+function performUndo() {
+  if (!undoStack.length) return;
+  redoStack.push(snapshotState());
+  restoreSnapshot(undoStack.pop());
+  selectedItems = [];
+  selectedEdgeIds = [];
+  renderSidebar();
+  render();
+  scheduleSave();
+  updateUndoRedoButtons();
+}
+
+function performRedo() {
+  if (!redoStack.length) return;
+  undoStack.push(snapshotState());
+  restoreSnapshot(redoStack.pop());
+  selectedItems = [];
+  selectedEdgeIds = [];
+  renderSidebar();
+  render();
+  scheduleSave();
+  updateUndoRedoButtons();
+}
+
+function updateUndoRedoButtons() {
+  var undoBtn = document.getElementById('undoBtn');
+  var redoBtn = document.getElementById('redoBtn');
+  if (undoBtn) undoBtn.disabled = undoStack.length === 0;
+  if (redoBtn) redoBtn.disabled = redoStack.length === 0;
+}
+
+document.addEventListener('keydown', function(e){
+  var isUndoKey = (e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z';
+  var isRedoKey = (e.ctrlKey || e.metaKey) && (e.shiftKey && e.key.toLowerCase() === 'z' || e.key.toLowerCase() === 'y');
+  if (!isUndoKey && !isRedoKey) return;
+  // Let native undo run inside text fields being actively edited, rather than
+  // fighting it with a full canvas-state undo.
+  var active = document.activeElement;
+  if (active && (active.isContentEditable || active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
+  e.preventDefault();
+  if (isRedoKey) performRedo(); else performUndo();
+});
+
 // ── Sidebar multi-select (shift = range, ctrl/cmd = toggle) ────────────
 var selectedCardIds = [];      // ordered list of selected note IDs
 var lastClickedNoteId = null;  // anchor for shift-range selection
@@ -242,16 +318,38 @@ function clearSelection() { selectedCardIds = []; lastClickedNoteId = null; }
 
 // ── Canvas multi-select (ctrl/cmd-click only — no shift-range, since
 // canvas layout isn't linear like the sidebar) ──────────────────────────
-var canvasSelectedIds = []; // node.id values (card nodes on canvas)
-function isCanvasSelected(nodeId) { return canvasSelectedIds.indexOf(nodeId) !== -1; }
-function clearCanvasSelection() { canvasSelectedIds = []; render(); }
-function toggleCanvasSelect(nodeId) {
-  if (isCanvasSelected(nodeId)) {
-    canvasSelectedIds = canvasSelectedIds.filter(function(id){ return id !== nodeId; });
-  } else {
-    canvasSelectedIds.push(nodeId);
-  }
+// Unified across cards, notes, and groups: {id, kind} where kind is
+// 'card' | 'note' | 'group'. Edges have their own parallel selection since
+// they don't participate in drag.
+var selectedItems = []; // [{id, kind}]
+var selectedEdgeIds = [];
+
+function isItemSelected(id, kind) {
+  return selectedItems.some(function(it){ return it.id === id && it.kind === kind; });
+}
+function clearItemSelection() { selectedItems = []; render(); }
+function toggleItemSelect(id, kind) {
+  var idx = selectedItems.findIndex(function(it){ return it.id === id && it.kind === kind; });
+  if (idx >= 0) selectedItems.splice(idx, 1);
+  else selectedItems.push({ id: id, kind: kind });
   render();
+}
+function getSelectedByKind(kind) {
+  return selectedItems.filter(function(it){ return it.kind === kind; }).map(function(it){ return it.id; });
+}
+function selectedKinds() {
+  var s = {};
+  selectedItems.forEach(function(it){ s[it.kind] = true; });
+  return Object.keys(s);
+}
+
+function isEdgeSelected(id) { return selectedEdgeIds.indexOf(id) !== -1; }
+function clearEdgeSelection() { selectedEdgeIds = []; renderEdges(); }
+function toggleEdgeSelect(idToToggle) {
+  var idx = selectedEdgeIds.indexOf(idToToggle);
+  if (idx >= 0) selectedEdgeIds.splice(idx, 1);
+  else selectedEdgeIds.push(idToToggle);
+  renderEdges();
 }
 
 // ── Geometry: side-anchored connections (Obsidian-canvas style) ─────────
@@ -331,6 +429,9 @@ function init() {
       return n;
     });
 
+    undoStack = [];
+    redoStack = [];
+    updateUndoRedoButtons();
     renderSidebar();
     render();
   }).catch(function(e){ toast('Failed to load: ' + e.message, 'err'); });
@@ -505,7 +606,10 @@ var canvasWrap = document.getElementById('canvasWrap');
 canvasEl.addEventListener('dragover', function(e){ e.preventDefault(); canvasEl.classList.add('drop-target'); });
 canvasEl.addEventListener('dragleave', function(){ canvasEl.classList.remove('drop-target'); });
 canvasEl.addEventListener('mousedown', function(e){
-  if (e.target === canvasEl && canvasSelectedIds.length) clearCanvasSelection();
+  if (e.target === canvasEl) {
+    if (selectedItems.length) clearItemSelection();
+    if (selectedEdgeIds.length) clearEdgeSelection();
+  }
 });
 canvasEl.addEventListener('drop', function(e){
   e.preventDefault();
@@ -514,6 +618,7 @@ canvasEl.addEventListener('drop', function(e){
   if (!raw) return;
   var data;
   try { data = JSON.parse(raw); } catch(err){ return; }
+  pushUndoSnapshot();
   var rect = canvasEl.getBoundingClientRect();
   var x = e.clientX - rect.left;
   var y = e.clientY - rect.top;
@@ -589,6 +694,7 @@ canvasEl.addEventListener('drop', function(e){
   } else if (data.kind === 'newGroup') {
     var g = { id: uid('g'), label: 'New group', x: Math.max(0, x - 130), y: Math.max(0, y - 100), width: 260, height: 200, color: GROUP_COLORS[groups.length % GROUP_COLORS.length] };
     groups.push(g);
+    nodes.forEach(function(nn){ if (nn.type === 'card') assignGroupByOverlap(nn); }); // claim any existing cards this new group was drawn over
     render();
     scheduleSave();
     setTimeout(function(){
@@ -596,7 +702,7 @@ canvasEl.addEventListener('drop', function(e){
       if (lbl) { lbl.focus(); document.execCommand('selectAll', false, null); }
     }, 50);
   } else if (data.kind === 'newNote') {
-    var n = { id: uid('note'), type: 'note', text: '', color: NOTE_COLORS[0], x: Math.max(0, x - 90), y: Math.max(0, y - 45), width: 180, height: 90, groupId: null };
+    var n = { id: uid('note'), type: 'note', text: '', color: NOTE_COLORS[0], textAlign: 'center', x: Math.max(0, x - 90), y: Math.max(0, y - 45), width: 180, height: 90, groupId: null };
     nodes.push(n);
     render();
     scheduleSave();
@@ -614,9 +720,13 @@ function cardById(noteId) {
 }
 
 function render() {
-  var liveNodeIds = {};
-  nodes.forEach(function(n){ liveNodeIds[n.id] = true; });
-  canvasSelectedIds = canvasSelectedIds.filter(function(id){ return liveNodeIds[id]; });
+  var liveIds = {};
+  nodes.forEach(function(n){ liveIds[n.id] = true; });
+  groups.forEach(function(g){ liveIds[g.id] = true; });
+  selectedItems = selectedItems.filter(function(it){ return liveIds[it.id]; });
+  var liveEdgeIds = {};
+  edges.forEach(function(e){ liveEdgeIds[e.id] = true; });
+  selectedEdgeIds = selectedEdgeIds.filter(function(id){ return liveEdgeIds[id]; });
   Array.from(canvasEl.querySelectorAll('.card-node, .note-node, .group-frame')).forEach(function(el){ el.remove(); });
   groups.forEach(function(g, i){ renderGroup(g, i); });
   nodes.forEach(function(n){ n.type === 'note' ? renderNote(n) : renderNode(n); });
@@ -626,10 +736,77 @@ function render() {
 
 function groupColor(g, index) { return g.color || GROUP_COLORS[index % GROUP_COLORS.length]; }
 
+// ── Unified bulk context menu (cards / notes / groups) ────────────────────
+function buildBulkContextMenu(e) {
+  var kinds = selectedKinds();
+  var isSingleKind = kinds.length === 1;
+
+  if (isSingleKind && kinds[0] === 'card') {
+    var selNodeIds = getSelectedByKind('card');
+    var selNodes = nodes.filter(function(nn){ return selNodeIds.indexOf(nn.id) !== -1; });
+    var anyGrouped = selNodes.some(function(nn){ return nn.groupId; });
+    var anySuspended = selNodes.some(function(nn){ var cc = cardById(nn.noteId); return cc && cc.suspended; });
+    var items = [];
+    if (anyGrouped) items.push({ label: 'Remove from group (' + selNodes.length + ')', action: function(){ selNodes.forEach(function(nn){ nn.groupId = null; }); render(); scheduleSave(); } });
+    items.push({ label: anySuspended ? 'Unsuspend all (' + selNodes.length + ')' : 'Suspend all (' + selNodes.length + ')', action: function(){ toggleSuspendBulk(selNodes.map(function(nn){ return nn.noteId; }), !anySuspended); } });
+    items.push({ label: 'Return all to sidebar (' + selNodes.length + ')', action: function(){ deleteNodesBulk(selNodeIds); } });
+    items.push({ label: 'Delete all from Anki (' + selNodes.length + ')', danger: true, action: function(){ deleteCardsFromAnki(selNodes.map(function(nn){ return nn.noteId; })); } });
+    showContextMenu(e.clientX, e.clientY, items);
+    return;
+  }
+
+  if (isSingleKind && kinds[0] === 'note') {
+    var nids = getSelectedByKind('note');
+    var items = [
+      { label: 'Change color (' + nids.length + ')', action: function(){
+        showColorPalette(e.clientX, e.clientY, function(c){
+          nids.forEach(function(id){ var n = nodes.find(function(nn){ return nn.id === id; }); if (n) n.color = c; });
+          render(); scheduleSave();
+        }, NOTE_COLORS);
+      }},
+      { label: 'Align left (' + nids.length + ')', action: function(){
+        nids.forEach(function(id){ var n = nodes.find(function(nn){ return nn.id === id; }); if (n) n.textAlign = 'left'; });
+        render(); scheduleSave();
+      }},
+      { label: 'Align center (' + nids.length + ')', action: function(){
+        nids.forEach(function(id){ var n = nodes.find(function(nn){ return nn.id === id; }); if (n) n.textAlign = 'center'; });
+        render(); scheduleSave();
+      }},
+      { label: 'Delete notes (' + nids.length + ')', danger: true, action: function(){ deleteNotesBulk(nids); } }
+    ];
+    showContextMenu(e.clientX, e.clientY, items);
+    return;
+  }
+
+  if (isSingleKind && kinds[0] === 'group') {
+    var gids = getSelectedByKind('group');
+    var items = [
+      { label: 'Change color (' + gids.length + ')', action: function(){
+        showColorPalette(e.clientX, e.clientY, function(c){
+          gids.forEach(function(id){ var g = groups.find(function(gg){ return gg.id === id; }); if (g) g.color = c; });
+          render(); scheduleSave();
+        });
+      }},
+      { label: 'Delete groups (' + gids.length + ') — contents stay', danger: true, action: function(){
+        gids.forEach(function(id){ deleteGroup(id, true); });
+        selectedItems = selectedItems.filter(function(it){ return it.kind !== 'group'; });
+        render(); scheduleSave();
+      }}
+    ];
+    showContextMenu(e.clientX, e.clientY, items);
+    return;
+  }
+
+  // Mixed kinds — only universally-safe actions
+  showContextMenu(e.clientX, e.clientY, [
+    { label: 'Delete selected (' + selectedItems.length + ')', danger: true, action: function(){ deleteMixedSelection(); } }
+  ]);
+}
+
 function renderGroup(g, index) {
   var color = groupColor(g, index);
   var frame = document.createElement('div');
-  frame.className = 'group-frame';
+  frame.className = 'group-frame' + (isItemSelected(g.id, 'group') ? ' canvas-selected' : '');
   frame.id = g.id;
   frame.style.left = g.x + 'px';
   frame.style.top = g.y + 'px';
@@ -638,9 +815,23 @@ function renderGroup(g, index) {
   frame.style.borderColor = color;
   frame.style.background = color + '0f';
 
+  function startDragOrSelect(e) {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault(); e.stopPropagation();
+      toggleItemSelect(g.id, 'group');
+      return;
+    }
+    if (isItemSelected(g.id, 'group') && selectedItems.length > 1) {
+      startMultiSelectionDrag(e);
+    } else {
+      if (selectedItems.length) { selectedItems = []; render(); }
+      startGroupDrag(e, g);
+    }
+  }
+
   var handle = document.createElement('div');
   handle.className = 'group-drag-handle';
-  handle.addEventListener('mousedown', function(e){ startGroupDrag(e, g); });
+  handle.addEventListener('mousedown', startDragOrSelect);
   frame.appendChild(handle);
 
   var label = document.createElement('div');
@@ -648,7 +839,8 @@ function renderGroup(g, index) {
   label.contentEditable = true;
   label.style.color = color;
   label.textContent = g.label || 'Group';
-  label.addEventListener('mousedown', function(e){ e.stopPropagation(); });
+  label.addEventListener('mousedown', function(e){ if (e.ctrlKey || e.metaKey) return; e.stopPropagation(); });
+  label.addEventListener('focus', function(){ pushUndoSnapshot(); });
   label.addEventListener('blur', function(){ g.label = label.textContent.trim() || 'Group'; scheduleSave(); });
   label.addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); label.blur(); } });
   frame.appendChild(label);
@@ -658,9 +850,11 @@ function renderGroup(g, index) {
   resize.addEventListener('mousedown', function(e){ e.stopPropagation(); startGroupResize(e, g); });
   frame.appendChild(resize);
 
-  // Hover a side (not the top handle, not the resize corner) and drag to connect
+  // Hover a side (not the top handle, not the resize corner) and drag to connect;
+  // ctrl+click anywhere else on the frame body selects the group.
   frame.addEventListener('mousedown', function(e){
     if (e.target !== frame) return;
+    if (e.ctrlKey || e.metaKey) { startDragOrSelect(e); return; }
     var rect = frame.getBoundingClientRect();
     var zone = detectEdgeZone(rect, e.clientX, e.clientY, { thickness: 10, cornerExclude: 16, sides: ['left','right','bottom'] });
     if (zone) startConnectionDrag(e, g.id);
@@ -674,6 +868,10 @@ function renderGroup(g, index) {
 
   frame.addEventListener('contextmenu', function(e){
     e.preventDefault();
+    if (isItemSelected(g.id, 'group') && selectedItems.length > 1) {
+      buildBulkContextMenu(e);
+      return;
+    }
     showContextMenu(e.clientX, e.clientY, [
       { label: 'Change color', action: function(){ showColorPalette(e.clientX, e.clientY, function(c){ g.color = c; render(); scheduleSave(); }); } },
       { label: 'Delete group (contents stay)', danger: true, action: function(){ deleteGroup(g.id); } }
@@ -686,7 +884,7 @@ function renderGroup(g, index) {
 function renderNode(n) {
   var card = cardById(n.noteId);
   var el = document.createElement('div');
-  el.className = 'card-node' + (isCanvasSelected(n.id) ? ' canvas-selected' : '');
+  el.className = 'card-node' + (isItemSelected(n.id, 'card') ? ' canvas-selected' : '');
   el.id = n.id;
   el.style.left = n.x + 'px';
   el.style.top = n.y + 'px';
@@ -708,16 +906,16 @@ function renderNode(n) {
   el.addEventListener('mousedown', function(e){
     if (e.ctrlKey || e.metaKey) {
       e.preventDefault(); e.stopPropagation();
-      toggleCanvasSelect(n.id);
+      toggleItemSelect(n.id, 'card');
       return;
     }
     var rect = el.getBoundingClientRect();
     var zone = detectEdgeZone(rect, e.clientX, e.clientY, { thickness: 9, cornerExclude: 14 });
     if (zone) { startConnectionDrag(e, n.id); return; }
-    if (isCanvasSelected(n.id) && canvasSelectedIds.length > 1) {
-      startMultiNodeDrag(e, canvasSelectedIds.slice());
+    if (isItemSelected(n.id, 'card') && selectedItems.length > 1) {
+      startMultiSelectionDrag(e);
     } else {
-      if (canvasSelectedIds.length) { canvasSelectedIds = []; render(); }
+      if (selectedItems.length) { selectedItems = []; render(); }
       startNodeDrag(e, n);
     }
   });
@@ -728,17 +926,8 @@ function renderNode(n) {
   });
   el.addEventListener('contextmenu', function(e){
     e.preventDefault();
-    if (isCanvasSelected(n.id) && canvasSelectedIds.length > 1) {
-      var selNodeIds = canvasSelectedIds.slice();
-      var selNodes = nodes.filter(function(nn){ return selNodeIds.indexOf(nn.id) !== -1; });
-      var anyGrouped = selNodes.some(function(nn){ return nn.groupId; });
-      var anySuspended = selNodes.some(function(nn){ var cc = cardById(nn.noteId); return cc && cc.suspended; });
-      var items = [];
-      if (anyGrouped) items.push({ label: 'Remove from group (' + selNodes.length + ')', action: function(){ selNodes.forEach(function(nn){ nn.groupId = null; }); render(); scheduleSave(); } });
-      items.push({ label: anySuspended ? 'Unsuspend all (' + selNodes.length + ')' : 'Suspend all (' + selNodes.length + ')', action: function(){ toggleSuspendBulk(selNodes.map(function(nn){ return nn.noteId; }), !anySuspended); } });
-      items.push({ label: 'Return all to sidebar (' + selNodes.length + ')', action: function(){ deleteNodesBulk(selNodeIds); } });
-      items.push({ label: 'Delete all from Anki (' + selNodes.length + ')', danger: true, action: function(){ deleteCardsFromAnki(selNodes.map(function(nn){ return nn.noteId; })); } });
-      showContextMenu(e.clientX, e.clientY, items);
+    if (isItemSelected(n.id, 'card') && selectedItems.length > 1) {
+      buildBulkContextMenu(e);
       return;
     }
     var items = [];
@@ -755,7 +944,7 @@ function renderNode(n) {
 
 function renderNote(n) {
   var el = document.createElement('div');
-  el.className = 'note-node';
+  el.className = 'note-node' + (isItemSelected(n.id, 'note') ? ' canvas-selected' : '');
   el.id = n.id;
   el.style.left = n.x + 'px';
   el.style.top = n.y + 'px';
@@ -768,17 +957,31 @@ function renderNote(n) {
   var text = document.createElement('div');
   text.className = 'note-text';
   text.contentEditable = true;
+  text.style.textAlign = n.textAlign || 'center';
   text.textContent = n.text || '';
-  text.addEventListener('mousedown', function(e){ e.stopPropagation(); });
+  // Let a ctrl/cmd-click bubble up to the node handler for selection;
+  // otherwise stop propagation so a plain click can edit the text.
+  text.addEventListener('mousedown', function(e){ if (e.ctrlKey || e.metaKey) return; e.stopPropagation(); });
+  text.addEventListener('focus', function(){ pushUndoSnapshot(); });
   text.addEventListener('blur', function(){ n.text = text.textContent; scheduleSave(); });
   el.appendChild(text);
 
   el.addEventListener('mousedown', function(e){
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault(); e.stopPropagation();
+      toggleItemSelect(n.id, 'note');
+      return;
+    }
     if (e.target === text) return;
     var rect = el.getBoundingClientRect();
     var zone = detectEdgeZone(rect, e.clientX, e.clientY, { thickness: 9, cornerExclude: 14 });
     if (zone) { startConnectionDrag(e, n.id); return; }
-    startNodeDrag(e, n);
+    if (isItemSelected(n.id, 'note') && selectedItems.length > 1) {
+      startMultiSelectionDrag(e);
+    } else {
+      if (selectedItems.length) { selectedItems = []; render(); }
+      startNodeDrag(e, n);
+    }
   });
   el.addEventListener('mousemove', function(e){
     if (e.target === text) { el.style.cursor = ''; return; }
@@ -788,8 +991,13 @@ function renderNote(n) {
   });
   el.addEventListener('contextmenu', function(e){
     e.preventDefault();
+    if (isItemSelected(n.id, 'note') && selectedItems.length > 1) {
+      buildBulkContextMenu(e);
+      return;
+    }
     showContextMenu(e.clientX, e.clientY, [
       { label: 'Change color', action: function(){ showColorPalette(e.clientX, e.clientY, function(c){ n.color = c; render(); scheduleSave(); }, NOTE_COLORS); } },
+      { label: (n.textAlign === 'left') ? 'Center text' : 'Align text left', action: function(){ n.textAlign = (n.textAlign === 'left') ? 'center' : 'left'; render(); scheduleSave(); } },
       { label: 'Delete note', danger: true, action: function(){ deleteNode(n.id); } }
     ]);
   });
@@ -927,6 +1135,7 @@ function renderEdges() {
     var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     line.setAttribute('x1', pa.x); line.setAttribute('y1', pa.y);
     line.setAttribute('x2', pb.x); line.setAttribute('y2', pb.y);
+    if (isEdgeSelected(e.id)) line.setAttribute('class', 'edge-selected');
     line.style.stroke = color;
     if (lineStyle === 'dashed') line.setAttribute('stroke-dasharray', '8,5');
     else if (lineStyle === 'dotted') line.setAttribute('stroke-dasharray', '2,4');
@@ -942,8 +1151,25 @@ function renderEdges() {
       line.setAttribute('marker-start', 'url(#' + midStart + ')');
     }
 
+    line.addEventListener('click', function(ev){
+      ev.stopPropagation();
+      if (ev.ctrlKey || ev.metaKey) {
+        toggleEdgeSelect(e.id);
+      } else {
+        selectedEdgeIds = [e.id];
+        renderEdges();
+      }
+    });
     line.addEventListener('contextmenu', function(ev){
       ev.preventDefault();
+      if (isEdgeSelected(e.id) && selectedEdgeIds.length > 1) {
+        var ids = selectedEdgeIds.slice();
+        showContextMenu(ev.clientX, ev.clientY, [
+          { label: 'Edit connections (' + ids.length + ')', action: function(){ openBulkEdgeModal(ids); } },
+          { label: 'Delete connections (' + ids.length + ')', danger: true, action: function(){ deleteEdgesBulk(ids); } }
+        ]);
+        return;
+      }
       showContextMenu(ev.clientX, ev.clientY, [
         { label: 'Edit connection', action: function(){ openEdgeModal(e); } },
         { label: 'Delete connection', danger: true, action: function(){ deleteEdge(e.id); } }
@@ -983,13 +1209,28 @@ function promptEdgeLabel(e) {
 }
 
 // ── Edge editing modal ────────────────────────────────────────────────────
-var editingEdge = null;
+var editingEdge = null;          // single-edge edit mode
 var editingEdgeOriginal = null;
+var editingEdgeIds = null;       // bulk edit mode: array of edge ids
+var editingEdgesOriginal = null; // array of cloned edges, parallel to editingEdgeIds
 
 function updateOptionButtons(rowId, dataAttr, current) {
   document.querySelectorAll('#' + rowId + ' .option-btn').forEach(function(btn){
-    btn.classList.toggle('active', btn.getAttribute('data-' + dataAttr) === current);
+    btn.classList.toggle('active', current !== null && btn.getAttribute('data-' + dataAttr) === current);
   });
+}
+
+// Applies a mutator to whichever edge(s) are currently being edited —
+// a single edge in single-edit mode, or every edge in editingEdgeIds in bulk mode.
+function forEachEditingEdge(fn) {
+  if (editingEdgeIds) {
+    editingEdgeIds.forEach(function(id){
+      var edge = edges.find(function(x){ return x.id === id; });
+      if (edge) fn(edge);
+    });
+  } else if (editingEdge) {
+    fn(editingEdge);
+  }
 }
 
 function renderEdgeColorRow(e) {
@@ -1000,18 +1241,22 @@ function renderEdgeColorRow(e) {
     sw.className = 'option-btn';
     sw.style.width = '24px'; sw.style.height = '24px'; sw.style.padding = '0';
     sw.style.background = c;
-    sw.style.borderColor = ((e.color || DEFAULT_EDGE_COLOR) === c) ? '#e8e9ec' : 'transparent';
+    var activeColor = e ? (e.color || DEFAULT_EDGE_COLOR) : null;
+    sw.style.borderColor = (activeColor === c) ? '#e8e9ec' : 'transparent';
     sw.addEventListener('click', function(){
-      editingEdge.color = c;
+      forEachEditingEdge(function(edge){ edge.color = c; });
       renderEdges();
-      renderEdgeColorRow(editingEdge);
+      renderEdgeColorRow(e);
     });
     row.appendChild(sw);
   });
 }
 
 function openEdgeModal(e) {
+  pushUndoSnapshot();
   editingEdge = e;
+  editingEdgeIds = null;
+  editingEdgesOriginal = null;
   editingEdgeOriginal = Object.assign({}, e);
   document.getElementById('edgeLabelInput').value = e.label || '';
   updateOptionButtons('lineStyleRow', 'style', e.lineStyle || 'solid');
@@ -1020,38 +1265,73 @@ function openEdgeModal(e) {
   document.getElementById('edgeModal').classList.add('open');
 }
 
+function openBulkEdgeModal(ids) {
+  pushUndoSnapshot();
+  editingEdge = null;
+  editingEdgeOriginal = null;
+  editingEdgeIds = ids;
+  editingEdgesOriginal = ids.map(function(id){
+    var edge = edges.find(function(x){ return x.id === id; });
+    return edge ? Object.assign({}, edge) : null;
+  });
+  // Values may differ across the selected edges, so start blank/unhighlighted
+  // rather than guessing from any one edge.
+  document.getElementById('edgeLabelInput').value = '';
+  updateOptionButtons('lineStyleRow', 'style', null);
+  updateOptionButtons('directionRow', 'direction', null);
+  renderEdgeColorRow(null);
+  document.getElementById('edgeModal').classList.add('open');
+}
+
 document.querySelectorAll('#lineStyleRow .option-btn').forEach(function(btn){
   btn.addEventListener('click', function(){
-    editingEdge.lineStyle = btn.getAttribute('data-style');
-    updateOptionButtons('lineStyleRow', 'style', editingEdge.lineStyle);
+    var style = btn.getAttribute('data-style');
+    forEachEditingEdge(function(edge){ edge.lineStyle = style; });
+    updateOptionButtons('lineStyleRow', 'style', style);
     renderEdges();
   });
 });
 document.querySelectorAll('#directionRow .option-btn').forEach(function(btn){
   btn.addEventListener('click', function(){
-    editingEdge.direction = btn.getAttribute('data-direction');
-    updateOptionButtons('directionRow', 'direction', editingEdge.direction);
+    var dir = btn.getAttribute('data-direction');
+    forEachEditingEdge(function(edge){ edge.direction = dir; });
+    updateOptionButtons('directionRow', 'direction', dir);
     renderEdges();
   });
 });
 document.getElementById('edgeLabelInput').addEventListener('input', function(){
-  if (editingEdge) { editingEdge.label = this.value; renderEdges(); }
+  var val = this.value;
+  if (editingEdge || editingEdgeIds) {
+    forEachEditingEdge(function(edge){ edge.label = val; });
+    renderEdges();
+  }
 });
 document.getElementById('cancelEdgeBtn').addEventListener('click', function(){
-  if (editingEdge && editingEdgeOriginal) Object.assign(editingEdge, editingEdgeOriginal);
+  if (editingEdge && editingEdgeOriginal) {
+    Object.assign(editingEdge, editingEdgeOriginal);
+  } else if (editingEdgeIds && editingEdgesOriginal) {
+    editingEdgeIds.forEach(function(id, i){
+      var edge = edges.find(function(x){ return x.id === id; });
+      var orig = editingEdgesOriginal[i];
+      if (edge && orig) Object.assign(edge, orig);
+    });
+  }
   document.getElementById('edgeModal').classList.remove('open');
   renderEdges();
   editingEdge = null;
+  editingEdgeIds = null;
 });
 document.getElementById('saveEdgeBtn').addEventListener('click', function(){
   document.getElementById('edgeModal').classList.remove('open');
   editingEdge = null;
+  editingEdgeIds = null;
   scheduleSave();
 });
 
 // ── Dragging: card / note nodes ──────────────────────────────────────────
 function startNodeDrag(e, n) {
   e.preventDefault();
+  pushUndoSnapshot();
   var el = document.getElementById(n.id);
   el.classList.add('dragging');
   var startX = e.clientX, startY = e.clientY;
@@ -1082,33 +1362,52 @@ function startNodeDrag(e, n) {
   document.addEventListener('mouseup', onUp);
 }
 
-function startMultiNodeDrag(e, nodeIds) {
+// Drags the current unified selection (any mix of cards, notes, groups) as one
+// unit. Selecting a group implicitly carries its member nodes along, even if
+// those member nodes aren't separately selected — matching single-group drag.
+function startMultiSelectionDrag(e) {
   e.preventDefault();
-  var selNodes = nodes.filter(function(n){ return nodeIds.indexOf(n.id) !== -1; });
-  var els = selNodes.map(function(n){ var el = document.getElementById(n.id); el.classList.add('dragging'); return el; });
+  pushUndoSnapshot();
+  var selGroupIds = getSelectedByKind('group');
+  var selNodeIds = getSelectedByKind('card').concat(getSelectedByKind('note'));
+  var extraMemberNodes = nodes.filter(function(n){
+    return n.groupId && selGroupIds.indexOf(n.groupId) !== -1 && selNodeIds.indexOf(n.id) === -1;
+  });
+  var selNodes = nodes.filter(function(n){ return selNodeIds.indexOf(n.id) !== -1; }).concat(extraMemberNodes);
+  var selGroups = groups.filter(function(g){ return selGroupIds.indexOf(g.id) !== -1; });
+
+  var nodeEls = selNodes.map(function(n){ var el = document.getElementById(n.id); if (el) el.classList.add('dragging'); return el; });
+  var groupEls = selGroups.map(function(g){ return document.getElementById(g.id); });
+
   var startX = e.clientX, startY = e.clientY;
-  var origPositions = selNodes.map(function(n){ return { n: n, x: n.x, y: n.y }; });
+  var origNodePositions = selNodes.map(function(n){ return { n: n, x: n.x, y: n.y }; });
+  var origGroupPositions = selGroups.map(function(g){ return { g: g, x: g.x, y: g.y }; });
 
   function onMove(ev) {
     var dx = ev.clientX - startX, dy = ev.clientY - startY;
-    origPositions.forEach(function(p, i){
+    origNodePositions.forEach(function(p, i){
       p.n.x = Math.max(0, p.x + dx);
       p.n.y = Math.max(0, p.y + dy);
-      els[i].style.left = p.n.x + 'px';
-      els[i].style.top = p.n.y + 'px';
+      if (nodeEls[i]) { nodeEls[i].style.left = p.n.x + 'px'; nodeEls[i].style.top = p.n.y + 'px'; }
+    });
+    origGroupPositions.forEach(function(p, i){
+      p.g.x = Math.max(0, p.x + dx);
+      p.g.y = Math.max(0, p.y + dy);
+      if (groupEls[i]) { groupEls[i].style.left = p.g.x + 'px'; groupEls[i].style.top = p.g.y + 'px'; }
     });
     renderEdges();
   }
   function onUp(ev) {
-    els.forEach(function(el){ el.classList.remove('dragging'); });
+    nodeEls.forEach(function(el){ if (el) el.classList.remove('dragging'); });
     document.removeEventListener('mousemove', onMove);
     document.removeEventListener('mouseup', onUp);
     var sidebarRect = document.querySelector('.card-sidebar').getBoundingClientRect();
     if (ev.clientX >= sidebarRect.left && ev.clientX <= sidebarRect.right) {
-      deleteNodesBulk(nodeIds);
+      var cardIdsToReturn = selNodes.filter(function(n){ return n.type === 'card'; }).map(function(n){ return n.id; });
+      if (cardIdsToReturn.length) deleteNodesBulk(cardIdsToReturn);
       return;
     }
-    selNodes.forEach(function(n){ assignGroupByOverlap(n); });
+    selNodes.forEach(function(n){ if (n.type === 'card') assignGroupByOverlap(n); });
     scheduleSave();
   }
   document.addEventListener('mousemove', onMove);
@@ -1129,6 +1428,7 @@ function assignGroupByOverlap(n) {
 // ── Dragging: groups (move + resize) ────────────────────────────────────
 function startGroupDrag(e, g) {
   e.preventDefault(); e.stopPropagation();
+  pushUndoSnapshot();
   var startX = e.clientX, startY = e.clientY;
   var origX = g.x, origY = g.y;
   var memberNodes = nodes.filter(function(n){ return n.groupId === g.id; });
@@ -1144,6 +1444,8 @@ function startGroupDrag(e, g) {
   function onUp() {
     document.removeEventListener('mousemove', onMove);
     document.removeEventListener('mouseup', onUp);
+    nodes.forEach(function(nn){ if (nn.type === 'card') assignGroupByOverlap(nn); }); // pick up any cards the group frame was dragged over
+    render();
     scheduleSave();
   }
   document.addEventListener('mousemove', onMove);
@@ -1152,6 +1454,7 @@ function startGroupDrag(e, g) {
 
 function startGroupResize(e, g) {
   e.preventDefault(); e.stopPropagation();
+  pushUndoSnapshot();
   var startX = e.clientX, startY = e.clientY;
   var origW = g.width, origH = g.height;
   function onMove(ev) {
@@ -1162,6 +1465,8 @@ function startGroupResize(e, g) {
   function onUp() {
     document.removeEventListener('mousemove', onMove);
     document.removeEventListener('mouseup', onUp);
+    nodes.forEach(function(nn){ if (nn.type === 'card') assignGroupByOverlap(nn); }); // pick up any cards now covered after resize
+    render();
     scheduleSave();
   }
   document.addEventListener('mousemove', onMove);
@@ -1170,6 +1475,7 @@ function startGroupResize(e, g) {
 
 function startNodeResize(e, n) {
   e.preventDefault(); e.stopPropagation();
+  pushUndoSnapshot();
   var startX = e.clientX, startY = e.clientY;
   var origW = n.width || 180, origH = n.height || 90;
   function onMove(ev) {
@@ -1193,12 +1499,11 @@ document.getElementById('newGroupBtn').addEventListener('dragstart', function(e)
   e.dataTransfer.setData('text/plain', JSON.stringify({ kind: 'newGroup' }));
 });
 
-function deleteGroup(id) {
+function deleteGroup(id, silent) {
   groups = groups.filter(function(g){ return g.id !== id; });
   nodes.forEach(function(n){ if (n.groupId === id) n.groupId = null; });
   edges = edges.filter(function(e){ return e.fromNode !== id && e.toNode !== id; });
-  render();
-  scheduleSave();
+  if (!silent) { render(); scheduleSave(); }
 }
 
 // ── Notes: create via drag from toolbar ──────────────────────────────────
@@ -1255,6 +1560,7 @@ function startConnectionDrag(e, sourceId) {
 }
 
 function toggleEdge(a, b) {
+  pushUndoSnapshot();
   var existing = edges.findIndex(function(e){
     return (e.fromNode === a && e.toNode === b) || (e.fromNode === b && e.toNode === a);
   });
@@ -1271,16 +1577,25 @@ function toggleEdge(a, b) {
 
 function deleteEdge(id) {
   edges = edges.filter(function(e){ return e.id !== id; });
+  selectedEdgeIds = selectedEdgeIds.filter(function(x){ return x !== id; });
   renderEdges();
   scheduleSave();
 }
 
-function deleteNode(id) {
+function deleteEdgesBulk(ids) {
+  var idSet = {};
+  ids.forEach(function(id){ idSet[id] = true; });
+  edges = edges.filter(function(e){ return !idSet[e.id]; });
+  selectedEdgeIds = selectedEdgeIds.filter(function(id){ return !idSet[id]; });
+  renderEdges();
+  scheduleSave();
+  toast('Deleted ' + ids.length + ' connection' + (ids.length === 1 ? '' : 's'), 'ok');
+}
+
+function deleteNode(id, silent) {
   nodes = nodes.filter(function(n){ return n.id !== id; });
   edges = edges.filter(function(e){ return e.fromNode !== id && e.toNode !== id; });
-  renderSidebar();
-  render();
-  scheduleSave();
+  if (!silent) { renderSidebar(); render(); scheduleSave(); }
 }
 
 function deleteNodesBulk(ids) {
@@ -1288,11 +1603,44 @@ function deleteNodesBulk(ids) {
   ids.forEach(function(id){ idSet[id] = true; });
   nodes = nodes.filter(function(n){ return !idSet[n.id]; });
   edges = edges.filter(function(e){ return !idSet[e.fromNode] && !idSet[e.toNode]; });
-  canvasSelectedIds = canvasSelectedIds.filter(function(id){ return !idSet[id]; });
+  selectedItems = selectedItems.filter(function(it){ return !idSet[it.id]; });
   renderSidebar();
   render();
   scheduleSave();
   toast('Returned ' + ids.length + ' card' + (ids.length === 1 ? '' : 's') + ' to sidebar', 'ok');
+}
+
+function deleteNotesBulk(ids) {
+  ids.forEach(function(id){ deleteNode(id, true); });
+  selectedItems = selectedItems.filter(function(it){ return ids.indexOf(it.id) === -1; });
+  renderSidebar();
+  render();
+  scheduleSave();
+  toast('Deleted ' + ids.length + ' note' + (ids.length === 1 ? '' : 's'), 'ok');
+}
+
+// Deletes a selection spanning multiple kinds: groups are dissolved (contents
+// stay unless separately selected), notes are removed, and cards are returned
+// to the sidebar — mirroring each kind's normal single-item delete behavior.
+function deleteMixedSelection() {
+  var cardIds = getSelectedByKind('card');
+  var noteIds = getSelectedByKind('note');
+  var groupIds = getSelectedByKind('group');
+
+  groupIds.forEach(function(id){ deleteGroup(id, true); });
+  noteIds.forEach(function(id){ deleteNode(id, true); });
+  if (cardIds.length) {
+    var cardIdSet = {};
+    cardIds.forEach(function(id){ cardIdSet[id] = true; });
+    nodes = nodes.filter(function(n){ return !(n.type === 'card' && cardIdSet[n.id]); });
+    edges = edges.filter(function(e){ return !cardIdSet[e.fromNode] && !cardIdSet[e.toNode]; });
+  }
+
+  selectedItems = [];
+  renderSidebar();
+  render();
+  scheduleSave();
+  toast('Deleted ' + (cardIds.length + noteIds.length + groupIds.length) + ' item' + ((cardIds.length + noteIds.length + groupIds.length) === 1 ? '' : 's'), 'ok');
 }
 
 // ── Color palette popover ────────────────────────────────────────────────
@@ -1328,7 +1676,7 @@ function showContextMenu(x, y, items) {
     var el = document.createElement('div');
     el.className = 'context-menu-item' + (item.danger ? ' danger' : '');
     el.textContent = item.label;
-    el.addEventListener('click', function(){ item.action(); menu.remove(); });
+    el.addEventListener('click', function(){ pushUndoSnapshot(); item.action(); menu.remove(); });
     menu.appendChild(el);
   });
   document.body.appendChild(menu);
@@ -1367,6 +1715,9 @@ function doSave() {
 }
 
 // ── Push to Anki ──────────────────────────────────────────────────────────
+document.getElementById('undoBtn').addEventListener('click', performUndo);
+document.getElementById('redoBtn').addEventListener('click', performRedo);
+
 document.getElementById('pushBtn').addEventListener('click', function(){
   if (nodes.length === 0 && groups.length === 0) { toast('Nothing to push — the canvas is empty.', 'err'); return; }
   var today = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });

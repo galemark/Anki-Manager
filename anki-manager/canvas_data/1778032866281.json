@@ -1,0 +1,956 @@
+{
+  "nodes": [
+    {
+      "groupId": "g_b2pfdmb",
+      "height": 70,
+      "id": "n_5bes44u",
+      "noteId": 1778033211422,
+      "type": "card",
+      "width": 180,
+      "x": 1304.0138854980469,
+      "y": 394.3263854980469
+    },
+    {
+      "groupId": "g_b2pfdmb",
+      "height": 70,
+      "id": "n_f5411q6",
+      "noteId": 1778033211428,
+      "type": "card",
+      "width": 180,
+      "x": 1500.0138854980469,
+      "y": 394.3263854980469
+    },
+    {
+      "groupId": "g_b2pfdmb",
+      "height": 70,
+      "id": "n_ibnf7pb",
+      "noteId": 1778033211429,
+      "type": "card",
+      "width": 180,
+      "x": 1696.0138854980469,
+      "y": 394.3263854980469
+    },
+    {
+      "groupId": "g_b2pfdmb",
+      "height": 70,
+      "id": "n_pjfm19a",
+      "noteId": 1778033211430,
+      "type": "card",
+      "width": 180,
+      "x": 1304.0138854980469,
+      "y": 545.3263854980469
+    },
+    {
+      "groupId": "g_b2pfdmb",
+      "height": 70,
+      "id": "n_ffyrixj",
+      "noteId": 1778033211431,
+      "type": "card",
+      "width": 180,
+      "x": 1500.0138854980469,
+      "y": 545.3263854980469
+    },
+    {
+      "groupId": "g_b2pfdmb",
+      "height": 70,
+      "id": "n_l7fzm9o",
+      "noteId": 1778033211434,
+      "type": "card",
+      "width": 180,
+      "x": 1696.0138854980469,
+      "y": 545.3263854980469
+    },
+    {
+      "groupId": "g_fhbbifg",
+      "height": 70,
+      "id": "n_6vbo0hs",
+      "noteId": 1778033211435,
+      "type": "card",
+      "width": 180,
+      "x": 1371.0138854980469,
+      "y": 1542.3263854980469
+    },
+    {
+      "groupId": "g_fhbbifg",
+      "height": 70,
+      "id": "n_ae0vc7i",
+      "noteId": 1778033211437,
+      "type": "card",
+      "width": 180,
+      "x": 1567.0138854980469,
+      "y": 1542.3263854980469
+    },
+    {
+      "groupId": "g_fhbbifg",
+      "height": 70,
+      "id": "n_6mdc1sp",
+      "noteId": 1778033211438,
+      "type": "card",
+      "width": 180,
+      "x": 1371.0138854980469,
+      "y": 1660.3263854980469
+    },
+    {
+      "groupId": "g_sw3v62s",
+      "height": 70,
+      "id": "n_j5p11zx",
+      "noteId": 1778033211439,
+      "type": "card",
+      "width": 180,
+      "x": 1571.0138854980469,
+      "y": 1174.6597290039062
+    },
+    {
+      "groupId": "g_sw3v62s",
+      "height": 70,
+      "id": "n_xlsfjix",
+      "noteId": 1778033211440,
+      "type": "card",
+      "width": 180,
+      "x": 1767.0138854980469,
+      "y": 1174.6597290039062
+    },
+    {
+      "groupId": "g_sw3v62s",
+      "height": 70,
+      "id": "n_iiszgt3",
+      "noteId": 1778033211441,
+      "type": "card",
+      "width": 180,
+      "x": 1963.0138854980469,
+      "y": 1174.6597290039062
+    },
+    {
+      "groupId": "g_sw3v62s",
+      "height": 70,
+      "id": "n_p4qg93x",
+      "noteId": 1778033211442,
+      "type": "card",
+      "width": 180,
+      "x": 1571.0138854980469,
+      "y": 1292.6597290039062
+    },
+    {
+      "groupId": "g_sw3v62s",
+      "height": 70,
+      "id": "n_nnovf77",
+      "noteId": 1778033211443,
+      "type": "card",
+      "width": 180,
+      "x": 1769.0138854980469,
+      "y": 1264.6597290039062
+    },
+    {
+      "groupId": "g_sw3v62s",
+      "height": 70,
+      "id": "n_j1650oi",
+      "noteId": 1778033211444,
+      "type": "card",
+      "width": 180,
+      "x": 1967.0138854980469,
+      "y": 1264.6597290039062
+    },
+    {
+      "groupId": "g_tectits",
+      "height": 70,
+      "id": "n_19jai9e",
+      "noteId": 1778033211447,
+      "type": "card",
+      "width": 180,
+      "x": 185.01388549804688,
+      "y": 1898.9931030273438
+    },
+    {
+      "groupId": "g_tectits",
+      "height": 70,
+      "id": "n_38g5vi1",
+      "noteId": 1778033211449,
+      "type": "card",
+      "width": 180,
+      "x": 381.0138854980469,
+      "y": 1898.9931030273438
+    },
+    {
+      "groupId": "g_tectits",
+      "height": 70,
+      "id": "n_qmwq5fp",
+      "noteId": 1778033211450,
+      "type": "card",
+      "width": 180,
+      "x": 185.01388549804688,
+      "y": 1999.9931030273438
+    },
+    {
+      "groupId": "g_tectits",
+      "height": 70,
+      "id": "n_u6opkto",
+      "noteId": 1778033211451,
+      "type": "card",
+      "width": 180,
+      "x": 381.0138854980469,
+      "y": 1999.9931030273438
+    },
+    {
+      "groupId": "g_66d9mth",
+      "height": 70,
+      "id": "n_s03kj18",
+      "noteId": 1778033211452,
+      "type": "card",
+      "width": 180,
+      "x": 787.0138854980469,
+      "y": 506.326416015625
+    },
+    {
+      "groupId": "g_tectits",
+      "height": 70,
+      "id": "n_thqheap",
+      "noteId": 1778033211453,
+      "type": "card",
+      "width": 180,
+      "x": 380.0138854980469,
+      "y": 2118.326416015625
+    },
+    {
+      "groupId": "g_tectits",
+      "height": 70,
+      "id": "n_wcw316w",
+      "noteId": 1778033211454,
+      "type": "card",
+      "width": 180,
+      "x": 584.0138854980469,
+      "y": 1900.326416015625
+    },
+    {
+      "groupId": "g_tectits",
+      "height": 70,
+      "id": "n_nwepjuc",
+      "noteId": 1778033211455,
+      "type": "card",
+      "width": 180,
+      "x": 778.0138854980469,
+      "y": 1910.326416015625
+    },
+    {
+      "groupId": "g_tectits",
+      "height": 70,
+      "id": "n_hc8alpy",
+      "noteId": 1778033211456,
+      "type": "card",
+      "width": 180,
+      "x": 774.0138854980469,
+      "y": 2054.326416015625
+    },
+    {
+      "groupId": "g_tectits",
+      "height": 70,
+      "id": "n_ugrgjst",
+      "noteId": 1778033211457,
+      "type": "card",
+      "width": 180,
+      "x": 585.0138854980469,
+      "y": 2019.326416015625
+    },
+    {
+      "groupId": "g_tectits",
+      "height": 70,
+      "id": "n_oa7t56b",
+      "noteId": 1778033211458,
+      "type": "card",
+      "width": 180,
+      "x": 191.01388549804688,
+      "y": 2134.326416015625
+    },
+    {
+      "groupId": "g_tectits",
+      "height": 70,
+      "id": "n_ppmebyn",
+      "noteId": 1778033211460,
+      "type": "card",
+      "width": 180,
+      "x": 777.0138854980469,
+      "y": 2164.326416015625
+    },
+    {
+      "groupId": "g_66d9mth",
+      "height": 70,
+      "id": "n_zilaqqb",
+      "noteId": 1778033211461,
+      "type": "card",
+      "width": 180,
+      "x": 189.45833587646484,
+      "y": 361.8819580078125
+    },
+    {
+      "groupId": "g_66d9mth",
+      "height": 70,
+      "id": "n_jekb8gk",
+      "noteId": 1778033211462,
+      "type": "card",
+      "width": 180,
+      "x": 385.45833587646484,
+      "y": 361.8819580078125
+    },
+    {
+      "groupId": "g_66d9mth",
+      "height": 70,
+      "id": "n_qkxlxu0",
+      "noteId": 1778033211463,
+      "type": "card",
+      "width": 180,
+      "x": 189.45833587646484,
+      "y": 479.8819580078125
+    },
+    {
+      "groupId": "g_dsr8e27",
+      "height": 70,
+      "id": "n_ahhw8u1",
+      "noteId": 1778033211464,
+      "type": "card",
+      "width": 180,
+      "x": 198.45833587646484,
+      "y": 1488.326416015625
+    },
+    {
+      "groupId": "g_dsr8e27",
+      "height": 70,
+      "id": "n_kqej98k",
+      "noteId": 1778033211465,
+      "type": "card",
+      "width": 180,
+      "x": 394.45833587646484,
+      "y": 1488.326416015625
+    },
+    {
+      "groupId": "g_dsr8e27",
+      "height": 70,
+      "id": "n_rk51iwl",
+      "noteId": 1778033211466,
+      "type": "card",
+      "width": 180,
+      "x": 198.45833587646484,
+      "y": 1606.326416015625
+    },
+    {
+      "groupId": "g_6noiemn",
+      "height": 70,
+      "id": "n_yop9fy6",
+      "noteId": 1778033211468,
+      "type": "card",
+      "width": 180,
+      "x": 194.45833587646484,
+      "y": 1115.6597900390625
+    },
+    {
+      "groupId": "g_6noiemn",
+      "height": 70,
+      "id": "n_an44vl4",
+      "noteId": 1778033211469,
+      "type": "card",
+      "width": 180,
+      "x": 390.45833587646484,
+      "y": 1115.6597900390625
+    },
+    {
+      "groupId": "g_6noiemn",
+      "height": 70,
+      "id": "n_tzefw2b",
+      "noteId": 1778033211470,
+      "type": "card",
+      "width": 180,
+      "x": 194.45833587646484,
+      "y": 1233.6597900390625
+    },
+    {
+      "groupId": "g_6noiemn",
+      "height": 70,
+      "id": "n_q71lpo4",
+      "noteId": 1778033211471,
+      "type": "card",
+      "width": 180,
+      "x": 390.45833587646484,
+      "y": 1233.6597900390625
+    },
+    {
+      "groupId": "g_njzrb9i",
+      "height": 70,
+      "id": "n_x817ztd",
+      "noteId": 1778033211472,
+      "type": "card",
+      "width": 180,
+      "x": 181.01388549804688,
+      "y": 771.6597900390625
+    },
+    {
+      "groupId": "g_njzrb9i",
+      "height": 70,
+      "id": "n_kp4zz9x",
+      "noteId": 1778033211473,
+      "type": "card",
+      "width": 180,
+      "x": 377.0138854980469,
+      "y": 771.6597900390625
+    },
+    {
+      "groupId": "g_njzrb9i",
+      "height": 70,
+      "id": "n_cyxj2gs",
+      "noteId": 1778033211474,
+      "type": "card",
+      "width": 180,
+      "x": 181.01388549804688,
+      "y": 905.6597900390625
+    },
+    {
+      "groupId": "g_8xx4m4p",
+      "height": 70,
+      "id": "n_q51i0zg",
+      "noteId": 1778033211475,
+      "type": "card",
+      "width": 180,
+      "x": 1614.2361450195312,
+      "y": 769.1041870117188
+    },
+    {
+      "groupId": "g_8xx4m4p",
+      "height": 70,
+      "id": "n_rh36qpq",
+      "noteId": 1778033211476,
+      "type": "card",
+      "width": 180,
+      "x": 1816.2361450195312,
+      "y": 791.1041870117188
+    },
+    {
+      "groupId": "g_9fljb4r",
+      "height": 70,
+      "id": "n_nahmifh",
+      "noteId": 1778033211478,
+      "type": "card",
+      "width": 180,
+      "x": 1096.2361450195312,
+      "y": 1892.1041870117188
+    },
+    {
+      "groupId": "g_9fljb4r",
+      "height": 70,
+      "id": "n_5cdnyfy",
+      "noteId": 1778033211479,
+      "type": "card",
+      "width": 180,
+      "x": 1292.2361450195312,
+      "y": 1892.1041870117188
+    },
+    {
+      "groupId": "g_9fljb4r",
+      "height": 70,
+      "id": "n_59odzjk",
+      "noteId": 1778033211480,
+      "type": "card",
+      "width": 180,
+      "x": 1096.2361450195312,
+      "y": 2026.1041870117188
+    },
+    {
+      "groupId": "g_1tiznu4",
+      "height": 70,
+      "id": "n_mxja7r8",
+      "noteId": 1778033211481,
+      "type": "card",
+      "width": 180,
+      "x": 892.2361450195312,
+      "y": 770.4375610351562
+    },
+    {
+      "groupId": "g_1tiznu4",
+      "height": 70,
+      "id": "n_a0py981",
+      "noteId": 1778033211482,
+      "type": "card",
+      "width": 180,
+      "x": 1088.2361450195312,
+      "y": 770.4375610351562
+    },
+    {
+      "groupId": "g_zqqunb6",
+      "height": 70,
+      "id": "n_v4ibaoz",
+      "noteId": 1778033211487,
+      "type": "card",
+      "width": 180,
+      "x": 2174.2361450195312,
+      "y": 400.6597900390625
+    },
+    {
+      "groupId": "g_zqqunb6",
+      "height": 70,
+      "id": "n_olt2dta",
+      "noteId": 1778033211488,
+      "type": "card",
+      "width": 180,
+      "x": 2370.2361450195312,
+      "y": 400.6597900390625
+    },
+    {
+      "groupId": "g_zqqunb6",
+      "height": 70,
+      "id": "n_5icevs9",
+      "noteId": 1778033211490,
+      "type": "card",
+      "width": 180,
+      "x": 2174.2361450195312,
+      "y": 551.6597900390625
+    },
+    {
+      "groupId": "g_zqqunb6",
+      "height": 70,
+      "id": "n_0t3rtgy",
+      "noteId": 1778033211491,
+      "type": "card",
+      "width": 180,
+      "x": 2370.2361450195312,
+      "y": 551.6597900390625
+    },
+    {
+      "groupId": "g_zqqunb6",
+      "height": 70,
+      "id": "n_rjsvbrw",
+      "noteId": 1778033211493,
+      "type": "card",
+      "width": 180,
+      "x": 2177.2361450195312,
+      "y": 654.7708740234375
+    },
+    {
+      "groupId": "g_zqqunb6",
+      "height": 70,
+      "id": "n_t5iojax",
+      "noteId": 1778033211499,
+      "type": "card",
+      "width": 180,
+      "x": 2368.2361450195312,
+      "y": 705.8819580078125
+    },
+    {
+      "groupId": "g_g3vmudw",
+      "height": 70,
+      "id": "n_echkppe",
+      "noteId": 1778033211500,
+      "type": "card",
+      "width": 180,
+      "x": 2561.7916870117188,
+      "y": 1151.104248046875
+    },
+    {
+      "groupId": "g_b2pfdmb",
+      "height": 70,
+      "id": "n_akygp7b",
+      "noteId": 1778033211501,
+      "type": "card",
+      "width": 180,
+      "x": 1891.125,
+      "y": 399.3263854980469
+    },
+    {
+      "groupId": "g_66d9mth",
+      "height": 70,
+      "id": "n_y7r9hiu",
+      "noteId": 1778033211502,
+      "type": "card",
+      "width": 180,
+      "x": 389.6805725097656,
+      "y": 481.10418701171875
+    },
+    {
+      "groupId": "g_b2pfdmb",
+      "height": 70,
+      "id": "n_vtisrwt",
+      "noteId": 1778033211504,
+      "type": "card",
+      "width": 180,
+      "x": 1888.0138854980469,
+      "y": 547.6597290039062
+    },
+    {
+      "groupId": "g_fhbbifg",
+      "height": 70,
+      "id": "n_vmp3tw9",
+      "noteId": 1778033211505,
+      "type": "card",
+      "width": 180,
+      "x": 1565.0138854980469,
+      "y": 1659.1111145019531
+    },
+    {
+      "groupId": "g_66d9mth",
+      "height": 70,
+      "id": "n_7xnvbgg",
+      "noteId": 1778496477325,
+      "type": "card",
+      "width": 180,
+      "x": 590.0138893127441,
+      "y": 368.77777099609375
+    },
+    {
+      "groupId": "g_66d9mth",
+      "height": 70,
+      "id": "n_qaonx1q",
+      "noteId": 1778411835628,
+      "type": "card",
+      "width": 180,
+      "x": 786.0138893127441,
+      "y": 373.77777099609375
+    },
+    {
+      "groupId": "g_sw3v62s",
+      "height": 70,
+      "id": "n_t9amnzm",
+      "noteId": 1778411835714,
+      "type": "card",
+      "width": 180,
+      "x": 2157.6805725097656,
+      "y": 1153.7777786254883
+    },
+    {
+      "groupId": "g_8xx4m4p",
+      "height": 70,
+      "id": "n_cgt5oo6",
+      "noteId": 1778496477461,
+      "type": "card",
+      "width": 180,
+      "x": 1621.013916015625,
+      "y": 888.1111450195312
+    },
+    {
+      "groupId": "g_tectits",
+      "height": 70,
+      "id": "n_v11y37b",
+      "noteId": 1778496477590,
+      "type": "card",
+      "width": 180,
+      "x": 582.3472137451172,
+      "y": 2105.1111450195312
+    },
+    {
+      "groupId": "g_fhbbifg",
+      "height": 70,
+      "id": "n_qz3nc1m",
+      "noteId": 1778496477728,
+      "type": "card",
+      "width": 180,
+      "x": 1766.3472137451172,
+      "y": 1639.1111145019531
+    },
+    {
+      "groupId": "g_dsr8e27",
+      "height": 70,
+      "id": "n_s6cpxjo",
+      "noteId": 1778496477977,
+      "type": "card",
+      "width": 180,
+      "x": 397.01388931274414,
+      "y": 1619.111083984375
+    },
+    {
+      "groupId": "g_zqqunb6",
+      "height": 70,
+      "id": "n_gttkj90",
+      "noteId": 1778496482626,
+      "type": "card",
+      "width": 180,
+      "x": 2177.3472290039062,
+      "y": 776.77783203125
+    },
+    {
+      "groupId": "g_zqqunb6",
+      "height": 70,
+      "id": "n_aoamevv",
+      "noteId": 1778496482678,
+      "type": "card",
+      "width": 180,
+      "x": 2374.3472290039062,
+      "y": 788.77783203125
+    },
+    {
+      "groupId": "g_zqqunb6",
+      "height": 70,
+      "id": "n_elin4or",
+      "noteId": 1778496477862,
+      "type": "card",
+      "width": 180,
+      "x": 2583.3472290039062,
+      "y": 400.111083984375
+    },
+    {
+      "groupId": "g_zqqunb6",
+      "height": 70,
+      "id": "n_vmp7wka",
+      "noteId": 1778496482746,
+      "type": "card",
+      "width": 180,
+      "x": 2585.3472290039062,
+      "y": 573.4444580078125
+    },
+    {
+      "groupId": "g_fhbbifg",
+      "height": 70,
+      "id": "n_qy4i78u",
+      "noteId": 1778496482962,
+      "type": "card",
+      "width": 180,
+      "x": 1971.0138854980469,
+      "y": 1529.7777786254883
+    },
+    {
+      "groupId": "g_fhbbifg",
+      "height": 70,
+      "id": "n_tnq9c4m",
+      "noteId": 1778033211498,
+      "type": "card",
+      "width": 180,
+      "x": 1754.3472137451172,
+      "y": 1538.7777709960938
+    },
+    {
+      "color": "#243428",
+      "groupId": null,
+      "height": 70,
+      "id": "note_5d4vq5k",
+      "text": "Chemical Components of Urine",
+      "textAlign": "center",
+      "type": "note",
+      "width": 194,
+      "x": 969.3541564941406,
+      "y": 1209.6666641235352
+    },
+    {
+      "groupId": "g_fhbbifg",
+      "height": 70,
+      "id": "n_wyr78cx",
+      "noteId": 1778033211492,
+      "type": "card",
+      "width": 180,
+      "x": 1968.03125,
+      "y": 1683
+    }
+  ],
+  "groups": [
+    {
+      "color": "#4caf7d",
+      "height": 351,
+      "id": "g_b2pfdmb",
+      "label": "Specific Gravity",
+      "width": 821,
+      "x": 1274.0138854980469,
+      "y": 338.3263854980469
+    },
+    {
+      "color": "#4caf7d",
+      "height": 307,
+      "id": "g_fhbbifg",
+      "label": "pH",
+      "width": 847,
+      "x": 1341.0138854980469,
+      "y": 1486.3263854980469
+    },
+    {
+      "color": "#4caf7d",
+      "height": 328,
+      "id": "g_sw3v62s",
+      "label": "Proteins",
+      "width": 818,
+      "x": 1541.0138854980469,
+      "y": 1118.6597290039062
+    },
+    {
+      "color": "#4caf7d",
+      "height": 426,
+      "id": "g_tectits",
+      "label": "Glucose",
+      "width": 845,
+      "x": 155.01388549804688,
+      "y": 1842.9931030273438
+    },
+    {
+      "color": "#4caf7d",
+      "height": 363,
+      "id": "g_66d9mth",
+      "label": "Ketones",
+      "width": 834,
+      "x": 159.45833587646484,
+      "y": 305.8819580078125
+    },
+    {
+      "color": "#4caf7d",
+      "height": 382,
+      "id": "g_dsr8e27",
+      "label": "Blood",
+      "width": 448,
+      "x": 168.45833587646484,
+      "y": 1432.326416015625
+    },
+    {
+      "color": "#4caf7d",
+      "height": 339,
+      "id": "g_6noiemn",
+      "label": "Bilirubin",
+      "width": 436,
+      "x": 164.45833587646484,
+      "y": 1059.6597900390625
+    },
+    {
+      "color": "#4caf7d",
+      "height": 305,
+      "id": "g_njzrb9i",
+      "label": "Urobilinogen",
+      "width": 436,
+      "x": 151.01388549804688,
+      "y": 715.6597900390625
+    },
+    {
+      "color": "#4caf7d",
+      "height": 351,
+      "id": "g_8xx4m4p",
+      "label": "Nitrite",
+      "width": 452,
+      "x": 1590.2361450195312,
+      "y": 735.1041870117188
+    },
+    {
+      "color": "#4caf7d",
+      "height": 322,
+      "id": "g_9fljb4r",
+      "label": "Leukocyte Esterase",
+      "width": 436,
+      "x": 1066.2361450195312,
+      "y": 1836.1041870117188
+    },
+    {
+      "color": "#4caf7d",
+      "height": 188,
+      "id": "g_1tiznu4",
+      "label": "Ascorbic Acid",
+      "width": 436,
+      "x": 862.2361450195312,
+      "y": 714.4375610351562
+    },
+    {
+      "color": "#d4a853",
+      "height": 737,
+      "id": "g_zqqunb6",
+      "label": "Methods of Measuring Chemical Components of Urine",
+      "width": 687,
+      "x": 2144.2361450195312,
+      "y": 344.6597900390625
+    },
+    {
+      "color": "#c0524a",
+      "height": 159,
+      "id": "g_g3vmudw",
+      "label": "Interferences",
+      "width": 228,
+      "x": 2534.236099243164,
+      "y": 1125.104248046875
+    }
+  ],
+  "edges": [
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "note_5d4vq5k",
+      "id": "e_4krojah",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_b2pfdmb"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "note_5d4vq5k",
+      "id": "e_zr68hsy",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_sw3v62s"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "note_5d4vq5k",
+      "id": "e_2uig7au",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_8xx4m4p"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "note_5d4vq5k",
+      "id": "e_lljy85i",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_9fljb4r"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "note_5d4vq5k",
+      "id": "e_b06echw",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_fhbbifg"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "note_5d4vq5k",
+      "id": "e_oxfizxg",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_1tiznu4"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "note_5d4vq5k",
+      "id": "e_8af4xvj",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_tectits"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "note_5d4vq5k",
+      "id": "e_vwtr4d8",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_dsr8e27"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "note_5d4vq5k",
+      "id": "e_uabhtah",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_6noiemn"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "note_5d4vq5k",
+      "id": "e_tw4ue3f",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_njzrb9i"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "note_5d4vq5k",
+      "id": "e_9v29nyv",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_66d9mth"
+    }
+  ]
+}
