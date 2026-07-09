@@ -690,11 +690,45 @@ def save_topic_map():
 
 # ── Deck Map: canvas persistence ─────────────────────────────────────────────
 
-def _canvas_path(deck):
-    """One JSON file per deck, sanitized filename."""
+def _deck_id(deck):
+    """Resolve a deck name to its stable numeric Anki deck ID.
+    Returns None if the deck doesn't exist (or the lookup fails)."""
+    try:
+        ids = anki("deckNamesAndIds")
+        return ids.get(deck)
+    except Exception:
+        return None
+
+
+def _canvas_path(deck_id):
+    """One JSON file per deck, keyed by stable numeric deck ID."""
     os.makedirs(CANVAS_DIR, exist_ok=True)
+    return os.path.join(CANVAS_DIR, f"{deck_id}.json")
+
+
+def _legacy_canvas_path(deck):
+    """Old-style sanitized-name path, kept only to locate pre-migration files."""
     safe = re.sub(r'[^A-Za-z0-9_.\- ]', '_', deck).replace("::", "__")
     return os.path.join(CANVAS_DIR, f"{safe}.json")
+
+
+def _migrate_legacy_canvas(deck, deck_id):
+    """If no ID-keyed file exists yet, look for an old sanitized-name file
+    and re-save its contents under the new ID-keyed filename. The legacy
+    file is left in place afterward."""
+    new_path = _canvas_path(deck_id)
+    if os.path.exists(new_path):
+        return
+    old_path = _legacy_canvas_path(deck)
+    if not os.path.exists(old_path):
+        return
+    try:
+        with open(old_path, "r", encoding="utf-8") as f:
+            canvas = json.load(f)
+        with open(new_path, "w", encoding="utf-8") as f:
+            json.dump(canvas, f, indent=2)
+    except Exception:
+        pass  # non-fatal — worst case, migration is retried on next load
 
 
 def _empty_canvas():
@@ -706,7 +740,13 @@ def get_canvas():
     deck = request.args.get("deck", "")
     if not deck:
         return jsonify({"error": "No deck specified"}), 400
-    path = _canvas_path(deck)
+    deck_id = _deck_id(deck)
+    if deck_id is None:
+        # Deck no longer exists (e.g. stale bookmark) — soft-fail with an
+        # empty canvas rather than a hard error.
+        return jsonify(_empty_canvas())
+    _migrate_legacy_canvas(deck, deck_id)
+    path = _canvas_path(deck_id)
     if not os.path.exists(path):
         return jsonify(_empty_canvas())
     try:
@@ -727,8 +767,13 @@ def save_canvas():
         "groups": data.get("groups", []),
         "edges": data.get("edges", []),
     }
+    deck_id = _deck_id(deck)
+    if deck_id is None:
+        # Deck no longer exists — soft-fail so the client doesn't see a hard
+        # error; there's just nowhere real to persist this save.
+        return jsonify({"ok": True, "warning": "Deck not found in Anki — canvas not saved"})
     try:
-        with open(_canvas_path(deck), "w", encoding="utf-8") as f:
+        with open(_canvas_path(deck_id), "w", encoding="utf-8") as f:
             json.dump(canvas, f, indent=2)
         return jsonify({"ok": True})
     except Exception as e:

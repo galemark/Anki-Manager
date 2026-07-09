@@ -51,6 +51,7 @@ aside.card-sidebar { width: 240px; min-width: 160px; max-width: 480px; flex-shri
 .sidebar-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 10px 11px; font-size: 11.5px; line-height: 1.55; color: var(--text); cursor: grab; white-space: normal; word-break: break-word; overflow-wrap: break-word; }
 .sidebar-card:hover { border-color: var(--accent2); }
 .sidebar-card.suspended { border: 2px solid var(--accent); padding: 9px 10px; }
+.sidebar-card.selected { border-color: var(--accent2); background: color-mix(in srgb, var(--accent2) 18%, var(--surface2)); box-shadow: 0 0 0 1px var(--accent2) inset; }
 .sidebar-empty { padding: 20px 12px; text-align: center; color: var(--muted); font-size: 11px; line-height: 1.7; }
 
 .canvas-wrap { flex: 1; position: relative; overflow: auto; background:
@@ -61,6 +62,7 @@ aside.card-sidebar { width: 240px; min-width: 160px; max-width: 480px; flex-shri
 .card-node { position: absolute; width: 180px; min-height: 70px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px; cursor: grab; font-size: 11px; line-height: 1.5; color: var(--text); user-select: none; transition: border-color 0.15s, box-shadow 0.15s; z-index: 5; }
 .card-node:hover { border-color: var(--accent2); }
 .card-node.dragging { cursor: grabbing; z-index: 50; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.card-node.canvas-selected { border-color: var(--accent2); box-shadow: 0 0 0 2px var(--accent2); }
 .card-front { overflow: hidden; white-space: normal; word-break: break-word; overflow-wrap: break-word; }
 .card-node .card-full { display: none; position: absolute; top: calc(100% + 6px); left: 0; width: 260px; background: var(--surface); border: 1px solid var(--accent2); border-radius: 8px; padding: 10px 12px; z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.5); font-size: 11px; line-height: 1.6; }
 .card-node:hover .card-full { display: block; }
@@ -219,6 +221,27 @@ var DEFAULT_EDGE_COLOR = '#7c9fd4';
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
 
+// ── Sidebar multi-select (shift = range, ctrl/cmd = toggle) ────────────
+var selectedCardIds = [];      // ordered list of selected note IDs
+var lastClickedNoteId = null;  // anchor for shift-range selection
+
+function isSelected(noteId) { return selectedCardIds.indexOf(noteId) !== -1; }
+function clearSelection() { selectedCardIds = []; lastClickedNoteId = null; }
+
+// ── Canvas multi-select (ctrl/cmd-click only — no shift-range, since
+// canvas layout isn't linear like the sidebar) ──────────────────────────
+var canvasSelectedIds = []; // node.id values (card nodes on canvas)
+function isCanvasSelected(nodeId) { return canvasSelectedIds.indexOf(nodeId) !== -1; }
+function clearCanvasSelection() { canvasSelectedIds = []; render(); }
+function toggleCanvasSelect(nodeId) {
+  if (isCanvasSelected(nodeId)) {
+    canvasSelectedIds = canvasSelectedIds.filter(function(id){ return id !== nodeId; });
+  } else {
+    canvasSelectedIds.push(nodeId);
+  }
+  render();
+}
+
 // ── Geometry: side-anchored connections (Obsidian-canvas style) ─────────
 function rectBorderPoint(rect, towardX, towardY) {
   var cx = rect.x + rect.w/2, cy = rect.y + rect.h/2;
@@ -307,6 +330,13 @@ function placedNoteIds() {
   return s;
 }
 
+document.getElementById('sidebarList').addEventListener('click', function(e){
+  if (e.target === e.currentTarget && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+    clearSelection();
+    renderSidebar();
+  }
+});
+
 function renderSidebar() {
   var placed = placedNoteIds();
   var unplaced = cards.filter(function(c){ return !placed[c.id]; });
@@ -316,21 +346,68 @@ function renderSidebar() {
     list.innerHTML = '<div class="sidebar-empty">' + (cards.length ? 'All cards placed on the canvas.' : 'This deck has no cards.') + '</div>';
     return;
   }
-  unplaced.forEach(function(c){
+  // Drop selections for cards that are no longer in the unplaced list
+  // (e.g. placed on canvas, deleted, or filtered out by a refresh).
+  var unplacedIds = {};
+  unplaced.forEach(function(c){ unplacedIds[c.id] = true; });
+  selectedCardIds = selectedCardIds.filter(function(id){ return unplacedIds[id]; });
+
+  unplaced.forEach(function(c, idx){
     var el = document.createElement('div');
-    el.className = 'sidebar-card' + (c.suspended ? ' suspended' : '');
+    el.className = 'sidebar-card' + (c.suspended ? ' suspended' : '') + (isSelected(c.id) ? ' selected' : '');
     el.draggable = true;
+
     el.textContent = stripHtml(c.front);
-    el.addEventListener('dragstart', function(e){
-      e.dataTransfer.setData('text/plain', JSON.stringify({ kind: 'card', noteId: c.id, offsetX: e.offsetX, offsetY: e.offsetY }));
+    el.addEventListener('click', function(e){
+      if (e.shiftKey && lastClickedNoteId !== null) {
+        var anchorIdx = unplaced.findIndex(function(x){ return x.id === lastClickedNoteId; });
+        if (anchorIdx === -1) anchorIdx = idx;
+        var lo = Math.min(anchorIdx, idx), hi = Math.max(anchorIdx, idx);
+        selectedCardIds = unplaced.slice(lo, hi + 1).map(function(x){ return x.id; });
+      } else if (e.ctrlKey || e.metaKey) {
+        if (isSelected(c.id)) {
+          selectedCardIds = selectedCardIds.filter(function(id){ return id !== c.id; });
+        } else {
+          selectedCardIds.push(c.id);
+        }
+        lastClickedNoteId = c.id;
+      } else {
+        // Plain click: if this card is already part of a multi-selection, leave the
+        // selection intact (so a plain click-drag on a selected card still drags the
+        // whole group); otherwise select just this card.
+        if (!isSelected(c.id) || selectedCardIds.length <= 1) {
+          selectedCardIds = [c.id];
+        }
+        lastClickedNoteId = c.id;
+      }
+      renderSidebar();
     });
+
+    el.addEventListener('dragstart', function(e){
+      if (isSelected(c.id) && selectedCardIds.length > 1) {
+        e.dataTransfer.setData('text/plain', JSON.stringify({ kind: 'cards', noteIds: selectedCardIds.slice(), offsetX: e.offsetX, offsetY: e.offsetY }));
+      } else {
+        e.dataTransfer.setData('text/plain', JSON.stringify({ kind: 'card', noteId: c.id, offsetX: e.offsetX, offsetY: e.offsetY }));
+      }
+    });
+
     el.addEventListener('contextmenu', function(e){
       e.preventDefault();
-      showContextMenu(e.clientX, e.clientY, [
-        { label: c.suspended ? 'Unsuspend' : 'Suspend', action: function(){ toggleSuspend(c.id, !c.suspended); } },
-        { label: 'Delete from Anki', danger: true, action: function(){ deleteCardFromAnki(c.id); } }
-      ]);
+      if (isSelected(c.id) && selectedCardIds.length > 1) {
+        var ids = selectedCardIds.slice();
+        var anySuspended = ids.some(function(id){ var cc = cardById(id); return cc && cc.suspended; });
+        showContextMenu(e.clientX, e.clientY, [
+          { label: anySuspended ? 'Unsuspend all (' + ids.length + ')' : 'Suspend all (' + ids.length + ')', action: function(){ toggleSuspendBulk(ids, !anySuspended); } },
+          { label: 'Delete all from Anki (' + ids.length + ')', danger: true, action: function(){ deleteCardsFromAnki(ids); } }
+        ]);
+      } else {
+        showContextMenu(e.clientX, e.clientY, [
+          { label: c.suspended ? 'Unsuspend' : 'Suspend', action: function(){ toggleSuspend(c.id, !c.suspended); } },
+          { label: 'Delete from Anki', danger: true, action: function(){ deleteCardFromAnki(c.id); } }
+        ]);
+      }
     });
+
     list.appendChild(el);
   });
   document.getElementById('emptyHint').style.display = (nodes.length === 0) ? 'block' : 'none';
@@ -341,6 +418,9 @@ var canvasEl = document.getElementById('canvas');
 var canvasWrap = document.getElementById('canvasWrap');
 canvasEl.addEventListener('dragover', function(e){ e.preventDefault(); canvasEl.classList.add('drop-target'); });
 canvasEl.addEventListener('dragleave', function(){ canvasEl.classList.remove('drop-target'); });
+canvasEl.addEventListener('mousedown', function(e){
+  if (e.target === canvasEl && canvasSelectedIds.length) clearCanvasSelection();
+});
 canvasEl.addEventListener('drop', function(e){
   e.preventDefault();
   canvasEl.classList.remove('drop-target');
@@ -364,6 +444,62 @@ canvasEl.addEventListener('drop', function(e){
     render();
     assignGroupByOverlap(newNode); // was missing here — sidebar drops never joined a group until manually nudged
     scheduleSave();
+  } else if (data.kind === 'cards') {
+    // Multi-card drop from a shift/ctrl selection — lay the cards out in a grid
+    // near the drop point, then wrap them all in a freshly created group.
+    // Card height is variable (long fronts wrap and grow taller), so a fixed
+    // row height isn't safe — we place at a provisional height, render once to
+    // measure actual rendered heights, then reflow rows using those real
+    // measurements before finalizing positions and the group frame size.
+    var noteIds = data.noteIds || [];
+    if (noteIds.length === 0) return;
+    var offX2 = (typeof data.offsetX === 'number') ? data.offsetX : 10;
+    var offY2 = (typeof data.offsetY === 'number') ? data.offsetY : 10;
+    var originX = Math.max(0, x - offX2), originY = Math.max(0, y - offY2);
+    var CARD_W = 180, GAP = 16, COLS = Math.min(3, Math.ceil(Math.sqrt(noteIds.length)));
+    var newNodes = [];
+    noteIds.forEach(function(noteId, i){
+      var col = i % COLS;
+      var nn = { id: uid('n'), type: 'card', noteId: noteId, x: originX + col * (CARD_W + GAP), y: originY, width: CARD_W, height: 70, groupId: null };
+      nodes.push(nn);
+      newNodes.push(nn);
+    });
+    clearSelection();
+    renderSidebar();
+    render(); // provisional render so we can measure real per-card heights
+
+    var rows = Math.ceil(newNodes.length / COLS);
+    var rowHeights = new Array(rows).fill(0);
+    newNodes.forEach(function(nn, i){
+      var row = Math.floor(i / COLS);
+      var h = document.getElementById(nn.id).offsetHeight;
+      if (h > rowHeights[row]) rowHeights[row] = h;
+    });
+    var rowY = [0];
+    for (var r = 1; r < rows; r++) rowY[r] = rowY[r-1] + rowHeights[r-1] + GAP;
+    newNodes.forEach(function(nn, i){
+      var row = Math.floor(i / COLS);
+      nn.y = originY + rowY[row];
+    });
+
+    var PAD = 30, LABEL_PAD = 26;
+    var totalContentHeight = rowY[rows-1] + rowHeights[rows-1];
+    var groupWidth = COLS * CARD_W + (COLS - 1) * GAP + PAD * 2;
+    var groupHeight = totalContentHeight + PAD * 2 + LABEL_PAD;
+    var g = {
+      id: uid('g'), label: 'New group',
+      x: Math.max(0, originX - PAD), y: Math.max(0, originY - PAD - LABEL_PAD),
+      width: groupWidth, height: groupHeight,
+      color: GROUP_COLORS[groups.length % GROUP_COLORS.length]
+    };
+    groups.push(g);
+    newNodes.forEach(function(nn){ nn.groupId = g.id; });
+    render(); // final render with real, non-overlapping row positions
+    scheduleSave();
+    setTimeout(function(){
+      var lbl = document.querySelector('#' + g.id + ' .group-label');
+      if (lbl) { lbl.focus(); document.execCommand('selectAll', false, null); }
+    }, 50);
   } else if (data.kind === 'newGroup') {
     var g = { id: uid('g'), label: 'New group', x: Math.max(0, x - 130), y: Math.max(0, y - 100), width: 260, height: 200, color: GROUP_COLORS[groups.length % GROUP_COLORS.length] };
     groups.push(g);
@@ -392,6 +528,9 @@ function cardById(noteId) {
 }
 
 function render() {
+  var liveNodeIds = {};
+  nodes.forEach(function(n){ liveNodeIds[n.id] = true; });
+  canvasSelectedIds = canvasSelectedIds.filter(function(id){ return liveNodeIds[id]; });
   Array.from(canvasEl.querySelectorAll('.card-node, .note-node, .group-frame')).forEach(function(el){ el.remove(); });
   groups.forEach(function(g, i){ renderGroup(g, i); });
   nodes.forEach(function(n){ n.type === 'note' ? renderNote(n) : renderNode(n); });
@@ -461,7 +600,7 @@ function renderGroup(g, index) {
 function renderNode(n) {
   var card = cardById(n.noteId);
   var el = document.createElement('div');
-  el.className = 'card-node';
+  el.className = 'card-node' + (isCanvasSelected(n.id) ? ' canvas-selected' : '');
   el.id = n.id;
   el.style.left = n.x + 'px';
   el.style.top = n.y + 'px';
@@ -481,10 +620,20 @@ function renderNode(n) {
   }
 
   el.addEventListener('mousedown', function(e){
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault(); e.stopPropagation();
+      toggleCanvasSelect(n.id);
+      return;
+    }
     var rect = el.getBoundingClientRect();
     var zone = detectEdgeZone(rect, e.clientX, e.clientY, { thickness: 9, cornerExclude: 14 });
     if (zone) { startConnectionDrag(e, n.id); return; }
-    startNodeDrag(e, n);
+    if (isCanvasSelected(n.id) && canvasSelectedIds.length > 1) {
+      startMultiNodeDrag(e, canvasSelectedIds.slice());
+    } else {
+      if (canvasSelectedIds.length) { canvasSelectedIds = []; render(); }
+      startNodeDrag(e, n);
+    }
   });
   el.addEventListener('mousemove', function(e){
     var rect = el.getBoundingClientRect();
@@ -493,6 +642,19 @@ function renderNode(n) {
   });
   el.addEventListener('contextmenu', function(e){
     e.preventDefault();
+    if (isCanvasSelected(n.id) && canvasSelectedIds.length > 1) {
+      var selNodeIds = canvasSelectedIds.slice();
+      var selNodes = nodes.filter(function(nn){ return selNodeIds.indexOf(nn.id) !== -1; });
+      var anyGrouped = selNodes.some(function(nn){ return nn.groupId; });
+      var anySuspended = selNodes.some(function(nn){ var cc = cardById(nn.noteId); return cc && cc.suspended; });
+      var items = [];
+      if (anyGrouped) items.push({ label: 'Remove from group (' + selNodes.length + ')', action: function(){ selNodes.forEach(function(nn){ nn.groupId = null; }); render(); scheduleSave(); } });
+      items.push({ label: anySuspended ? 'Unsuspend all (' + selNodes.length + ')' : 'Suspend all (' + selNodes.length + ')', action: function(){ toggleSuspendBulk(selNodes.map(function(nn){ return nn.noteId; }), !anySuspended); } });
+      items.push({ label: 'Return all to sidebar (' + selNodes.length + ')', action: function(){ deleteNodesBulk(selNodeIds); } });
+      items.push({ label: 'Delete all from Anki (' + selNodes.length + ')', danger: true, action: function(){ deleteCardsFromAnki(selNodes.map(function(nn){ return nn.noteId; })); } });
+      showContextMenu(e.clientX, e.clientY, items);
+      return;
+    }
     var items = [];
     if (n.groupId) items.push({ label: 'Remove from group', action: function(){ n.groupId = null; render(); scheduleSave(); } });
     items.push({ label: 'Open in Anki', action: function(){ openInAnki(n.noteId); } });
@@ -591,6 +753,42 @@ function deleteCardFromAnki(noteId) {
     render();
     scheduleSave();
     toast('Card deleted from Anki', 'ok');
+  }).catch(function(e){ toast('Failed: ' + e.message, 'err'); });
+}
+
+function toggleSuspendBulk(noteIds, suspend) {
+  fetch('/api/suspend-cards', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ noteIds: noteIds, suspend: suspend })
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if (d.error) throw new Error(d.error);
+    noteIds.forEach(function(id){
+      var card = cardById(id);
+      if (card) card.suspended = suspend;
+    });
+    renderSidebar();
+    toast((suspend ? 'Suspended ' : 'Unsuspended ') + noteIds.length + ' card' + (noteIds.length === 1 ? '' : 's'), 'ok');
+  }).catch(function(e){ toast('Failed: ' + e.message, 'err'); });
+}
+
+function deleteCardsFromAnki(noteIds) {
+  if (!confirm('Permanently delete ' + noteIds.length + ' cards from Anki? This cannot be undone.')) return;
+  fetch('/api/delete-notes', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ noteIds: noteIds })
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if (d.error) throw new Error(d.error);
+    var idSet = {};
+    noteIds.forEach(function(id){ idSet[id] = true; });
+    cards = cards.filter(function(c){ return !idSet[c.id]; });
+    var removedNodeIds = nodes.filter(function(n){ return n.type === 'card' && idSet[n.noteId]; }).map(function(n){ return n.id; });
+    nodes = nodes.filter(function(n){ return !(n.type === 'card' && idSet[n.noteId]); });
+    edges = edges.filter(function(e){ return removedNodeIds.indexOf(e.fromNode) === -1 && removedNodeIds.indexOf(e.toNode) === -1; });
+    clearSelection();
+    renderSidebar();
+    render();
+    scheduleSave();
+    toast('Deleted ' + noteIds.length + ' cards from Anki', 'ok');
   }).catch(function(e){ toast('Failed: ' + e.message, 'err'); });
 }
 
@@ -798,6 +996,39 @@ function startNodeDrag(e, n) {
   document.addEventListener('mouseup', onUp);
 }
 
+function startMultiNodeDrag(e, nodeIds) {
+  e.preventDefault();
+  var selNodes = nodes.filter(function(n){ return nodeIds.indexOf(n.id) !== -1; });
+  var els = selNodes.map(function(n){ var el = document.getElementById(n.id); el.classList.add('dragging'); return el; });
+  var startX = e.clientX, startY = e.clientY;
+  var origPositions = selNodes.map(function(n){ return { n: n, x: n.x, y: n.y }; });
+
+  function onMove(ev) {
+    var dx = ev.clientX - startX, dy = ev.clientY - startY;
+    origPositions.forEach(function(p, i){
+      p.n.x = Math.max(0, p.x + dx);
+      p.n.y = Math.max(0, p.y + dy);
+      els[i].style.left = p.n.x + 'px';
+      els[i].style.top = p.n.y + 'px';
+    });
+    renderEdges();
+  }
+  function onUp(ev) {
+    els.forEach(function(el){ el.classList.remove('dragging'); });
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    var sidebarRect = document.querySelector('.card-sidebar').getBoundingClientRect();
+    if (ev.clientX >= sidebarRect.left && ev.clientX <= sidebarRect.right) {
+      deleteNodesBulk(nodeIds);
+      return;
+    }
+    selNodes.forEach(function(n){ assignGroupByOverlap(n); });
+    scheduleSave();
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
 function assignGroupByOverlap(n) {
   var el = document.getElementById(n.id);
   var found = null;
@@ -964,6 +1195,18 @@ function deleteNode(id) {
   renderSidebar();
   render();
   scheduleSave();
+}
+
+function deleteNodesBulk(ids) {
+  var idSet = {};
+  ids.forEach(function(id){ idSet[id] = true; });
+  nodes = nodes.filter(function(n){ return !idSet[n.id]; });
+  edges = edges.filter(function(e){ return !idSet[e.fromNode] && !idSet[e.toNode]; });
+  canvasSelectedIds = canvasSelectedIds.filter(function(id){ return !idSet[id]; });
+  renderSidebar();
+  render();
+  scheduleSave();
+  toast('Returned ' + ids.length + ' card' + (ids.length === 1 ? '' : 's') + ' to sidebar', 'ok');
 }
 
 // ── Color palette popover ────────────────────────────────────────────────
