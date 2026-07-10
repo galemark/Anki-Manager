@@ -1,0 +1,229 @@
+{
+  "nodes": [
+    {
+      "groupId": "g_5a2dc18",
+      "height": 70,
+      "id": "n_0mgpsde",
+      "noteId": 1783561182243,
+      "type": "card",
+      "width": 180,
+      "x": 123,
+      "y": 131.0
+    },
+    {
+      "groupId": "g_5a2dc18",
+      "height": 70,
+      "id": "n_w2nckee",
+      "noteId": 1783561182244,
+      "type": "card",
+      "width": 180,
+      "x": 332,
+      "y": 263.0
+    },
+    {
+      "groupId": "g_5a2dc18",
+      "height": 70,
+      "id": "n_4pxdja7",
+      "noteId": 1783561182245,
+      "type": "card",
+      "width": 180,
+      "x": 357,
+      "y": 106.0
+    },
+    {
+      "groupId": "g_5a2dc18",
+      "height": 70,
+      "id": "n_p2jodss",
+      "noteId": 1783561182246,
+      "type": "card",
+      "width": 180,
+      "x": 132,
+      "y": 264.0
+    },
+    {
+      "groupId": "g_5a2dc18",
+      "height": 70,
+      "id": "n_ulox8sq",
+      "noteId": 1783561182247,
+      "type": "card",
+      "width": 180,
+      "x": 335,
+      "y": 367.0
+    },
+    {
+      "groupId": "g_5a2dc18",
+      "height": 70,
+      "id": "n_7r2i40a",
+      "noteId": 1783561182248,
+      "type": "card",
+      "width": 180,
+      "x": 580,
+      "y": 210.0
+    },
+    {
+      "groupId": "g_5a2dc18",
+      "height": 70,
+      "id": "n_tal9p9o",
+      "noteId": 1783561182242,
+      "type": "card",
+      "width": 180,
+      "x": 125,
+      "y": 421.0
+    },
+    {
+      "groupId": "g_5a2dc18",
+      "height": 70,
+      "id": "n_h48j3tk",
+      "noteId": 1783561182252,
+      "type": "card",
+      "width": 180,
+      "x": 578,
+      "y": 513.0
+    },
+    {
+      "groupId": "g_5a2dc18",
+      "height": 70,
+      "id": "n_33iiq4z",
+      "noteId": 1783561182253,
+      "type": "card",
+      "width": 180,
+      "x": 577,
+      "y": 367.0
+    },
+    {
+      "groupId": "g_5a2dc18",
+      "height": 70,
+      "id": "n_1fu0ttb",
+      "noteId": 1783561182254,
+      "type": "card",
+      "width": 180,
+      "x": 114,
+      "y": 709.0
+    },
+    {
+      "groupId": "g_5a2dc18",
+      "height": 70,
+      "id": "n_1lyu3l1",
+      "noteId": 1783561182255,
+      "type": "card",
+      "width": 180,
+      "x": 329,
+      "y": 693.0
+    },
+    {
+      "groupId": "g_5a2dc18",
+      "height": 70,
+      "id": "n_860iihm",
+      "noteId": 1783561182256,
+      "type": "card",
+      "width": 180,
+      "x": 105,
+      "y": 584.0
+    },
+    {
+      "groupId": "g_5a2dc18",
+      "height": 70,
+      "id": "n_ch6ctxq",
+      "noteId": 1783561182257,
+      "type": "card",
+      "width": 180,
+      "x": 336,
+      "y": 488.0
+    },
+    {
+      "groupId": "g_5a2dc18",
+      "height": 70,
+      "id": "n_vzf3ijm",
+      "noteId": 1783561182258,
+      "type": "card",
+      "width": 180,
+      "x": 583,
+      "y": 111.0
+    }
+  ],
+  "groups": [
+    {
+      "id": "g_5a2dc18",
+      "label": "Renal Tests",
+      "x": 60,
+      "y": 60.0,
+      "width": 740,
+      "height": 769,
+      "color": "#7c9fd4"
+    }
+  ],
+  "edges": [
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_0mgpsde",
+      "id": "e_lttdn52",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_p2jodss"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_0mgpsde",
+      "id": "e_3dcx7ok",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_w2nckee"
+    },
+    {
+      "color": null,
+      "direction": "forward",
+      "fromNode": "n_0mgpsde",
+      "id": "e_s1w8zgi",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_4pxdja7"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_tal9p9o",
+      "id": "e_emp9fsz",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_ulox8sq"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_tal9p9o",
+      "id": "e_zht9qby",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_ch6ctxq"
+    },
+    {
+      "color": null,
+      "direction": "backward",
+      "fromNode": "n_860iihm",
+      "id": "e_9b2s98f",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_ch6ctxq"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_1fu0ttb",
+      "id": "e_ln0jukw",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_1lyu3l1"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_33iiq4z",
+      "id": "e_mw4nwvc",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_h48j3tk"
+    }
+  ]
+}

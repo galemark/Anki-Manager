@@ -5,6 +5,7 @@ import html
 import textwrap
 import urllib.request
 import urllib.error
+import uuid
 from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory
 
@@ -735,6 +736,13 @@ def _empty_canvas():
     return {"nodes": [], "groups": [], "edges": []}
 
 
+def uid_py(prefix):
+    """Server-side id generator mirroring the client's uid() helper,
+    used when we need to mint new node/group ids on the backend
+    (e.g. when creating a promoted-subdeck canvas)."""
+    return f"{prefix}_{uuid.uuid4().hex[:7]}"
+
+
 @app.route("/api/canvas")
 def get_canvas():
     deck = request.args.get("deck", "")
@@ -776,6 +784,264 @@ def save_canvas():
         with open(_canvas_path(deck_id), "w", encoding="utf-8") as f:
             json.dump(canvas, f, indent=2)
         return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ── Deck Map: promote group(s) to subdeck ────────────────────────────────────
+
+@app.route("/api/promote-group", methods=["POST"])
+def promote_group():
+    """Promote one or more canvas groups into a real Anki subdeck.
+
+    - Moves the underlying Anki cards (changeDeck) into a new subdeck.
+    - Leaves the PARENT canvas completely untouched (nothing is deleted or
+      re-saved there) — the cards stay visible on the parent map because
+      Anki's deck:"Parent" search already includes subdeck cards.
+    - Creates a brand-new canvas for the subdeck containing a recentered
+      copy of the promoted group(s). If multiple groups are promoted at
+      once, each keeps its own distinct frame (label/color) and they are
+      stacked vertically so they don't overlap. Edges between two cards
+      that are both part of the promoted set (whether from the same
+      original group or different ones) are carried over; edges reaching
+      outside the promoted set are dropped from the new map (they simply
+      can't exist there) but remain untouched on the parent map.
+    """
+    data = request.json or {}
+    parent_deck = data.get("parentDeck", "").strip()
+    group_ids = data.get("groupIds", [])
+    subdeck_name = data.get("subdeckName", "").strip()
+    nodes = data.get("nodes", [])
+    groups = data.get("groups", [])
+    edges = data.get("edges", [])
+
+    if not parent_deck:
+        return jsonify({"error": "No parent deck specified"}), 400
+    if not group_ids:
+        return jsonify({"error": "No groups specified"}), 400
+    if not subdeck_name:
+        return jsonify({"error": "No subdeck name specified"}), 400
+
+    full_subdeck_name = f"{parent_deck}::{subdeck_name}"
+
+    try:
+        # ── 1. Create the subdeck in Anki ──────────────────────────────────
+        anki("createDeck", deck=full_subdeck_name)
+
+        # ── 2. Gather the selected groups (preserve given order) ──────────
+        group_map = {g["id"]: g for g in groups}
+        selected_groups = [group_map[gid] for gid in group_ids if gid in group_map]
+        if not selected_groups:
+            return jsonify({"error": "None of the specified groups were found"}), 404
+
+        # ── 3. Precompute per-group horizontal placement + new group ids.
+        # Horizontal offset only depends on the group's own x, not on
+        # vertical stacking, so we can resolve it up front. Resolving new
+        # group ids up front also lets us detect hub-note bridges (5b)
+        # BEFORE deciding where vertical stacking starts — this is what
+        # lets us reserve room for hub notes instead of overlapping them.
+        old_to_new_group = {}     # original group id -> its new (recentered) id
+        group_offset_x = {}       # original group id -> offset_x
+        member_nodes_by_group = {}
+
+        for g in selected_groups:
+            member_nodes = [n for n in nodes if n.get("groupId") == g["id"]]
+            if not member_nodes:
+                continue
+            member_nodes_by_group[g["id"]] = member_nodes
+            group_offset_x[g["id"]] = -g["x"] + 60
+            old_to_new_group[g["id"]] = uid_py("g")
+
+        if not member_nodes_by_group:
+            return jsonify({"error": "Selected group(s) have no cards to promote"}), 400
+
+        # ── 3b. Detect hub-note bridges up front (same "promoted anchor"
+        # logic as before: an edge endpoint counts as promoted if it's one
+        # of the member nodes OR one of the original group ids, since the
+        # map lets you drag a connection onto a group frame's border
+        # directly rather than onto a specific card/note inside it).
+        all_member_ids = {n["id"] for ns in member_nodes_by_group.values() for n in ns}
+        promoted_anchor_ids = all_member_ids | set(old_to_new_group.keys())
+
+        def _remap_anchor(anchor_id):
+            # Node ids are unchanged during promotion (only groupId is
+            # reassigned), but GROUP ids change, so any edge endpoint that
+            # was pointing at an old group id must be repointed at the new one.
+            return old_to_new_group.get(anchor_id, anchor_id)
+
+        node_map = {n["id"]: n for n in nodes}
+
+        # Map every promoted anchor id (node id or group id) to the OLD
+        # group id it belongs to, so a hub note can be horizontally
+        # centered over the right cluster once that cluster's new x is known.
+        anchor_owner_group = {}
+        for gid, members in member_nodes_by_group.items():
+            anchor_owner_group[gid] = gid          # group-anchored edge -> itself
+            for n in members:
+                anchor_owner_group[n["id"]] = gid  # node-anchored edge -> its group
+
+        bridge_links = []       # (external_note_id, owner_old_group_id, original_edge)
+        seen_ext_ids = set()
+        for e in edges:
+            a, b = e.get("fromNode"), e.get("toNode")
+            a_in, b_in = a in promoted_anchor_ids, b in promoted_anchor_ids
+            if a_in and not b_in:
+                ext_id, anchor_id = b, a
+            elif b_in and not a_in:
+                ext_id, anchor_id = a, b
+            else:
+                continue
+            ext_node = node_map.get(ext_id)
+            if not ext_node or ext_node.get("type") != "note":
+                continue  # skip foreign cards/groups — notes only
+            bridge_links.append((ext_id, anchor_owner_group.get(anchor_id), e))
+            seen_ext_ids.add(ext_id)
+
+        # ── 3c. Reserve a top band tall enough for the tallest hub note, so
+        # group stacking starts BELOW it instead of the note being placed
+        # above y=60 and colliding with the first promoted group.
+        HUB_GAP = 60
+        hub_heights = [node_map[eid].get("height", 90) for eid in seen_ext_ids]
+        reserved_band = (max(hub_heights) + HUB_GAP) if hub_heights else 0
+
+        # ── 4. Build recentered nodes/groups, stacking clusters vertically
+        # below the reserved hub-note band ──────────────────────────────
+        cursor_y = 60 + reserved_band
+        new_nodes = []
+        new_groups = []
+        note_ids = []
+        new_group_rect = {}   # old group id -> final {x, y, width, height}
+
+        for g in selected_groups:
+            member_nodes = member_nodes_by_group.get(g["id"])
+            if not member_nodes:
+                continue
+
+            offset_x = group_offset_x[g["id"]]
+            offset_y = -g["y"] + cursor_y
+            new_gid = old_to_new_group[g["id"]]
+
+            new_x = g["x"] + offset_x
+            new_y = g["y"] + offset_y
+            new_groups.append({
+                "id": new_gid,
+                "label": g.get("label", "Group"),
+                "x": new_x,
+                "y": new_y,
+                "width": g["width"],
+                "height": g["height"],
+                "color": g.get("color"),
+            })
+            new_group_rect[g["id"]] = {"x": new_x, "y": new_y, "width": g["width"], "height": g["height"]}
+
+            for n in member_nodes:
+                nn = dict(n)
+                nn["x"] = n["x"] + offset_x
+                nn["y"] = n["y"] + offset_y
+                nn["groupId"] = new_gid
+                new_nodes.append(nn)
+                if n.get("type") == "card" and n.get("noteId") is not None:
+                    note_ids.append(n["noteId"])
+
+            cursor_y += g["height"] + 60
+
+        # ── 5. Move the actual Anki cards ──────────────────────────────────
+        note_ids = list(dict.fromkeys(note_ids))  # dedupe, preserve order
+        card_ids = anki("findCards", query=" OR ".join(f"nid:{nid}" for nid in note_ids))
+        if card_ids:
+            anki("changeDeck", cards=card_ids, deck=full_subdeck_name)
+
+        # ── 6. Carry over edges fully contained within the promoted set ────
+        new_edges = []
+        for e in edges:
+            a, b = e.get("fromNode"), e.get("toNode")
+            if a in promoted_anchor_ids and b in promoted_anchor_ids:
+                ne = dict(e)
+                ne["fromNode"] = _remap_anchor(a)
+                ne["toNode"] = _remap_anchor(b)
+                new_edges.append(ne)
+
+        # ── 6b. Carry over connected "hub" note-nodes, placed inside the
+        # reserved top band computed in 3c. A note-node sitting OUTSIDE the
+        # promoted group(s) but connected to something inside them (e.g. a
+        # central "Disorders" note that fans out to several topic groups)
+        # represents relatedness the user wants preserved. We clone that
+        # note onto the new map — the original stays untouched on the
+        # parent map, since it may still connect to other, non-promoted
+        # groups there. Only note-type nodes are auto-carried; foreign
+        # card-nodes and foreign (non-promoted) groups are left alone.
+        new_node_map = {n["id"]: n for n in new_nodes}
+        new_group_map = {g["id"]: g for g in new_groups}
+
+        hub_owner_groups = {}   # ext_id -> list of old group ids it connects to
+        for ext_id, owner_gid, _e in bridge_links:
+            hub_owner_groups.setdefault(ext_id, []).append(owner_gid)
+
+        def _owner_center_x(owner_gids):
+            xs = []
+            for gid in owner_gids:
+                rect = new_group_rect.get(gid)
+                if rect:
+                    xs.append(rect["x"] + rect["width"] / 2)
+            return sum(xs) / len(xs) if xs else 60
+
+        # Lay hub notes out left-to-right (ordered by the groups they
+        # connect to) so multiple hub notes never overlap each other,
+        # all within the reserved band above the stacked groups.
+        hub_order = sorted(hub_owner_groups.keys(), key=lambda eid: _owner_center_x(hub_owner_groups[eid]))
+
+        bridge_new_id = {}   # original external note id -> its new cloned id
+        cursor_x = 60
+        for ext_id in hub_order:
+            ext_node = node_map[ext_id]
+            clone_w = ext_node.get("width", 180)
+            clone_h = ext_node.get("height", 90)
+            desired_x = _owner_center_x(hub_owner_groups[ext_id]) - clone_w / 2
+            clone_x = max(cursor_x, desired_x)
+
+            clone = dict(ext_node)
+            new_id = uid_py("note")
+            clone["id"] = new_id
+            clone["x"] = clone_x
+            clone["y"] = 60
+            clone["groupId"] = None
+
+            bridge_new_id[ext_id] = new_id
+            new_nodes.append(clone)
+            new_node_map[new_id] = clone
+            cursor_x = clone_x + clone_w + 40  # keep next hub note clear of this one
+
+        for ext_id, owner_gid, e in bridge_links:
+            new_bridge_id = bridge_new_id[ext_id]
+            anchor_id = e.get("toNode") if e.get("fromNode") == ext_id else e.get("fromNode")
+            promoted_id = _remap_anchor(anchor_id)
+            if e.get("fromNode") == ext_id:
+                from_node, to_node = new_bridge_id, promoted_id
+            else:
+                from_node, to_node = promoted_id, new_bridge_id
+            new_edges.append({
+                "id": uid_py("e"),
+                "fromNode": from_node,
+                "toNode": to_node,
+                "label": e.get("label", ""),
+                "color": e.get("color"),
+                "lineStyle": e.get("lineStyle", "solid"),
+                "direction": e.get("direction", "none"),
+            })
+
+        # ── 6. Write the new subdeck's canvas file ──────────────────────────
+        new_deck_id = _deck_id(full_subdeck_name)
+        if new_deck_id is None:
+            return jsonify({"error": "Subdeck was created but its ID could not be resolved"}), 500
+        with open(_canvas_path(new_deck_id), "w", encoding="utf-8") as f:
+            json.dump({"nodes": new_nodes, "groups": new_groups, "edges": new_edges}, f, indent=2)
+
+        return jsonify({
+            "ok": True,
+            "subdeck": full_subdeck_name,
+            "cardsMoved": len(note_ids),
+            "hubNotesCarried": len(bridge_new_id),
+        })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

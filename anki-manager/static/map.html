@@ -129,6 +129,9 @@ svg.edge-layer .edge-label-text { fill: var(--accent2); font-size: 10px; font-fa
 #toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
 #toast.toast-ok { border-left: 3px solid var(--success); }
 #toast.toast-err { border-left: 3px solid var(--danger); }
+.card-preview-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.card-preview { background: var(--surface2); border-radius: 7px; padding: 9px 11px; font-size: 12px; line-height: 1.5; border: 1px solid var(--border); }
+.card-preview .front { color: var(--text); }
 </style>
 </head>
 <body>
@@ -217,6 +220,23 @@ svg.edge-layer .edge-label-text { fill: var(--accent2); font-size: 10px; font-fa
     <div class="modal-actions" style="margin-top:16px;">
       <button class="btn btn-ghost" id="cancelEdgeBtn">Cancel</button>
       <button class="btn btn-success" id="saveEdgeBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="promoteModal">
+  <div class="modal">
+    <h3>Promote to subdeck</h3>
+    <input type="text" id="promoteSubdeckInput" placeholder="Subdeck name (e.g. Renal Tests)">
+    <div class="modal-hint">
+      Creates "<span id="promoteDeckPreview"></span>::<em>name</em>" and moves the cards below into it.
+      The parent map stays unchanged; a new map is created for the subdeck with these group(s) recentered.
+    </div>
+    <div class="modal-section-label">Cards to be moved (<span id="promoteCardCount">0</span>)</div>
+    <div class="card-preview-list" id="promoteCardPreview" style="max-height:220px;overflow-y:auto;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="cancelPromoteBtn">Cancel</button>
+      <button class="btn btn-success" id="confirmPromoteBtn">⇪ Promote</button>
     </div>
   </div>
 </div>
@@ -787,6 +807,10 @@ function buildBulkContextMenu(e) {
           render(); scheduleSave();
         });
       }},
+      { label: 'Promote ' + gids.length + ' group' + (gids.length === 1 ? '' : 's') + ' to subdeck', action: function(){
+        var selGroups = gids.map(function(id){ return groups.find(function(gg){ return gg.id === id; }); }).filter(Boolean);
+        openPromoteModal(selGroups);
+      }},
       { label: 'Delete groups (' + gids.length + ') — contents stay', danger: true, action: function(){
         gids.forEach(function(id){ deleteGroup(id, true); });
         selectedItems = selectedItems.filter(function(it){ return it.kind !== 'group'; });
@@ -874,6 +898,7 @@ function renderGroup(g, index) {
     }
     showContextMenu(e.clientX, e.clientY, [
       { label: 'Change color', action: function(){ showColorPalette(e.clientX, e.clientY, function(c){ g.color = c; render(); scheduleSave(); }); } },
+      { label: 'Promote to subdeck', action: function(){ openPromoteModal([g]); } },
       { label: 'Delete group (contents stay)', danger: true, action: function(){ deleteGroup(g.id); } }
     ]);
   });
@@ -1760,6 +1785,73 @@ document.getElementById('confirmPushBtn').addEventListener('click', function(){
     toast('✓ Pushed "' + d.label + '" to Anki', 'ok');
   }).catch(function(e){ toast('Push failed: ' + e.message, 'err'); })
   .finally(function(){ btn.disabled = false; btn.textContent = '⇪ Push'; });
+});
+
+// ── Promote group(s) to subdeck ──────────────────────────────────────────
+var promotingGroups = null; // set while the modal is open
+
+function openPromoteModal(selGroups) {
+  selGroups = (selGroups || []).filter(Boolean);
+  if (!selGroups.length) return;
+  promotingGroups = selGroups;
+
+  var memberNodes = nodes.filter(function(n){
+    return n.type === 'card' && selGroups.some(function(g){ return n.groupId === g.id; });
+  });
+
+  document.getElementById('promoteDeckPreview').textContent = deck;
+  document.getElementById('promoteSubdeckInput').value = selGroups.length === 1 ? (selGroups[0].label || '') : '';
+  document.getElementById('promoteCardCount').textContent = memberNodes.length;
+
+  var listEl = document.getElementById('promoteCardPreview');
+  if (memberNodes.length === 0) {
+    listEl.innerHTML = '<div class="sidebar-empty">No cards in selected group(s).</div>';
+  } else {
+    listEl.innerHTML = memberNodes.map(function(n){
+      var c = cardById(n.noteId);
+      return '<div class="card-preview"><div class="front">' + esc(c ? stripHtml(c.front) : '(card not found)') + '</div></div>';
+    }).join('');
+  }
+
+  document.getElementById('promoteModal').classList.add('open');
+  setTimeout(function(){ document.getElementById('promoteSubdeckInput').focus(); }, 50);
+}
+
+document.getElementById('cancelPromoteBtn').addEventListener('click', function(){
+  document.getElementById('promoteModal').classList.remove('open');
+  promotingGroups = null;
+});
+
+document.getElementById('confirmPromoteBtn').addEventListener('click', function(){
+  var name = document.getElementById('promoteSubdeckInput').value.trim();
+  if (!name) { toast('Enter a subdeck name', 'err'); return; }
+  if (!promotingGroups || !promotingGroups.length) return;
+
+  var btn = this;
+  btn.disabled = true;
+  btn.textContent = 'Promoting…';
+
+  fetch('/api/promote-group', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      parentDeck: deck,
+      groupIds: promotingGroups.map(function(g){ return g.id; }),
+      subdeckName: name,
+      nodes: nodes, groups: groups, edges: edges
+    })
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if (d.error) throw new Error(d.error);
+    document.getElementById('promoteModal').classList.remove('open');
+    var msg = '✓ Promoted ' + d.cardsMoved + ' card' + (d.cardsMoved === 1 ? '' : 's') + ' to "' + d.subdeck + '"';
+    if (d.hubNotesCarried) msg += ' (+' + d.hubNotesCarried + ' connected note' + (d.hubNotesCarried === 1 ? '' : 's') + ' carried over)';
+    toast(msg, 'ok');
+    promotingGroups = null;
+    // The parent canvas is deliberately left untouched — cards physically
+    // moved to the subdeck, but Anki's deck:"Parent" search already
+    // includes subdeck cards, so this map's own card lookups stay valid
+    // with no reload needed.
+  }).catch(function(e){ toast('Promote failed: ' + e.message, 'err'); })
+  .finally(function(){ btn.disabled = false; btn.textContent = '⇪ Promote'; });
 });
 
 init();

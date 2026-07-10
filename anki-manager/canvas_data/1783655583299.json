@@ -1,0 +1,298 @@
+{
+  "nodes": [
+    {
+      "groupId": "g_1ca1c8d",
+      "height": 70,
+      "id": "n_vmi7g6e",
+      "noteId": 1777604454398,
+      "type": "card",
+      "width": 180,
+      "x": 229,
+      "y": 270
+    },
+    {
+      "groupId": "g_1ca1c8d",
+      "height": 70,
+      "id": "n_gkjyfp1",
+      "noteId": 1777604454399,
+      "type": "card",
+      "width": 180,
+      "x": 30,
+      "y": 85
+    },
+    {
+      "groupId": "g_1ca1c8d",
+      "height": 70,
+      "id": "n_ifsobqt",
+      "noteId": 1777604454400,
+      "type": "card",
+      "width": 180,
+      "x": 31,
+      "y": 170
+    },
+    {
+      "groupId": "g_1ca1c8d",
+      "height": 70,
+      "id": "n_7gipved",
+      "noteId": 1777604454401,
+      "type": "card",
+      "width": 180,
+      "x": 29,
+      "y": 252
+    },
+    {
+      "groupId": "g_1ca1c8d",
+      "height": 70,
+      "id": "n_7yum0fw",
+      "noteId": 1777604454403,
+      "type": "card",
+      "width": 180,
+      "x": 429,
+      "y": 88
+    },
+    {
+      "groupId": "g_1ca1c8d",
+      "height": 70,
+      "id": "n_xcq5ro5",
+      "noteId": 1777604454404,
+      "type": "card",
+      "width": 180,
+      "x": 433,
+      "y": 169
+    },
+    {
+      "groupId": "g_1ca1c8d",
+      "height": 70,
+      "id": "n_2d9id9j",
+      "noteId": 1777604454405,
+      "type": "card",
+      "width": 180,
+      "x": 230,
+      "y": 92
+    },
+    {
+      "groupId": "g_1ca1c8d",
+      "height": 70,
+      "id": "n_zgfd66f",
+      "noteId": 1777604454406,
+      "type": "card",
+      "width": 180,
+      "x": 430,
+      "y": 264
+    },
+    {
+      "groupId": "g_1ca1c8d",
+      "height": 70,
+      "id": "n_3epciq1",
+      "noteId": 1777604454407,
+      "type": "card",
+      "width": 180,
+      "x": 430,
+      "y": 470
+    },
+    {
+      "groupId": "g_1ca1c8d",
+      "height": 70,
+      "id": "n_ipu7vkw",
+      "noteId": 1777604454408,
+      "type": "card",
+      "width": 180,
+      "x": 25,
+      "y": 335
+    },
+    {
+      "groupId": "g_1ca1c8d",
+      "height": 70,
+      "id": "n_477lrnd",
+      "noteId": 1777604454409,
+      "type": "card",
+      "width": 180,
+      "x": 430,
+      "y": 366
+    },
+    {
+      "groupId": "g_1ca1c8d",
+      "height": 70,
+      "id": "n_dw1swkl",
+      "noteId": 1777604454447,
+      "type": "card",
+      "width": 180,
+      "x": 227,
+      "y": 173.5555419921875
+    },
+    {
+      "groupId": "g_1d7041a",
+      "height": 70,
+      "id": "n_ob4kgmx",
+      "noteId": 1777604454410,
+      "type": "card",
+      "width": 180,
+      "x": 39,
+      "y": 666
+    },
+    {
+      "groupId": "g_1d7041a",
+      "height": 70,
+      "id": "n_ern0y6n",
+      "noteId": 1777604454411,
+      "type": "card",
+      "width": 180,
+      "x": 235,
+      "y": 666
+    },
+    {
+      "groupId": "g_1d7041a",
+      "height": 70,
+      "id": "n_w4fbeun",
+      "noteId": 1777604454412,
+      "type": "card",
+      "width": 180,
+      "x": 39,
+      "y": 784
+    },
+    {
+      "groupId": "g_1d7041a",
+      "height": 70,
+      "id": "n_djr3vys",
+      "noteId": 1777604454439,
+      "type": "card",
+      "width": 180,
+      "x": 14,
+      "y": 934.5555419921875
+    },
+    {
+      "groupId": "g_1d7041a",
+      "height": 70,
+      "id": "n_tvfinsx",
+      "noteId": 1777604454438,
+      "type": "card",
+      "width": 180,
+      "x": 273,
+      "y": 932.5555419921875
+    },
+    {
+      "color": "#361e1e",
+      "groupId": null,
+      "height": 70,
+      "id": "note_1b5c781",
+      "text": "Disorders",
+      "textAlign": "center",
+      "type": "note",
+      "width": 120,
+      "x": 0,
+      "y": 0
+    }
+  ],
+  "groups": [
+    {
+      "color": "#c0524a",
+      "height": 515,
+      "id": "g_1ca1c8d",
+      "label": "Anuria, Oliguria, Polyuria, Nocturia",
+      "width": 647,
+      "x": 0,
+      "y": 59
+    },
+    {
+      "color": "#c0524a",
+      "height": 432,
+      "id": "g_1d7041a",
+      "label": "Diabetes insipidus vs mellitus",
+      "width": 466,
+      "x": 0,
+      "y": 624
+    }
+  ],
+  "edges": [
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_gkjyfp1",
+      "id": "e_xxt4rto",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_ifsobqt"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_ifsobqt",
+      "id": "e_nz604sp",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_7gipved"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_2d9id9j",
+      "id": "e_ecso5fy",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_dw1swkl"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_dw1swkl",
+      "id": "e_agsr8ny",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_vmi7g6e"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_7yum0fw",
+      "id": "e_vntmwsz",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_xcq5ro5"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_zgfd66f",
+      "id": "e_6mzrd1q",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_477lrnd"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_477lrnd",
+      "id": "e_k2lxpf2",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_3epciq1"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_djr3vys",
+      "id": "e_8fwmkq1",
+      "label": "compare",
+      "lineStyle": "solid",
+      "toNode": "n_tvfinsx"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "note_1b5c781",
+      "id": "e_b49f599",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_1d7041a"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "note_1b5c781",
+      "id": "e_1cde8ba",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_1ca1c8d"
+    }
+  ]
+}
