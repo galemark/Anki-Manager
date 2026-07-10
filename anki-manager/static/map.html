@@ -958,12 +958,12 @@ function renderNote(n) {
   text.className = 'note-text';
   text.contentEditable = true;
   text.style.textAlign = n.textAlign || 'center';
-  text.textContent = n.text || '';
+  setNoteTextContent(text, n.text || '');
   // Let a ctrl/cmd-click bubble up to the node handler for selection;
   // otherwise stop propagation so a plain click can edit the text.
   text.addEventListener('mousedown', function(e){ if (e.ctrlKey || e.metaKey) return; e.stopPropagation(); });
   text.addEventListener('focus', function(){ pushUndoSnapshot(); });
-  text.addEventListener('blur', function(){ n.text = text.textContent; scheduleSave(); });
+  text.addEventListener('blur', function(){ n.text = getNoteTextContent(text); scheduleSave(); });
   el.appendChild(text);
 
   el.addEventListener('mousedown', function(e){
@@ -1011,6 +1011,23 @@ function renderNote(n) {
 }
 
 function stripHtml(s){ var d = document.createElement('div'); d.innerHTML = s || ''; return d.textContent || ''; }
+
+// ── Note text: contentEditable line-break handling ──────────────────────
+// Browsers store multi-line contentEditable content as separate <div>/<br>
+// elements, not literal "\n" characters. textContent ignores those element
+// boundaries entirely and concatenates every line into one run, which is
+// why line breaks in a note used to vanish on the next render. These two
+// helpers convert between our plain "\n"-joined n.text and the DOM
+// structure the browser actually produces/expects.
+function setNoteTextContent(el, text) {
+  el.innerHTML = esc(text).replace(/\n/g, '<br>');
+}
+function getNoteTextContent(el) {
+  // innerText (unlike textContent) reflects rendered line breaks, so a
+  // <div>1. One</div><div>2. Two</div> structure correctly comes back as
+  // "1. One\n2. Two" instead of "1. One2. Two".
+  return el.innerText.replace(/\r/g, '');
+}
 
 function openInAnki(noteId) {
   fetch('/api/anki-browse', {

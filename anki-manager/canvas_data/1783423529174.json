@@ -517,8 +517,8 @@
       "noteId": 1783561182262,
       "type": "card",
       "width": 180,
-      "x": 1535,
-      "y": 1728.375
+      "x": 1522,
+      "y": 1700.375
     },
     {
       "groupId": "g_xcardvw",
@@ -527,8 +527,8 @@
       "noteId": 1783561182263,
       "type": "card",
       "width": 180,
-      "x": 1731,
-      "y": 1728.375
+      "x": 1732,
+      "y": 1706.375
     },
     {
       "groupId": "g_xcardvw",
@@ -549,6 +549,18 @@
       "width": 180,
       "x": 264,
       "y": 634
+    },
+    {
+      "color": "#2a2436",
+      "groupId": null,
+      "height": 148,
+      "id": "note_kmjoqlx",
+      "text": "Renal Tests\n1. Creatinine clearance\n2. GFR\n3. Free water clearance\n4. Renal plasma flow\n5. Beta2-microglobulin",
+      "textAlign": "left",
+      "type": "note",
+      "width": 189,
+      "x": 1968.5,
+      "y": 466.0416564941406
     }
   ],
   "groups": [
@@ -706,6 +718,15 @@
       "label": "",
       "lineStyle": "solid",
       "toNode": "g_9ly5iz3"
+    },
+    {
+      "color": null,
+      "direction": "forward",
+      "fromNode": "n_fxxbzpx",
+      "id": "e_kwlfjrn",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_jpurtal"
     }
   ]
 }
