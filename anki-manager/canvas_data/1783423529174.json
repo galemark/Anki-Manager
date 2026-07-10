@@ -327,8 +327,8 @@
       "noteId": 1783561182244,
       "type": "card",
       "width": 180,
-      "x": 2214,
-      "y": 815.375
+      "x": 2009,
+      "y": 806.375
     },
     {
       "groupId": "g_5tsreas",
@@ -339,16 +339,6 @@
       "width": 180,
       "x": 2239,
       "y": 658.375
-    },
-    {
-      "groupId": "g_5tsreas",
-      "height": 70,
-      "id": "n_p2jodss",
-      "noteId": 1783561182246,
-      "type": "card",
-      "width": 180,
-      "x": 2014,
-      "y": 816.375
     },
     {
       "groupId": "g_5tsreas",
@@ -727,15 +717,6 @@
       "label": "",
       "lineStyle": "solid",
       "toNode": "n_jpurtal"
-    },
-    {
-      "color": null,
-      "direction": "none",
-      "fromNode": "n_0mgpsde",
-      "id": "e_lttdn52",
-      "label": "",
-      "lineStyle": "solid",
-      "toNode": "n_p2jodss"
     },
     {
       "color": null,

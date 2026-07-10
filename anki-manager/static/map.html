@@ -74,8 +74,33 @@ aside.transfer-sidebar.open { display: flex; }
 .transfer-resize-handle:hover, .transfer-resize-handle.resizing { background: var(--accent2); opacity: 0.3; }
 .transfer-header { padding: 12px 14px 8px; border-bottom: 1px solid var(--border); }
 .transfer-title { font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
-.transfer-deck-select { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: 'DM Mono', monospace; font-size: 11.5px; border-radius: 6px; padding: 6px 8px; outline: none; }
-.transfer-deck-select:focus { border-color: var(--accent2); }
+/* Deck combobox: searchable/filterable replacement for the old <select> */
+.deck-combo { position: relative; }
+.deck-combo-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: 'DM Mono', monospace; font-size: 11.5px; border-radius: 6px; padding: 6px 8px; outline: none; box-sizing: border-box; }
+.deck-combo-input:focus { border-color: var(--accent2); }
+.deck-combo-input::placeholder { color: var(--muted); }
+.deck-combo-panel { display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; max-height: 260px; overflow-y: auto; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,0.35); z-index: 30; padding: 4px; }
+.deck-combo-panel.open { display: block; }
+.deck-combo-group-label { font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); padding: 6px 8px 3px; }
+.deck-combo-item { padding: 6px 8px 6px 5px; border-radius: 5px; font-size: 11.5px; color: var(--text); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 3px solid transparent; }
+.deck-combo-item.depth-0 { border-left-color: var(--deck-depth-0, #6ea8fe); }
+.deck-combo-item.depth-1 { border-left-color: var(--deck-depth-1, #4fd1a5); }
+.deck-combo-item.depth-2 { border-left-color: var(--deck-depth-2, #f2c94c); }
+.deck-combo-item.depth-3 { border-left-color: var(--deck-depth-3, #f2789f); }
+.deck-combo-item.depth-4plus { border-left-color: var(--deck-depth-4plus, #b39ddb); }
+.deck-combo-legend { display: flex; align-items: center; gap: 5px; padding: 4px 8px 6px; }
+.deck-combo-legend-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.deck-combo-legend-dot.depth-0 { background: var(--deck-depth-0, #6ea8fe); }
+.deck-combo-legend-dot.depth-1 { background: var(--deck-depth-1, #4fd1a5); }
+.deck-combo-legend-dot.depth-2 { background: var(--deck-depth-2, #f2c94c); }
+.deck-combo-legend-dot.depth-3 { background: var(--deck-depth-3, #f2789f); }
+.deck-combo-legend-dot.depth-4plus { background: var(--deck-depth-4plus, #b39ddb); }
+.deck-combo-item:hover, .deck-combo-item.active { background: color-mix(in srgb, var(--accent2) 18%, var(--surface2)); }
+.deck-combo-item.recent-item::before { content: "★ "; color: var(--accent); font-size: 10px; }
+.deck-combo-empty { padding: 10px 8px; color: var(--muted); font-size: 11px; text-align: center; }
+.deck-combo-clear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 2px 4px; display: none; line-height: 1; }
+.deck-combo-clear.show { display: block; }
+.deck-combo-clear:hover { color: var(--text); }
 .transfer-hint { font-size: 10px; color: var(--muted); padding: 8px 14px; line-height: 1.6; }
 .transfer-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; transition: opacity 0.15s, background-color 0.15s; }
 .transfer-list.disabled-drop { opacity: 0.45; pointer-events: none; }
@@ -249,9 +274,11 @@ svg.edge-layer .edge-label-text { fill: var(--accent2); font-size: 10px; font-fa
             <option value="tag">By tag</option>
           </select>
         </div>
-        <select class="transfer-deck-select" id="transferDeckSelect">
-          <option value="">Choose a deck…</option>
-        </select>
+        <div class="deck-combo" id="deckCombo">
+          <input type="text" class="deck-combo-input" id="transferDeckInput" placeholder="Choose a deck…" autocomplete="off" />
+          <button type="button" class="deck-combo-clear" id="transferDeckClear" title="Clear">✕</button>
+          <div class="deck-combo-panel" id="transferDeckPanel"></div>
+        </div>
       </div>
       <div class="transfer-hint">Drag cards in to pull them into this deck. Drag cards from this deck onto the list below to push them out.</div>
       <div class="transfer-list disabled-drop" id="transferList"></div>
@@ -775,7 +802,6 @@ function renderSidebar() {
 // ── Cross-deck transfer panel ────────────────────────────────────────────
 var transferSidebarEl = document.getElementById('transferSidebar');
 var transferListEl = document.getElementById('transferList');
-var transferDeckSelectEl = document.getElementById('transferDeckSelect');
 
 function moveCardsApi(sourceDeck, targetDeck, noteIds) {
   return fetch('/api/move-cards', {
@@ -926,23 +952,171 @@ function loadTransferDeck(deckName) {
   }).catch(function(e){ toast('Failed to load deck: ' + e.message, 'err'); });
 }
 
-function populateTransferDeckSelect() {
-  fetch('/api/decks').then(function(r){ return r.json(); }).then(function(d){
-    var names = (d.decks || []).filter(function(n){ return n !== deck; }).sort();
-    transferDeckSelectEl.innerHTML = '<option value="">Choose a deck…</option>' +
-      names.map(function(n){ return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join('');
+// ── Deck combobox: searchable dropdown + recent-decks pinned to top ─────────
+var allTransferDeckNames = [];   // every deck except the current one, unsorted-original order preserved from API
+var recentTransferDeckNames = []; // most-recent-first, capped server-side
+var transferDecksLoaded = false;
+var comboActiveIndex = -1;       // keyboard-navigated row in the open panel
+
+var deckComboEl = document.getElementById('deckCombo');
+var transferDeckInputEl = document.getElementById('transferDeckInput');
+var transferDeckClearEl = document.getElementById('transferDeckClear');
+var transferDeckPanelEl = document.getElementById('transferDeckPanel');
+
+function deckLabel(fullName) {
+  // Show just the leaf segment, indented by nesting depth; full path stays
+  // in the title attribute (tooltip) and is still what's matched on search.
+  var parts = fullName.split('::');
+  return { leaf: parts[parts.length - 1], depth: parts.length - 1, full: fullName };
+}
+
+function loadTransferDeckOptions() {
+  var decksP = fetch('/api/decks').then(function(r){ return r.json(); });
+  var recentP = deck ? fetch('/api/recent-transfer-decks?deck=' + encodeURIComponent(deck)).then(function(r){ return r.json(); }) : Promise.resolve({ decks: [] });
+  Promise.all([decksP, recentP]).then(function(results){
+    var d = results[0], r = results[1];
+    allTransferDeckNames = (d.decks || []).filter(function(n){ return n !== deck; }).sort();
+    recentTransferDeckNames = (r.decks || []).filter(function(n){ return allTransferDeckNames.indexOf(n) !== -1; });
+    transferDecksLoaded = true;
+    if (transferDeckPanelEl.classList.contains('open')) renderDeckComboPanel(transferDeckInputEl.value);
   }).catch(function(e){ toast('Failed to load deck list: ' + e.message, 'err'); });
+}
+
+function buildComboLegend() {
+  var legend = document.createElement('div');
+  legend.className = 'deck-combo-legend';
+  ['depth-0', 'depth-1', 'depth-2', 'depth-3', 'depth-4plus'].forEach(function(cls){
+    var dot = document.createElement('span');
+    dot.className = 'deck-combo-legend-dot ' + cls;
+    legend.appendChild(dot);
+  });
+  return legend;
+}
+
+function renderDeckComboPanel(filterText) {
+  var q = (filterText || '').trim().toLowerCase();
+  transferDeckPanelEl.innerHTML = '';
+  comboActiveIndex = -1;
+  transferDeckPanelEl.appendChild(buildComboLegend());
+
+  var matches = function(name){ return !q || name.toLowerCase().indexOf(q) !== -1; };
+  var rows = []; // flat list of {name, isRecent} in display order, for keyboard nav
+
+  if (!q && recentTransferDeckNames.length) {
+    var recentLabel = document.createElement('div');
+    recentLabel.className = 'deck-combo-group-label';
+    recentLabel.textContent = 'Recent';
+    transferDeckPanelEl.appendChild(recentLabel);
+    recentTransferDeckNames.forEach(function(name){
+      transferDeckPanelEl.appendChild(buildComboItem(name, true));
+      rows.push(name);
+    });
+    var allLabel = document.createElement('div');
+    allLabel.className = 'deck-combo-group-label';
+    allLabel.textContent = 'All decks';
+    transferDeckPanelEl.appendChild(allLabel);
+  }
+
+  var filtered = allTransferDeckNames.filter(matches);
+  if (!filtered.length) {
+    var empty = document.createElement('div');
+    empty.className = 'deck-combo-empty';
+    empty.textContent = q ? 'No matching decks.' : 'No other decks available.';
+    transferDeckPanelEl.appendChild(empty);
+    return;
+  }
+  filtered.forEach(function(name){
+    transferDeckPanelEl.appendChild(buildComboItem(name, false));
+    rows.push(name);
+  });
+  transferDeckPanelEl._rows = rows;
+}
+
+function deckDepthClass(depth) {
+  return depth >= 4 ? 'depth-4plus' : ('depth-' + depth);
+}
+
+function buildComboItem(name, isRecent) {
+  var lbl = deckLabel(name);
+  var el = document.createElement('div');
+  el.className = 'deck-combo-item ' + deckDepthClass(lbl.depth) + (isRecent ? ' recent-item' : '');
+  el.textContent = lbl.leaf;
+  el.title = lbl.full;
+  el.dataset.deck = name;
+  el.addEventListener('mousedown', function(e){
+    e.preventDefault(); // keep input focus behavior predictable
+    chooseTransferDeck(name);
+  });
+  return el;
+}
+
+function openDeckComboPanel() {
+  transferDeckPanelEl.classList.add('open');
+  renderDeckComboPanel(transferDeckInputEl.value);
+}
+function closeDeckComboPanel() {
+  transferDeckPanelEl.classList.remove('open');
+  comboActiveIndex = -1;
+}
+
+function chooseTransferDeck(name) {
+  transferDeckInputEl.value = name ? deckLabel(name).leaf : '';
+  transferDeckInputEl.title = name;
+  transferDeckClearEl.classList.toggle('show', !!name);
+  closeDeckComboPanel();
+  loadTransferDeck(name);
+  if (name && deck) {
+    fetch('/api/recent-transfer-decks', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deck: deck, chosen: name })
+    }).then(function(r){ return r.json(); }).then(function(res){
+      if (res && res.decks) recentTransferDeckNames = res.decks;
+    }).catch(function(){ /* non-fatal — recents are a convenience, not core */ });
+  }
 }
 
 document.getElementById('transferToggleBtn').addEventListener('click', function(){
   transferOpen = !transferOpen;
   this.classList.toggle('active', transferOpen);
   transferSidebarEl.classList.toggle('open', transferOpen);
-  if (transferOpen && transferDeckSelectEl.options.length <= 1) populateTransferDeckSelect();
+  if (transferOpen && !transferDecksLoaded) loadTransferDeckOptions();
 });
 
-transferDeckSelectEl.addEventListener('change', function(){
-  loadTransferDeck(this.value);
+transferDeckInputEl.addEventListener('focus', function(){
+  if (!transferDecksLoaded) loadTransferDeckOptions();
+  openDeckComboPanel();
+});
+transferDeckInputEl.addEventListener('input', function(){
+  transferDeckClearEl.classList.remove('show'); // typing implies no confirmed selection yet
+  renderDeckComboPanel(this.value);
+  transferDeckPanelEl.classList.add('open');
+});
+transferDeckInputEl.addEventListener('keydown', function(e){
+  var rows = transferDeckPanelEl.querySelectorAll('.deck-combo-item');
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (!rows.length) return;
+    comboActiveIndex += (e.key === 'ArrowDown' ? 1 : -1);
+    if (comboActiveIndex < 0) comboActiveIndex = rows.length - 1;
+    if (comboActiveIndex >= rows.length) comboActiveIndex = 0;
+    rows.forEach(function(r, i){ r.classList.toggle('active', i === comboActiveIndex); });
+    rows[comboActiveIndex].scrollIntoView({ block: 'nearest' });
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (comboActiveIndex >= 0 && rows[comboActiveIndex]) {
+      chooseTransferDeck(rows[comboActiveIndex].dataset.deck);
+    }
+  } else if (e.key === 'Escape') {
+    closeDeckComboPanel();
+    transferDeckInputEl.blur();
+  }
+});
+transferDeckClearEl.addEventListener('click', function(){
+  chooseTransferDeck('');
+  transferDeckInputEl.focus();
+});
+document.addEventListener('click', function(e){
+  if (!deckComboEl.contains(e.target)) closeDeckComboPanel();
 });
 
 // Drop zone: cards dragged FROM this deck (sidebar or canvas) land here as a

@@ -17,6 +17,10 @@ ANKI_CONNECT_URL = "http://127.0.0.1:8765"
 CANVAS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "canvas_data")
 DECK_MAP_MODEL = "00 Deck Map"
 
+# ── Recent transfer-deck picks (per source deck, keyed by deck ID) ──────────
+RECENT_TRANSFER_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "recent_transfer_data")
+RECENT_TRANSFER_MAX = 5
+
 # Anki's 7 flag colors (flag index -> hex). Index 0 means "no flag".
 FLAG_COLORS = {
     1: "#e6555a",  # red
@@ -824,6 +828,60 @@ def save_canvas():
         with open(_canvas_path(deck_id), "w", encoding="utf-8") as f:
             json.dump(canvas, f, indent=2)
         return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+def _recent_transfer_path(deck_id):
+    """One small JSON file per source deck, keyed by stable numeric deck ID,
+    storing the deck names most recently picked in its transfer sidebar."""
+    os.makedirs(RECENT_TRANSFER_DIR, exist_ok=True)
+    return os.path.join(RECENT_TRANSFER_DIR, f"{deck_id}.json")
+
+
+@app.route("/api/recent-transfer-decks")
+def get_recent_transfer_decks():
+    deck = request.args.get("deck", "")
+    if not deck:
+        return jsonify({"error": "No deck specified"}), 400
+    deck_id = _deck_id(deck)
+    if deck_id is None:
+        return jsonify({"decks": []})
+    path = _recent_transfer_path(deck_id)
+    if not os.path.exists(path):
+        return jsonify({"decks": []})
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return jsonify({"decks": json.load(f).get("decks", [])})
+    except Exception:
+        return jsonify({"decks": []})
+
+
+@app.route("/api/recent-transfer-decks", methods=["POST"])
+def add_recent_transfer_deck():
+    data = request.json or {}
+    deck = data.get("deck", "")
+    chosen = data.get("chosen", "")
+    if not deck or not chosen:
+        return jsonify({"error": "Missing deck or chosen"}), 400
+    deck_id = _deck_id(deck)
+    if deck_id is None:
+        return jsonify({"ok": True})  # nothing to persist against
+    path = _recent_transfer_path(deck_id)
+    recents = []
+    if os.path.exists(path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                recents = json.load(f).get("decks", [])
+        except Exception:
+            recents = []
+    recents = [d for d in recents if d != chosen]
+    recents.insert(0, chosen)
+    recents = recents[:RECENT_TRANSFER_MAX]
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump({"decks": recents}, f, indent=2)
+        return jsonify({"ok": True, "decks": recents})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
