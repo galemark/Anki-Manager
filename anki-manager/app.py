@@ -17,6 +17,17 @@ ANKI_CONNECT_URL = "http://127.0.0.1:8765"
 CANVAS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "canvas_data")
 DECK_MAP_MODEL = "00 Deck Map"
 
+# Anki's 7 flag colors (flag index -> hex). Index 0 means "no flag".
+FLAG_COLORS = {
+    1: "#e6555a",  # red
+    2: "#e6a355",  # orange
+    3: "#4caf7d",  # green
+    4: "#5c8fe6",  # blue
+    5: "#e670c0",  # pink
+    6: "#5cc2c7",  # turquoise
+    7: "#a37ce6",  # purple
+}
+
 # ── AnkiConnect helpers ──────────────────────────────────────────────────────
 
 def anki(action, **params):
@@ -101,6 +112,29 @@ def suspend_cards():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/flag-cards", methods=["POST"])
+def flag_cards():
+    """Set (or clear) the Anki flag color on all cards belonging to the given note IDs.
+    flag: 0 = no flag, 1-7 = red/orange/green/blue/pink/turquoise/purple."""
+    data = request.json or {}
+    note_ids = data.get("noteIds", [])
+    flag = data.get("flag", 0)
+    if not note_ids:
+        return jsonify({"error": "No cards specified"}), 400
+    if flag not in range(0, 8):
+        return jsonify({"error": "Invalid flag value"}), 400
+    try:
+        query = " OR ".join(f'nid:{nid}' for nid in note_ids)
+        card_ids = anki("findCards", query=query)
+        if not card_ids:
+            return jsonify({"error": "No matching cards found in Anki"}), 404
+        for cid in card_ids:
+            anki("setSpecificValueOfCard", card=cid, keys=["flags"], newValues=[flag])
+        return jsonify({"ok": True, "count": len(card_ids)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/delete-notes", methods=["POST"])
 def delete_notes():
     """Permanently delete notes (and their cards) from Anki."""
@@ -125,9 +159,11 @@ def get_cards():
             return jsonify({"cards": []})
         notes = anki("notesInfo", notes=ids)
 
-        # Bulk-fetch suspension status. Suspension is a per-CARD property in Anki,
-        # not per-note, so a note counts as suspended if any of its cards are.
+        # Bulk-fetch suspension + flag status. Both are per-CARD properties in Anki,
+        # not per-note, so a note counts as suspended if any of its cards are, and
+        # a note's flag is the first non-zero flag found among its cards.
         suspended_by_note = {}
+        flag_by_note = {}
         try:
             card_ids = anki("findCards", query=query)
             if card_ids:
@@ -136,8 +172,11 @@ def get_cards():
                     nid = ci.get("note")
                     is_susp = ci.get("queue") == -1
                     suspended_by_note[nid] = suspended_by_note.get(nid, False) or is_susp
+                    card_flag = ci.get("flags", 0) or 0
+                    if card_flag and not flag_by_note.get(nid):
+                        flag_by_note[nid] = card_flag
         except Exception:
-            pass  # non-fatal — cards just won't show a suspended flag
+            pass  # non-fatal — cards just won't show a suspended/flag state
 
         cards = []
         for n in notes:
@@ -154,7 +193,8 @@ def get_cards():
                 "tags": n.get("tags", []),
                 "deck": deck or "unknown",
                 "modelName": n.get("modelName", ""),
-                "suspended": suspended_by_note.get(n["noteId"], False)
+                "suspended": suspended_by_note.get(n["noteId"], False),
+                "flag": flag_by_note.get(n["noteId"], 0)
             })
         return jsonify({"cards": cards})
     except Exception as e:
@@ -1338,9 +1378,15 @@ def render_map_svg(nodes, groups, edges, card_lookup):
 
         card = card_lookup.get(n.get("noteId"))
         front = _strip_html(card["front"]) if card else "(card not found)"
+        # Suspended state is deliberately never shown in the pushed snapshot.
+        # Flags DO show — a flagged card gets a colored border same as it does live.
+        flag = (card or {}).get("flag", 0)
+        flag_color = FLAG_COLORS.get(flag)
+        border_stroke = flag_color if flag_color else "#2a2d35"
+        border_width = "2" if flag_color else "1"
         parts.append(
             f'<rect x="{n["x"]}" y="{n["y"]}" width="{w}" height="{h}" rx="8" '
-            f'fill="#1e2128" stroke="#2a2d35" stroke-width="1"/>'
+            f'fill="#1e2128" stroke="{border_stroke}" stroke-width="{border_width}"/>'
             f'<foreignObject x="{n["x"]+8}" y="{n["y"]+8}" width="{w-16}" height="{h-16}">'
             f'<div xmlns="http://www.w3.org/1999/xhtml" style="font-family: DM Mono, monospace; '
             f'font-size:11px; line-height:1.36; color:#e8e9ec; overflow:hidden; white-space:pre-wrap;">{html.escape(front)}</div>'
@@ -1370,11 +1416,31 @@ def push_map():
     try:
         note_ids = anki("findNotes", query=f'deck:"{deck}"')
         notes = anki("notesInfo", notes=note_ids) if note_ids else []
+
+        # Bulk-fetch flags so the pushed snapshot can draw flag-colored borders.
+        # (Suspended state is intentionally NOT fetched here — the pushed snapshot
+        # never shows the suspended/gold border, even though the live canvas does.)
+        flag_by_note = {}
+        try:
+            card_ids = anki("findCards", query=f'deck:"{deck}"')
+            if card_ids:
+                card_infos = anki("cardsInfo", cards=card_ids)
+                for ci in card_infos:
+                    nid = ci.get("note")
+                    card_flag = ci.get("flags", 0) or 0
+                    if card_flag and not flag_by_note.get(nid):
+                        flag_by_note[nid] = card_flag
+        except Exception:
+            pass  # non-fatal — pushed cards just won't show flag borders
+
         card_lookup = {}
         for note_info in notes:
             fields = note_info.get("fields", {})
             front = next(iter(fields.values()), {}).get("value", "") if fields else ""
-            card_lookup[note_info["noteId"]] = {"front": front}
+            card_lookup[note_info["noteId"]] = {
+                "front": front,
+                "flag": flag_by_note.get(note_info["noteId"], 0),
+            }
 
         svg = render_map_svg(nodes, groups, edges, card_lookup)
 

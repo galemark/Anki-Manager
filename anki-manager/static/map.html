@@ -10,6 +10,8 @@
   --bg: #0e0f11; --surface: #16181c; --surface2: #1e2128;
   --border: #2a2d35; --text: #e8e9ec; --muted: #6b7280;
   --accent: #d4a853; --accent2: #7c9fd4;
+  --flag-1: #e6555a; --flag-2: #e6a355; --flag-3: #4caf7d; --flag-4: #5c8fe6;
+  --flag-5: #e670c0; --flag-6: #5cc2c7; --flag-7: #a37ce6;
   --danger: #c0524a; --success: #4caf7d; --merge: #8b6fd4;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -55,6 +57,13 @@ aside.card-sidebar { width: 240px; min-width: 160px; max-width: 480px; flex-shri
 .sidebar-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 10px 11px; font-size: 11.5px; line-height: 1.55; color: var(--text); cursor: grab; white-space: normal; word-break: break-word; overflow-wrap: break-word; }
 .sidebar-card:hover { border-color: var(--accent2); }
 .sidebar-card.suspended { border: 2px solid var(--accent); padding: 9px 10px; }
+.sidebar-card.flag-1 { border: 2px solid var(--flag-1); padding: 9px 10px; }
+.sidebar-card.flag-2 { border: 2px solid var(--flag-2); padding: 9px 10px; }
+.sidebar-card.flag-3 { border: 2px solid var(--flag-3); padding: 9px 10px; }
+.sidebar-card.flag-4 { border: 2px solid var(--flag-4); padding: 9px 10px; }
+.sidebar-card.flag-5 { border: 2px solid var(--flag-5); padding: 9px 10px; }
+.sidebar-card.flag-6 { border: 2px solid var(--flag-6); padding: 9px 10px; }
+.sidebar-card.flag-7 { border: 2px solid var(--flag-7); padding: 9px 10px; }
 .sidebar-card.selected { border-color: var(--accent2); background: color-mix(in srgb, var(--accent2) 18%, var(--surface2)); box-shadow: 0 0 0 1px var(--accent2) inset; }
 .sidebar-empty { padding: 20px 12px; text-align: center; color: var(--muted); font-size: 11px; line-height: 1.7; }
 
@@ -91,6 +100,14 @@ aside.transfer-sidebar.open { display: flex; }
 .card-node:hover { border-color: var(--accent2); }
 .card-node.dragging { cursor: grabbing; z-index: 50; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
 .card-node.canvas-selected { border-color: var(--accent2); box-shadow: 0 0 0 2px var(--accent2); }
+.card-node.suspended { border: 2px solid var(--accent); padding: 8px 10px; }
+.card-node.flag-1 { border: 2px solid var(--flag-1); padding: 8px 10px; }
+.card-node.flag-2 { border: 2px solid var(--flag-2); padding: 8px 10px; }
+.card-node.flag-3 { border: 2px solid var(--flag-3); padding: 8px 10px; }
+.card-node.flag-4 { border: 2px solid var(--flag-4); padding: 8px 10px; }
+.card-node.flag-5 { border: 2px solid var(--flag-5); padding: 8px 10px; }
+.card-node.flag-6 { border: 2px solid var(--flag-6); padding: 8px 10px; }
+.card-node.flag-7 { border: 2px solid var(--flag-7); padding: 8px 10px; }
 .group-frame.canvas-selected { box-shadow: 0 0 0 2px var(--accent2); }
 .note-node.canvas-selected { box-shadow: 0 0 0 2px var(--accent2); }
 svg.edge-layer line.edge-selected { stroke-width: 3.5; stroke-opacity: 1; }
@@ -126,9 +143,14 @@ svg.edge-layer .edge-label-text { fill: var(--accent2); font-size: 10px; font-fa
 .color-swatch:hover { border-color: var(--text); }
 
 .context-menu { position: fixed; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 5px; z-index: 999; box-shadow: 0 8px 24px rgba(0,0,0,0.5); min-width: 170px; }
-.context-menu-item { padding: 7px 12px; font-size: 12px; color: var(--text); cursor: pointer; border-radius: 5px; }
+.context-menu-item { padding: 7px 12px; font-size: 12px; color: var(--text); cursor: pointer; border-radius: 5px; display: flex; align-items: center; justify-content: space-between; gap: 8px; position: relative; }
 .context-menu-item:hover { background: var(--surface2); }
 .context-menu-item.danger { color: var(--danger); }
+.context-menu-item .cm-caret { color: var(--muted); font-size: 10px; }
+.context-menu-item .cm-swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; margin-right: 8px; flex-shrink: 0; }
+.context-menu-item .cm-label { display: flex; align-items: center; }
+.context-submenu { position: fixed; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 5px; z-index: 1000; box-shadow: 0 8px 24px rgba(0,0,0,0.5); min-width: 150px; display: none; }
+.context-submenu.open { display: block; }
 
 .empty-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; color: var(--muted); z-index: 1; width: 320px; }
 .empty-hint h2 { font-family: 'Fraunces', serif; font-weight: 300; color: var(--text); font-size: 18px; margin-bottom: 8px; }
@@ -218,7 +240,15 @@ svg.edge-layer .edge-label-text { fill: var(--accent2); font-size: 10px; font-fa
     </div>
     <aside class="transfer-sidebar" id="transferSidebar">
       <div class="transfer-header">
-        <div class="transfer-title">Transfer with…</div>
+        <div class="transfer-title" style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;">
+          <span>Transfer with…</span>
+          <select class="sidebar-sort" id="transferSort" title="Sort transfer list">
+            <option value="default">Deck order</option>
+            <option value="created">Date created</option>
+            <option value="alpha">Alphabetical</option>
+            <option value="tag">By tag</option>
+          </select>
+        </div>
         <select class="transfer-deck-select" id="transferDeckSelect">
           <option value="">Choose a deck…</option>
         </select>
@@ -295,6 +325,36 @@ svg.edge-layer .edge-label-text { fill: var(--accent2); font-size: 10px; font-fa
 <script>
 // ── State ─────────────────────────────────────────────────────────────────
 var deck = new URLSearchParams(location.search).get('deck') || '';
+// Anki's 7 flag colors (index -> {name, hex}). Kept in sync with FLAG_COLORS in app.py.
+var FLAG_INFO = {
+  1: { name: 'Red',       hex: '#e6555a' },
+  2: { name: 'Orange',    hex: '#e6a355' },
+  3: { name: 'Green',     hex: '#4caf7d' },
+  4: { name: 'Blue',      hex: '#5c8fe6' },
+  5: { name: 'Pink',      hex: '#e670c0' },
+  6: { name: 'Turquoise', hex: '#5cc2c7' },
+  7: { name: 'Purple',    hex: '#a37ce6' }
+};
+
+// Border class for a card: suspended wins over flag when both are set.
+function cardBorderClass(c) {
+  if (!c) return '';
+  if (c.suspended) return 'suspended';
+  if (c.flag) return 'flag-' + c.flag;
+  return '';
+}
+
+// Builds the "Flag" submenu items for a card/selection's current flag value.
+// onSet(flagValue) is called with 0 to unflag, or 1-7 to set that color.
+function buildFlagSubmenu(currentFlag, onSet) {
+  var items = Object.keys(FLAG_INFO).map(function(k){
+    var n = parseInt(k, 10);
+    return { label: FLAG_INFO[n].name, swatch: FLAG_INFO[n].hex, action: function(){ onSet(n); } };
+  });
+  items.push({ label: 'No flag', action: function(){ onSet(0); } });
+  return items;
+}
+
 var cards = [];           // live card data from AnkiConnect: {id, front, back, tags}
 var nodes = [];           // {id, type:'card'|'note', noteId?, text?, color?, x, y, width, height, groupId}
 var groups = [];          // {id, label, x, y, width, height, color}
@@ -546,6 +606,7 @@ function placedNoteIds() {
 
 // ── Sidebar sorting ──────────────────────────────────────────────────────
 var currentSort = 'default';
+var transferSortMode = 'default';
 var UNTAGGED_LABEL = 'Untagged';
 
 document.getElementById('sidebarSort').addEventListener('change', function(){
@@ -553,17 +614,24 @@ document.getElementById('sidebarSort').addEventListener('change', function(){
   renderSidebar();
 });
 
+document.getElementById('transferSort').addEventListener('change', function(){
+  transferSortMode = this.value;
+  renderTransferList();
+});
+
 // Returns { list: [cards in sort order], groups: [{label, cards}] | null }
-// groups is only populated for the 'tag' sort, so renderSidebar can inject headers.
-function sortCards(list) {
+// groups is only populated for the 'tag' sort, so callers can inject headers.
+// `mode` defaults to the primary sidebar's sort so existing callers don't change.
+function sortCards(list, mode) {
+  var sortMode = mode || currentSort;
   var arr = list.slice();
-  if (currentSort === 'created') {
+  if (sortMode === 'created') {
     // Anki note IDs are epoch-millisecond creation timestamps, so a numeric
     // sort on id doubles as a date-created sort with no extra data needed.
     arr.sort(function(a, b){ return a.id - b.id; });
     return { list: arr, groups: null };
   }
-  if (currentSort === 'alpha') {
+  if (sortMode === 'alpha') {
     arr.sort(function(a, b){
       var fa = stripHtml(a.front).trim().toLowerCase();
       var fb = stripHtml(b.front).trim().toLowerCase();
@@ -573,7 +641,7 @@ function sortCards(list) {
     });
     return { list: arr, groups: null };
   }
-  if (currentSort === 'tag') {
+  if (sortMode === 'tag') {
     // Group by first tag (alphabetically); untagged cards form their own
     // group, sorted last. Cards with multiple tags key off the first one —
     // simplest rule, and matches how Anki's own browser sidebar treats
@@ -642,7 +710,8 @@ function renderSidebar() {
       }
     }
     var el = document.createElement('div');
-    el.className = 'sidebar-card' + (c.suspended ? ' suspended' : '') + (isSelected(c.id) ? ' selected' : '');
+    var bClass = cardBorderClass(c);
+    el.className = 'sidebar-card' + (bClass ? ' ' + bClass : '') + (isSelected(c.id) ? ' selected' : '');
     el.draggable = true;
 
     el.textContent = stripHtml(c.front);
@@ -686,11 +755,13 @@ function renderSidebar() {
         var anySuspended = ids.some(function(id){ var cc = cardById(id); return cc && cc.suspended; });
         showContextMenu(e.clientX, e.clientY, [
           { label: anySuspended ? 'Unsuspend all (' + ids.length + ')' : 'Suspend all (' + ids.length + ')', action: function(){ toggleSuspendBulk(ids, !anySuspended); } },
+          { label: 'Flag all (' + ids.length + ')', submenu: buildFlagSubmenu(0, function(flagVal){ setFlagBulk(ids, flagVal); }) },
           { label: 'Delete all from Anki (' + ids.length + ')', danger: true, action: function(){ deleteCardsFromAnki(ids); } }
         ]);
       } else {
         showContextMenu(e.clientX, e.clientY, [
           { label: c.suspended ? 'Unsuspend' : 'Suspend', action: function(){ toggleSuspend(c.id, !c.suspended); } },
+          { label: 'Flag', submenu: buildFlagSubmenu(c.flag, function(flagVal){ setFlag(c.id, flagVal); }) },
           { label: 'Delete from Anki', danger: true, action: function(){ deleteCardFromAnki(c.id); } }
         ]);
       }
@@ -754,7 +825,7 @@ function pullInCards(noteIds) {
     noteIds.forEach(function(nid){
       var src = transferCards.find(function(c){ return c.id === nid; });
       if (src && !cards.some(function(c){ return c.id === nid; })) {
-        cards.push({ id: src.id, front: src.front, back: src.back, tags: src.tags, deck: deck, modelName: src.modelName, suspended: src.suspended });
+        cards.push({ id: src.id, front: src.front, back: src.back, tags: src.tags, deck: deck, modelName: src.modelName, suspended: src.suspended, flag: src.flag });
       }
     });
     transferCards = transferCards.filter(function(c){ return noteIds.indexOf(c.id) === -1; });
@@ -779,7 +850,29 @@ function renderTransferList() {
     transferListEl.innerHTML = '<div class="transfer-empty">This deck has no cards.</div>';
     return;
   }
-  transferCards.forEach(function(c, idx){
+
+  var sorted = sortCards(transferCards, transferSortMode);
+  var sortedTransferCards = sorted.list;
+  var groupLabelByCardId = null;
+  if (sorted.groups) {
+    groupLabelByCardId = {};
+    sorted.groups.forEach(function(g){
+      g.cards.forEach(function(c){ groupLabelByCardId[c.id] = g.label; });
+    });
+  }
+  var lastGroupLabel = null;
+
+  sortedTransferCards.forEach(function(c, idx){
+    if (groupLabelByCardId) {
+      var label = groupLabelByCardId[c.id];
+      if (label !== lastGroupLabel) {
+        var header = document.createElement('div');
+        header.className = 'sidebar-group-header';
+        header.textContent = label;
+        transferListEl.appendChild(header);
+        lastGroupLabel = label;
+      }
+    }
     var el = document.createElement('div');
     el.className = 'transfer-card' + (isTransferSelected(c.id) ? ' selected' : '');
     el.draggable = true;
@@ -787,10 +880,10 @@ function renderTransferList() {
 
     el.addEventListener('click', function(e){
       if (e.shiftKey && transferLastClickedId !== null) {
-        var anchorIdx = transferCards.findIndex(function(x){ return x.id === transferLastClickedId; });
+        var anchorIdx = sortedTransferCards.findIndex(function(x){ return x.id === transferLastClickedId; });
         if (anchorIdx === -1) anchorIdx = idx;
         var lo = Math.min(anchorIdx, idx), hi = Math.max(anchorIdx, idx);
-        transferSelectedIds = transferCards.slice(lo, hi + 1).map(function(x){ return x.id; });
+        transferSelectedIds = sortedTransferCards.slice(lo, hi + 1).map(function(x){ return x.id; });
       } else if (e.ctrlKey || e.metaKey) {
         if (isTransferSelected(c.id)) {
           transferSelectedIds = transferSelectedIds.filter(function(id){ return id !== c.id; });
@@ -1140,6 +1233,7 @@ function buildBulkContextMenu(e) {
     var items = [];
     if (anyGrouped) items.push({ label: 'Remove from group (' + selNodes.length + ')', action: function(){ selNodes.forEach(function(nn){ nn.groupId = null; }); render(); scheduleSave(); } });
     items.push({ label: anySuspended ? 'Unsuspend all (' + selNodes.length + ')' : 'Suspend all (' + selNodes.length + ')', action: function(){ toggleSuspendBulk(selNodes.map(function(nn){ return nn.noteId; }), !anySuspended); } });
+    items.push({ label: 'Flag all (' + selNodes.length + ')', submenu: buildFlagSubmenu(0, function(flagVal){ setFlagBulk(selNodes.map(function(nn){ return nn.noteId; }), flagVal); }) });
     items.push({ label: 'Return all to sidebar (' + selNodes.length + ')', action: function(){ deleteNodesBulk(selNodeIds); } });
     items.push({ label: 'Delete all from Anki (' + selNodes.length + ')', danger: true, action: function(){ deleteCardsFromAnki(selNodes.map(function(nn){ return nn.noteId; })); } });
     showContextMenu(e.clientX, e.clientY, items);
@@ -1280,7 +1374,8 @@ function renderGroup(g, index) {
 function renderNode(n) {
   var card = cardById(n.noteId);
   var el = document.createElement('div');
-  el.className = 'card-node' + (isItemSelected(n.id, 'card') ? ' canvas-selected' : '');
+  var bClass = cardBorderClass(card);
+  el.className = 'card-node' + (bClass ? ' ' + bClass : '') + (isItemSelected(n.id, 'card') ? ' canvas-selected' : '');
   el.id = n.id;
   el.style.left = n.x + 'px';
   el.style.top = n.y + 'px';
@@ -1330,6 +1425,7 @@ function renderNode(n) {
     if (n.groupId) items.push({ label: 'Remove from group', action: function(){ n.groupId = null; render(); scheduleSave(); } });
     items.push({ label: 'Open in Anki', action: function(){ openInAnki(n.noteId); } });
     items.push({ label: (card && card.suspended) ? 'Unsuspend' : 'Suspend', action: function(){ toggleSuspend(n.noteId, !(card && card.suspended)); } });
+    items.push({ label: 'Flag', submenu: buildFlagSubmenu(card && card.flag, function(flagVal){ setFlag(n.noteId, flagVal); }) });
     items.push({ label: 'Return to sidebar', action: function(){ deleteNode(n.id); } });
     items.push({ label: 'Delete from Anki', danger: true, action: function(){ deleteCardFromAnki(n.noteId); } });
     showContextMenu(e.clientX, e.clientY, items);
@@ -1441,7 +1537,38 @@ function toggleSuspend(noteId, suspend) {
     var card = cardById(noteId);
     if (card) card.suspended = suspend;
     renderSidebar();
+    render();
     toast(suspend ? 'Card suspended' : 'Card unsuspended', 'ok');
+  }).catch(function(e){ toast('Failed: ' + e.message, 'err'); });
+}
+
+function setFlag(noteId, flag) {
+  fetch('/api/flag-cards', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ noteIds: [noteId], flag: flag })
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if (d.error) throw new Error(d.error);
+    var card = cardById(noteId);
+    if (card) card.flag = flag;
+    renderSidebar();
+    render();
+    toast(flag ? ('Flagged ' + FLAG_INFO[flag].name) : 'Flag removed', 'ok');
+  }).catch(function(e){ toast('Failed: ' + e.message, 'err'); });
+}
+
+function setFlagBulk(noteIds, flag) {
+  fetch('/api/flag-cards', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ noteIds: noteIds, flag: flag })
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if (d.error) throw new Error(d.error);
+    noteIds.forEach(function(id){
+      var card = cardById(id);
+      if (card) card.flag = flag;
+    });
+    renderSidebar();
+    render();
+    toast((flag ? 'Flagged ' + FLAG_INFO[flag].name + ' — ' : 'Removed flag — ') + noteIds.length + ' card' + (noteIds.length === 1 ? '' : 's'), 'ok');
   }).catch(function(e){ toast('Failed: ' + e.message, 'err'); });
 }
 
@@ -1474,6 +1601,7 @@ function toggleSuspendBulk(noteIds, suspend) {
       if (card) card.suspended = suspend;
     });
     renderSidebar();
+    render();
     toast((suspend ? 'Suspended ' : 'Unsuspended ') + noteIds.length + ' card' + (noteIds.length === 1 ? '' : 's'), 'ok');
   }).catch(function(e){ toast('Failed: ' + e.message, 'err'); });
 }
@@ -2095,9 +2223,12 @@ function showColorPalette(x, y, onPick, palette) {
 }
 
 // ── Context menu ──────────────────────────────────────────────────────────
+// items: [{ label, danger, action }] for a normal row, or
+//        { label, swatch, submenu: [{ label, swatch, action }] } for a flyout row.
 function showContextMenu(x, y, items) {
   var existing = document.querySelector('.context-menu');
   if (existing) existing.remove();
+  document.querySelectorAll('.context-submenu').forEach(function(m){ m.remove(); });
   var menu = document.createElement('div');
   menu.className = 'context-menu';
   menu.style.left = x + 'px';
@@ -2105,14 +2236,68 @@ function showContextMenu(x, y, items) {
   items.forEach(function(item){
     var el = document.createElement('div');
     el.className = 'context-menu-item' + (item.danger ? ' danger' : '');
-    el.textContent = item.label;
-    el.addEventListener('click', function(){ pushUndoSnapshot(); item.action(); menu.remove(); });
+
+    var labelWrap = document.createElement('span');
+    labelWrap.className = 'cm-label';
+    if (item.swatch) {
+      var sw = document.createElement('span');
+      sw.className = 'cm-swatch';
+      sw.style.background = item.swatch;
+      labelWrap.appendChild(sw);
+    }
+    labelWrap.appendChild(document.createTextNode(item.label));
+    el.appendChild(labelWrap);
+
+    if (item.submenu && item.submenu.length) {
+      var caret = document.createElement('span');
+      caret.className = 'cm-caret';
+      caret.textContent = '▸';
+      el.appendChild(caret);
+
+      var submenu = document.createElement('div');
+      submenu.className = 'context-submenu';
+      item.submenu.forEach(function(subItem){
+        var subEl = document.createElement('div');
+        subEl.className = 'context-menu-item' + (subItem.danger ? ' danger' : '');
+        var subLabelWrap = document.createElement('span');
+        subLabelWrap.className = 'cm-label';
+        if (subItem.swatch) {
+          var subSw = document.createElement('span');
+          subSw.className = 'cm-swatch';
+          subSw.style.background = subItem.swatch;
+          subLabelWrap.appendChild(subSw);
+        }
+        subLabelWrap.appendChild(document.createTextNode(subItem.label));
+        subEl.appendChild(subLabelWrap);
+        subEl.addEventListener('click', function(e){
+          e.stopPropagation();
+          pushUndoSnapshot();
+          subItem.action();
+          menu.remove();
+          submenu.remove();
+        });
+        submenu.appendChild(subEl);
+      });
+      document.body.appendChild(submenu);
+
+      el.addEventListener('mouseenter', function(){
+        document.querySelectorAll('.context-submenu').forEach(function(m){ m.classList.remove('open'); });
+        var rect = el.getBoundingClientRect();
+        submenu.style.left = rect.right + 'px';
+        submenu.style.top = rect.top + 'px';
+        submenu.classList.add('open');
+      });
+    } else {
+      el.addEventListener('click', function(){ pushUndoSnapshot(); item.action(); menu.remove(); document.querySelectorAll('.context-submenu').forEach(function(m){ m.remove(); }); });
+    }
+
     menu.appendChild(el);
   });
   document.body.appendChild(menu);
   setTimeout(function(){
     document.addEventListener('click', function closeMenu(){
       menu.remove();
+      document.querySelectorAll('.context-submenu').forEach(function(m){ m.remove(); });
       document.removeEventListener('click', closeMenu);
     });
   }, 10);
