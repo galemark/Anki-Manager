@@ -788,6 +788,78 @@ def save_canvas():
         return jsonify({"error": str(e)}), 500
 
 
+# ── Cross-deck card transfer ──────────────────────────────────────────────────
+
+@app.route("/api/move-cards", methods=["POST"])
+def move_cards():
+    """Move card(s) from one deck to another via AnkiConnect's changeDeck.
+    Bidirectional — same endpoint serves both 'pull in' and 'push out', the
+    caller just swaps which deck is source vs. target. Best-effort only: no
+    orphan-flag is written here. Orphan status is instead detected live (see
+    /api/canvas-orphans) by cross-checking a deck's canvas against Anki at
+    load time, so there's nothing here that can desync."""
+    data = request.json or {}
+    source_deck = data.get("sourceDeck", "").strip()
+    target_deck = data.get("targetDeck", "").strip()
+    note_ids = data.get("noteIds", [])
+
+    if not source_deck or not target_deck:
+        return jsonify({"error": "Source and target deck are required"}), 400
+    if source_deck == target_deck:
+        return jsonify({"error": "Source and target deck must be different"}), 400
+    if not note_ids:
+        return jsonify({"error": "No cards specified"}), 400
+
+    try:
+        query = " OR ".join(f'nid:{nid}' for nid in note_ids)
+        card_ids = anki("findCards", query=query)
+        if not card_ids:
+            return jsonify({"error": "No matching cards found in Anki"}), 404
+        anki("changeDeck", cards=card_ids, deck=target_deck)
+        return jsonify({"ok": True, "count": len(card_ids)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/canvas-orphans")
+def get_canvas_orphans():
+    """Cross-check a deck's SAVED canvas against Anki's current deck
+    membership to find placed card nodes whose underlying card has since
+    been moved out (e.g. via a cross-deck transfer initiated from this
+    deck's map while it wasn't open). Active-manual: this only detects and
+    reports orphans for the caller to review — it never prunes anything
+    itself."""
+    deck = request.args.get("deck", "")
+    if not deck:
+        return jsonify({"error": "No deck specified"}), 400
+    deck_id = _deck_id(deck)
+    if deck_id is None:
+        return jsonify({"orphanNodeIds": []})
+    path = _canvas_path(deck_id)
+    if not os.path.exists(path):
+        return jsonify({"orphanNodeIds": []})
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            canvas = json.load(f)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    placed_card_nodes = [
+        n for n in canvas.get("nodes", [])
+        if n.get("type") == "card" and n.get("noteId") is not None
+    ]
+    if not placed_card_nodes:
+        return jsonify({"orphanNodeIds": []})
+
+    try:
+        current_note_ids = set(anki("findNotes", query=f'deck:"{deck}"'))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    orphan_ids = [n["id"] for n in placed_card_nodes if n["noteId"] not in current_note_ids]
+    return jsonify({"orphanNodeIds": orphan_ids})
+
+
 # ── Deck Map: promote group(s) to subdeck ────────────────────────────────────
 
 @app.route("/api/promote-group", methods=["POST"])
@@ -828,6 +900,43 @@ def promote_group():
         # ── 1. Create the subdeck in Anki ──────────────────────────────────
         anki("createDeck", deck=full_subdeck_name)
 
+        # ── 1b. Resolve the subdeck's canvas file and load it if one already
+        # exists, so newly promoted content can be MERGED into it (appended
+        # below, with collision-safe ids) instead of silently overwriting
+        # any map the user already built for this subdeck.
+        new_deck_id = _deck_id(full_subdeck_name)
+        if new_deck_id is None:
+            return jsonify({"error": "Subdeck was created but its ID could not be resolved"}), 500
+        canvas_path = _canvas_path(new_deck_id)
+
+        existing_canvas = _empty_canvas()
+        if os.path.exists(canvas_path):
+            try:
+                with open(canvas_path, "r", encoding="utf-8") as f:
+                    existing_canvas = json.load(f)
+            except Exception:
+                existing_canvas = _empty_canvas()  # corrupt/unreadable — treat as empty rather than fail the promote
+
+        existing_nodes = existing_canvas.get("nodes") or []
+        existing_groups = existing_canvas.get("groups") or []
+        existing_edges = existing_canvas.get("edges") or []
+        existing_has_content = bool(existing_nodes) or bool(existing_groups)
+
+        # Collision-safe id minting: uid_py() collisions are astronomically
+        # unlikely on their own, but merging two independently-generated
+        # canvases doubles the id surface, so we check explicitly rather
+        # than assume.
+        used_ids = {n.get("id") for n in existing_nodes}
+        used_ids |= {g.get("id") for g in existing_groups}
+        used_ids |= {e.get("id") for e in existing_edges}
+
+        def _safe_uid(prefix):
+            candidate = uid_py(prefix)
+            while candidate in used_ids:
+                candidate = uid_py(prefix)
+            used_ids.add(candidate)
+            return candidate
+
         # ── 2. Gather the selected groups (preserve given order) ──────────
         group_map = {g["id"]: g for g in groups}
         selected_groups = [group_map[gid] for gid in group_ids if gid in group_map]
@@ -850,7 +959,7 @@ def promote_group():
                 continue
             member_nodes_by_group[g["id"]] = member_nodes
             group_offset_x[g["id"]] = -g["x"] + 60
-            old_to_new_group[g["id"]] = uid_py("g")
+            old_to_new_group[g["id"]] = _safe_uid("g")
 
         if not member_nodes_by_group:
             return jsonify({"error": "Selected group(s) have no cards to promote"}), 400
@@ -904,9 +1013,23 @@ def promote_group():
         hub_heights = [node_map[eid].get("height", 90) for eid in seen_ext_ids]
         reserved_band = (max(hub_heights) + HUB_GAP) if hub_heights else 0
 
+        # ── 3d. If the subdeck canvas already has content, the newly
+        # promoted cluster (and its hub-note band) must start BELOW
+        # everything already on it, not at the top of the canvas.
+        EXISTING_GAP = 80
+        if existing_has_content:
+            existing_bottoms = [n.get("y", 0) + n.get("height", 90) for n in existing_nodes]
+            existing_bottoms += [g.get("y", 0) + g.get("height", 90) for g in existing_groups]
+            existing_bottom = max(existing_bottoms) if existing_bottoms else 0
+            base_y = existing_bottom + EXISTING_GAP
+        else:
+            base_y = 0
+
+        new_content_top = 60 + base_y   # where the hub-note band (or first group, if no hub notes) starts
+
         # ── 4. Build recentered nodes/groups, stacking clusters vertically
         # below the reserved hub-note band ──────────────────────────────
-        cursor_y = 60 + reserved_band
+        cursor_y = new_content_top + reserved_band
         new_nodes = []
         new_groups = []
         note_ids = []
@@ -957,6 +1080,7 @@ def promote_group():
             a, b = e.get("fromNode"), e.get("toNode")
             if a in promoted_anchor_ids and b in promoted_anchor_ids:
                 ne = dict(e)
+                ne["id"] = _safe_uid("e")  # regenerate rather than reuse the parent map's edge id, to stay collision-safe when merging into an existing subdeck canvas
                 ne["fromNode"] = _remap_anchor(a)
                 ne["toNode"] = _remap_anchor(b)
                 new_edges.append(ne)
@@ -1000,10 +1124,10 @@ def promote_group():
             clone_x = max(cursor_x, desired_x)
 
             clone = dict(ext_node)
-            new_id = uid_py("note")
+            new_id = _safe_uid("note")
             clone["id"] = new_id
             clone["x"] = clone_x
-            clone["y"] = 60
+            clone["y"] = new_content_top
             clone["groupId"] = None
 
             bridge_new_id[ext_id] = new_id
@@ -1020,7 +1144,7 @@ def promote_group():
             else:
                 from_node, to_node = promoted_id, new_bridge_id
             new_edges.append({
-                "id": uid_py("e"),
+                "id": _safe_uid("e"),
                 "fromNode": from_node,
                 "toNode": to_node,
                 "label": e.get("label", ""),
@@ -1029,18 +1153,24 @@ def promote_group():
                 "direction": e.get("direction", "none"),
             })
 
-        # ── 6. Write the new subdeck's canvas file ──────────────────────────
-        new_deck_id = _deck_id(full_subdeck_name)
-        if new_deck_id is None:
-            return jsonify({"error": "Subdeck was created but its ID could not be resolved"}), 500
-        with open(_canvas_path(new_deck_id), "w", encoding="utf-8") as f:
-            json.dump({"nodes": new_nodes, "groups": new_groups, "edges": new_edges}, f, indent=2)
+        # ── 7. Write the subdeck's canvas file — MERGED with whatever was
+        # already there (existing_* is [] if there was nothing, so this is
+        # a no-op concat in the fresh-subdeck case and a true merge
+        # otherwise; new_deck_id/canvas_path were already resolved in 1b).
+        final_canvas = {
+            "nodes": existing_nodes + new_nodes,
+            "groups": existing_groups + new_groups,
+            "edges": existing_edges + new_edges,
+        }
+        with open(canvas_path, "w", encoding="utf-8") as f:
+            json.dump(final_canvas, f, indent=2)
 
         return jsonify({
             "ok": True,
             "subdeck": full_subdeck_name,
             "cardsMoved": len(note_ids),
             "hubNotesCarried": len(bridge_new_id),
+            "merged": existing_has_content,
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500

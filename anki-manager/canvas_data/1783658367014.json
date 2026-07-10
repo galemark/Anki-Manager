@@ -1,0 +1,406 @@
+{
+  "nodes": [
+    {
+      "groupId": "g_b7e59d9",
+      "height": 70,
+      "id": "n_vmi7g6e",
+      "noteId": 1777604454398,
+      "type": "card",
+      "width": 180,
+      "x": 916,
+      "y": 435
+    },
+    {
+      "groupId": "g_b7e59d9",
+      "height": 70,
+      "id": "n_gkjyfp1",
+      "noteId": 1777604454399,
+      "type": "card",
+      "width": 180,
+      "x": 717,
+      "y": 250
+    },
+    {
+      "groupId": "g_b7e59d9",
+      "height": 70,
+      "id": "n_ifsobqt",
+      "noteId": 1777604454400,
+      "type": "card",
+      "width": 180,
+      "x": 718,
+      "y": 335
+    },
+    {
+      "groupId": "g_b7e59d9",
+      "height": 70,
+      "id": "n_7gipved",
+      "noteId": 1777604454401,
+      "type": "card",
+      "width": 180,
+      "x": 716,
+      "y": 417
+    },
+    {
+      "groupId": "g_b7e59d9",
+      "height": 70,
+      "id": "n_7yum0fw",
+      "noteId": 1777604454403,
+      "type": "card",
+      "width": 180,
+      "x": 1116,
+      "y": 253
+    },
+    {
+      "groupId": "g_b7e59d9",
+      "height": 70,
+      "id": "n_xcq5ro5",
+      "noteId": 1777604454404,
+      "type": "card",
+      "width": 180,
+      "x": 1120,
+      "y": 334
+    },
+    {
+      "groupId": "g_b7e59d9",
+      "height": 70,
+      "id": "n_2d9id9j",
+      "noteId": 1777604454405,
+      "type": "card",
+      "width": 180,
+      "x": 917,
+      "y": 257
+    },
+    {
+      "groupId": "g_b7e59d9",
+      "height": 70,
+      "id": "n_zgfd66f",
+      "noteId": 1777604454406,
+      "type": "card",
+      "width": 180,
+      "x": 1117,
+      "y": 429
+    },
+    {
+      "groupId": "g_b7e59d9",
+      "height": 70,
+      "id": "n_3epciq1",
+      "noteId": 1777604454407,
+      "type": "card",
+      "width": 180,
+      "x": 1117,
+      "y": 635
+    },
+    {
+      "groupId": "g_b7e59d9",
+      "height": 70,
+      "id": "n_ipu7vkw",
+      "noteId": 1777604454408,
+      "type": "card",
+      "width": 180,
+      "x": 712,
+      "y": 500
+    },
+    {
+      "groupId": "g_b7e59d9",
+      "height": 70,
+      "id": "n_477lrnd",
+      "noteId": 1777604454409,
+      "type": "card",
+      "width": 180,
+      "x": 1117,
+      "y": 531
+    },
+    {
+      "groupId": "g_b7e59d9",
+      "height": 70,
+      "id": "n_dw1swkl",
+      "noteId": 1777604454447,
+      "type": "card",
+      "width": 180,
+      "x": 914,
+      "y": 338.5555419921875
+    },
+    {
+      "groupId": "g_5e3a16b",
+      "height": 70,
+      "id": "n_ob4kgmx",
+      "noteId": 1777604454410,
+      "type": "card",
+      "width": 180,
+      "x": 138,
+      "y": 271
+    },
+    {
+      "groupId": "g_5e3a16b",
+      "height": 70,
+      "id": "n_ern0y6n",
+      "noteId": 1777604454411,
+      "type": "card",
+      "width": 180,
+      "x": 334,
+      "y": 271
+    },
+    {
+      "groupId": "g_5e3a16b",
+      "height": 70,
+      "id": "n_w4fbeun",
+      "noteId": 1777604454412,
+      "type": "card",
+      "width": 180,
+      "x": 138,
+      "y": 389
+    },
+    {
+      "groupId": "g_5e3a16b",
+      "height": 70,
+      "id": "n_djr3vys",
+      "noteId": 1777604454439,
+      "type": "card",
+      "width": 180,
+      "x": 122,
+      "y": 525.5555419921875
+    },
+    {
+      "groupId": "g_5e3a16b",
+      "height": 70,
+      "id": "n_tvfinsx",
+      "noteId": 1777604454438,
+      "type": "card",
+      "width": 180,
+      "x": 381,
+      "y": 523.5555419921875
+    },
+    {
+      "color": "#361e1e",
+      "groupId": null,
+      "height": 70,
+      "id": "note_b3b8095",
+      "text": "Disorders",
+      "textAlign": "center",
+      "type": "note",
+      "width": 120,
+      "x": 565.25,
+      "y": 79
+    },
+    {
+      "groupId": "g_4e93e2b",
+      "height": 70,
+      "id": "n_xijx3fe",
+      "noteId": 1778496483226,
+      "type": "card",
+      "width": 180,
+      "x": 345,
+      "y": 840
+    },
+    {
+      "groupId": "g_4e93e2b",
+      "height": 70,
+      "id": "n_88bpiuv",
+      "noteId": 1778496483095,
+      "type": "card",
+      "width": 180,
+      "x": 541,
+      "y": 840
+    },
+    {
+      "groupId": "g_4e93e2b",
+      "height": 70,
+      "id": "n_yjzwiq2",
+      "noteId": 1778496482807,
+      "type": "card",
+      "width": 180,
+      "x": 345,
+      "y": 1008
+    },
+    {
+      "groupId": "g_4e93e2b",
+      "height": 70,
+      "id": "n_3wct2m9",
+      "noteId": 1778411835785,
+      "type": "card",
+      "width": 180,
+      "x": 541,
+      "y": 958
+    },
+    {
+      "groupId": "g_4e93e2b",
+      "height": 70,
+      "id": "n_gbyk06w",
+      "noteId": 1778496476846,
+      "type": "card",
+      "width": 180,
+      "x": 543,
+      "y": 1056
+    },
+    {
+      "groupId": "g_4e93e2b",
+      "height": 70,
+      "id": "n_svee5ph",
+      "noteId": 1778496482878,
+      "type": "card",
+      "width": 180,
+      "x": 742,
+      "y": 843
+    },
+    {
+      "groupId": "g_4e93e2b",
+      "height": 70,
+      "id": "n_1vx1fxu",
+      "noteId": 1778496483026,
+      "type": "card",
+      "width": 180,
+      "x": 547,
+      "y": 1183
+    },
+    {
+      "groupId": "g_4e93e2b",
+      "height": 70,
+      "id": "n_ou5i241",
+      "noteId": 1777623967672,
+      "type": "card",
+      "width": 180,
+      "x": 741,
+      "y": 1014
+    },
+    {
+      "groupId": "g_4e93e2b",
+      "height": 70,
+      "id": "n_cand47s",
+      "noteId": 1777623967682,
+      "type": "card",
+      "width": 180,
+      "x": 745,
+      "y": 1114
+    }
+  ],
+  "groups": [
+    {
+      "color": "#c0524a",
+      "height": 515,
+      "id": "g_b7e59d9",
+      "label": "Anuria, Oliguria, Polyuria, Nocturia",
+      "width": 647,
+      "x": 687,
+      "y": 224
+    },
+    {
+      "color": "#c0524a",
+      "height": 432,
+      "id": "g_5e3a16b",
+      "label": "Diabetes insipidus vs mellitus",
+      "width": 466,
+      "x": 108,
+      "y": 215
+    },
+    {
+      "color": "#e0855c",
+      "height": 570,
+      "id": "g_4e93e2b",
+      "label": "Urine Abnormalities",
+      "width": 658,
+      "x": 315,
+      "y": 784
+    }
+  ],
+  "edges": [
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_gkjyfp1",
+      "id": "e_f8b594d",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_ifsobqt"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_ifsobqt",
+      "id": "e_3d3129f",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_7gipved"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_2d9id9j",
+      "id": "e_7a73547",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_dw1swkl"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_dw1swkl",
+      "id": "e_c06873e",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_vmi7g6e"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_7yum0fw",
+      "id": "e_a6c9cd2",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_xcq5ro5"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_zgfd66f",
+      "id": "e_274546d",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_477lrnd"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_477lrnd",
+      "id": "e_590ecf6",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "n_3epciq1"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "n_djr3vys",
+      "id": "e_575adfa",
+      "label": "compare",
+      "lineStyle": "solid",
+      "toNode": "n_tvfinsx"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "note_b3b8095",
+      "id": "e_2f03bc3",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_5e3a16b"
+    },
+    {
+      "color": null,
+      "direction": "none",
+      "fromNode": "note_b3b8095",
+      "id": "e_3669d64",
+      "label": "",
+      "lineStyle": "solid",
+      "toNode": "g_b7e59d9"
+    },
+    {
+      "id": "e_ruhf1qx",
+      "fromNode": "note_b3b8095",
+      "toNode": "g_4e93e2b",
+      "label": "",
+      "color": null,
+      "lineStyle": "solid",
+      "direction": "none"
+    }
+  ]
+}

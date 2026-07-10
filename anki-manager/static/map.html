@@ -58,9 +58,33 @@ aside.card-sidebar { width: 240px; min-width: 160px; max-width: 480px; flex-shri
 .sidebar-card.selected { border-color: var(--accent2); background: color-mix(in srgb, var(--accent2) 18%, var(--surface2)); box-shadow: 0 0 0 1px var(--accent2) inset; }
 .sidebar-empty { padding: 20px 12px; text-align: center; color: var(--muted); font-size: 11px; line-height: 1.7; }
 
+/* Second sidebar — cross-deck transfer panel (collapsed by default) */
+aside.transfer-sidebar { width: 240px; min-width: 180px; max-width: 420px; flex-shrink: 0; border-left: 1px solid var(--border); background: var(--surface); display: none; flex-direction: column; overflow: hidden; position: relative; }
+aside.transfer-sidebar.open { display: flex; }
+.transfer-resize-handle { position: absolute; top: 0; left: -3px; width: 6px; height: 100%; cursor: ew-resize; z-index: 20; }
+.transfer-resize-handle:hover, .transfer-resize-handle.resizing { background: var(--accent2); opacity: 0.3; }
+.transfer-header { padding: 12px 14px 8px; border-bottom: 1px solid var(--border); }
+.transfer-title { font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.transfer-deck-select { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: 'DM Mono', monospace; font-size: 11.5px; border-radius: 6px; padding: 6px 8px; outline: none; }
+.transfer-deck-select:focus { border-color: var(--accent2); }
+.transfer-hint { font-size: 10px; color: var(--muted); padding: 8px 14px; line-height: 1.6; }
+.transfer-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; transition: opacity 0.15s, background-color 0.15s; }
+.transfer-list.disabled-drop { opacity: 0.45; pointer-events: none; }
+.transfer-list.drop-target { background-color: rgba(124,159,212,0.06); outline: 2px dashed var(--accent2); outline-offset: -6px; }
+.transfer-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 10px 11px; font-size: 11.5px; line-height: 1.55; color: var(--text); cursor: grab; white-space: normal; word-break: break-word; overflow-wrap: break-word; }
+.transfer-card:hover { border-color: var(--accent2); }
+.transfer-card.selected { border-color: var(--accent2); background: color-mix(in srgb, var(--accent2) 18%, var(--surface2)); box-shadow: 0 0 0 1px var(--accent2) inset; }
+.transfer-empty { padding: 20px 12px; text-align: center; color: var(--muted); font-size: 11px; line-height: 1.7; }
+
+/* Orphan review banner */
+.orphan-banner { display: none; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 16px; background: rgba(212,168,83,0.1); border-bottom: 1px solid var(--accent); font-size: 11.5px; color: var(--text); flex-shrink: 0; }
+.orphan-banner.show { display: flex; }
+.orphan-banner-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.card-node.orphaned { border-color: var(--danger); opacity: 0.55; border-style: dashed; }
+
 .canvas-wrap { flex: 1; position: relative; overflow: auto; background:
   radial-gradient(circle, #1c1f26 1px, transparent 1px) 0 0 / 22px 22px, var(--bg); }
-#canvas { position: relative; width: 4000px; height: 3000px; }
+#canvas { position: relative; width: 4000px; height: 3000px; transform-origin: 0 0; }
 #canvas.drop-target { background-color: rgba(124,159,212,0.03); }
 
 .card-node { position: absolute; width: 180px; min-height: 70px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px; cursor: grab; font-size: 11px; line-height: 1.5; color: var(--text); user-select: none; transition: border-color 0.15s, box-shadow 0.15s; z-index: 5; }
@@ -117,6 +141,8 @@ svg.edge-layer .edge-label-text { fill: var(--accent2); font-size: 10px; font-fa
 .modal input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px; padding: 8px 10px; outline: none; margin-bottom: 6px; }
 .modal input:focus { border-color: var(--accent); }
 .modal .modal-hint { font-size: 10px; color: var(--muted); margin-bottom: 14px; }
+.modal .modal-hint.warn { color: #d4a853; }
+.modal .modal-hint.ok { color: #4caf7d; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
 .modal-section-label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin: 12px 0 6px; }
 .option-row { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -153,7 +179,18 @@ svg.edge-layer .edge-label-text { fill: var(--accent2); font-size: 10px; font-fa
     <button class="btn btn-ghost" id="redoBtn" title="Redo (Ctrl+Shift+Z)" disabled>↷ Redo</button>
     <div class="toolbar-divider"></div>
     <button class="btn btn-primary" id="pushBtn">⇪ Push to Anki</button>
+    <button class="btn btn-ghost" id="transferToggleBtn" title="Pull cards from / push cards to another deck">⇄ Transfer</button>
+    <span class="toolbar-hint" id="zoomIndicator" title="Ctrl/Cmd + scroll to zoom the canvas. Click to reset to 100%." style="cursor:pointer;">100%</span>
     <span class="toolbar-hint" id="connectHint"></span>
+  </div>
+
+  <div class="orphan-banner" id="orphanBanner">
+    <span id="orphanBannerText"></span>
+    <div class="orphan-banner-actions">
+      <button class="btn btn-ghost" id="orphanReviewBtn">Highlight</button>
+      <button class="btn btn-ghost" id="orphanRemoveBtn">Remove all</button>
+      <button class="btn btn-ghost" id="orphanDismissBtn">Dismiss</button>
+    </div>
   </div>
 
   <div class="body">
@@ -179,6 +216,17 @@ svg.edge-layer .edge-label-text { fill: var(--accent2); font-size: 10px; font-fa
         </div>
       </div>
     </div>
+    <aside class="transfer-sidebar" id="transferSidebar">
+      <div class="transfer-header">
+        <div class="transfer-title">Transfer with…</div>
+        <select class="transfer-deck-select" id="transferDeckSelect">
+          <option value="">Choose a deck…</option>
+        </select>
+      </div>
+      <div class="transfer-hint">Drag cards in to pull them into this deck. Drag cards from this deck onto the list below to push them out.</div>
+      <div class="transfer-list disabled-drop" id="transferList"></div>
+      <div class="transfer-resize-handle" id="transferResizeHandle"></div>
+    </aside>
   </div>
 </div>
 
@@ -228,6 +276,7 @@ svg.edge-layer .edge-label-text { fill: var(--accent2); font-size: 10px; font-fa
   <div class="modal">
     <h3>Promote to subdeck</h3>
     <input type="text" id="promoteSubdeckInput" placeholder="Subdeck name (e.g. Renal Tests)">
+    <div class="modal-hint" id="promoteNameHint" style="display:none;"></div>
     <div class="modal-hint">
       Creates "<span id="promoteDeckPreview"></span>::<em>name</em>" and moves the cards below into it.
       The parent map stays unchanged; a new map is created for the subdeck with these group(s) recentered.
@@ -251,10 +300,18 @@ var nodes = [];           // {id, type:'card'|'note', noteId?, text?, color?, x,
 var groups = [];          // {id, label, x, y, width, height, color}
 var edges = [];           // {id, fromNode, toNode, label}  fromNode/toNode may be a node id (n_/note_) or a group id (g_)
 var saveTimer = null;
+var allDeckNames = null;  // cached flat list from /api/decks, used for the promote-modal merge/create hint
 var GROUP_COLORS = ['#8b6fd4', '#4a90c0', '#4caf7d', '#d4a853', '#c0524a', '#7c9fd4', '#e0855c', '#5cc2c7'];
 var NOTE_COLORS = ['#2a2436', '#1e2a36', '#243428', '#362e1e', '#361e1e'];
 var EDGE_COLORS = ['#7c9fd4', '#8b6fd4', '#4caf7d', '#d4a853', '#c0524a', '#e0855c', '#5cc2c7', '#e8e9ec'];
 var DEFAULT_EDGE_COLOR = '#7c9fd4';
+
+// ── Cross-deck transfer panel state ─────────────────────────────────────────
+var transferOpen = false;
+var transferDeck = '';         // deck name currently selected in the second sidebar
+var transferCards = [];        // card data for transferDeck, same shape as `cards`
+var transferSelectedIds = [];  // multi-select within the transfer list
+var transferLastClickedId = null;
 
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
@@ -432,6 +489,29 @@ document.getElementById('deckLabel').textContent = deck ? deck.split('::').pop()
   });
 })();
 
+// ── Transfer sidebar resize (mirrors the primary sidebar, but it's docked on
+// the right — dragging the handle left grows it, dragging right shrinks it) ─
+(function(){
+  var handle = document.getElementById('transferResizeHandle');
+  var sidebar = document.getElementById('transferSidebar');
+  handle.addEventListener('mousedown', function(e){
+    e.preventDefault();
+    handle.classList.add('resizing');
+    var startX = e.clientX, startW = sidebar.getBoundingClientRect().width;
+    function onMove(ev){
+      var w = Math.min(420, Math.max(180, startW - (ev.clientX - startX)));
+      sidebar.style.width = w + 'px';
+    }
+    function onUp(){
+      handle.classList.remove('resizing');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+})();
+
 // ── Load cards + existing canvas ────────────────────────────────────────────
 function init() {
   if (!deck) { toast('No deck specified — go back and open a deck first.', 'err'); return; }
@@ -454,6 +534,7 @@ function init() {
     updateUndoRedoButtons();
     renderSidebar();
     render();
+    checkForOrphans();
   }).catch(function(e){ toast('Failed to load: ' + e.message, 'err'); });
 }
 
@@ -620,9 +701,287 @@ function renderSidebar() {
   document.getElementById('emptyHint').style.display = (nodes.length === 0) ? 'block' : 'none';
 }
 
+// ── Cross-deck transfer panel ────────────────────────────────────────────
+var transferSidebarEl = document.getElementById('transferSidebar');
+var transferListEl = document.getElementById('transferList');
+var transferDeckSelectEl = document.getElementById('transferDeckSelect');
+
+function moveCardsApi(sourceDeck, targetDeck, noteIds) {
+  return fetch('/api/move-cards', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ sourceDeck: sourceDeck, targetDeck: targetDeck, noteIds: noteIds })
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if (d.error) throw new Error(d.error);
+    return d;
+  });
+}
+
+// Removes cards (and any canvas nodes placed for them) from the CURRENT
+// deck's local state after a successful push-out.
+function removeCardsFromLocalDeck(noteIds) {
+  var idSet = {};
+  noteIds.forEach(function(id){ idSet[id] = true; });
+  cards = cards.filter(function(c){ return !idSet[c.id]; });
+  var nodeIdsToRemove = nodes.filter(function(n){ return n.type === 'card' && idSet[n.noteId]; }).map(function(n){ return n.id; });
+  if (nodeIdsToRemove.length) {
+    nodes = nodes.filter(function(n){ return nodeIdsToRemove.indexOf(n.id) === -1; });
+    edges = edges.filter(function(e){ return nodeIdsToRemove.indexOf(e.fromNode) === -1 && nodeIdsToRemove.indexOf(e.toNode) === -1; });
+    selectedItems = selectedItems.filter(function(it){ return nodeIdsToRemove.indexOf(it.id) === -1; });
+  }
+}
+
+// Push OUT: current deck (`deck`) → transferDeck. Cards always land unplaced
+// on the destination — the transfer panel never renders a canvas for it.
+function pushOutCards(noteIds) {
+  if (!transferDeck || !noteIds.length) return;
+  var targetShort = transferDeck.split('::').pop();
+  moveCardsApi(deck, transferDeck, noteIds).then(function(){
+    removeCardsFromLocalDeck(noteIds);
+    clearSelection();
+    renderSidebar();
+    render();
+    scheduleSave();
+    toast('Pushed ' + noteIds.length + ' card' + (noteIds.length === 1 ? '' : 's') + ' → ' + targetShort, 'ok');
+  }).catch(function(e){ toast('Transfer failed: ' + e.message, 'err'); });
+}
+
+// Pull IN: transferDeck → current deck (`deck`). Cards always land unplaced
+// here too — never auto-placed on the canvas.
+function pullInCards(noteIds) {
+  if (!transferDeck || !noteIds.length) return;
+  var sourceShort = transferDeck.split('::').pop();
+  moveCardsApi(transferDeck, deck, noteIds).then(function(){
+    noteIds.forEach(function(nid){
+      var src = transferCards.find(function(c){ return c.id === nid; });
+      if (src && !cards.some(function(c){ return c.id === nid; })) {
+        cards.push({ id: src.id, front: src.front, back: src.back, tags: src.tags, deck: deck, modelName: src.modelName, suspended: src.suspended });
+      }
+    });
+    transferCards = transferCards.filter(function(c){ return noteIds.indexOf(c.id) === -1; });
+    transferSelectedIds = transferSelectedIds.filter(function(id){ return noteIds.indexOf(id) === -1; });
+    renderSidebar();
+    renderTransferList();
+    toast('Pulled ' + noteIds.length + ' card' + (noteIds.length === 1 ? '' : 's') + ' ← ' + sourceShort, 'ok');
+  }).catch(function(e){ toast('Transfer failed: ' + e.message, 'err'); });
+}
+
+function isTransferSelected(noteId) { return transferSelectedIds.indexOf(noteId) !== -1; }
+
+function renderTransferList() {
+  transferListEl.innerHTML = '';
+  transferListEl.classList.toggle('disabled-drop', !transferDeck);
+
+  if (!transferDeck) {
+    transferListEl.innerHTML = '<div class="transfer-empty">Choose a deck above to browse and transfer its cards.</div>';
+    return;
+  }
+  if (transferCards.length === 0) {
+    transferListEl.innerHTML = '<div class="transfer-empty">This deck has no cards.</div>';
+    return;
+  }
+  transferCards.forEach(function(c, idx){
+    var el = document.createElement('div');
+    el.className = 'transfer-card' + (isTransferSelected(c.id) ? ' selected' : '');
+    el.draggable = true;
+    el.textContent = stripHtml(c.front);
+
+    el.addEventListener('click', function(e){
+      if (e.shiftKey && transferLastClickedId !== null) {
+        var anchorIdx = transferCards.findIndex(function(x){ return x.id === transferLastClickedId; });
+        if (anchorIdx === -1) anchorIdx = idx;
+        var lo = Math.min(anchorIdx, idx), hi = Math.max(anchorIdx, idx);
+        transferSelectedIds = transferCards.slice(lo, hi + 1).map(function(x){ return x.id; });
+      } else if (e.ctrlKey || e.metaKey) {
+        if (isTransferSelected(c.id)) {
+          transferSelectedIds = transferSelectedIds.filter(function(id){ return id !== c.id; });
+        } else {
+          transferSelectedIds.push(c.id);
+        }
+        transferLastClickedId = c.id;
+      } else {
+        if (!isTransferSelected(c.id) || transferSelectedIds.length <= 1) {
+          transferSelectedIds = [c.id];
+        }
+        transferLastClickedId = c.id;
+      }
+      renderTransferList();
+    });
+
+    el.addEventListener('dragstart', function(e){
+      if (isTransferSelected(c.id) && transferSelectedIds.length > 1) {
+        e.dataTransfer.setData('text/plain', JSON.stringify({ kind: 'transfer-pull-cards', noteIds: transferSelectedIds.slice(), sourceDeck: transferDeck }));
+      } else {
+        e.dataTransfer.setData('text/plain', JSON.stringify({ kind: 'transfer-pull-card', noteId: c.id, sourceDeck: transferDeck }));
+      }
+    });
+
+    transferListEl.appendChild(el);
+  });
+}
+
+function loadTransferDeck(deckName) {
+  transferDeck = deckName;
+  transferCards = [];
+  transferSelectedIds = [];
+  transferLastClickedId = null;
+  renderTransferList();
+  if (!deckName) return;
+  fetch('/api/cards?deck=' + encodeURIComponent(deckName)).then(function(r){ return r.json(); }).then(function(d){
+    if (deckName !== transferDeck) return; // deck was changed again before this resolved
+    transferCards = d.cards || [];
+    renderTransferList();
+  }).catch(function(e){ toast('Failed to load deck: ' + e.message, 'err'); });
+}
+
+function populateTransferDeckSelect() {
+  fetch('/api/decks').then(function(r){ return r.json(); }).then(function(d){
+    var names = (d.decks || []).filter(function(n){ return n !== deck; }).sort();
+    transferDeckSelectEl.innerHTML = '<option value="">Choose a deck…</option>' +
+      names.map(function(n){ return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join('');
+  }).catch(function(e){ toast('Failed to load deck list: ' + e.message, 'err'); });
+}
+
+document.getElementById('transferToggleBtn').addEventListener('click', function(){
+  transferOpen = !transferOpen;
+  this.classList.toggle('active', transferOpen);
+  transferSidebarEl.classList.toggle('open', transferOpen);
+  if (transferOpen && transferDeckSelectEl.options.length <= 1) populateTransferDeckSelect();
+});
+
+transferDeckSelectEl.addEventListener('change', function(){
+  loadTransferDeck(this.value);
+});
+
+// Drop zone: cards dragged FROM this deck (sidebar or canvas) land here as a
+// push-out. Disabled (via CSS) until a target deck is chosen in the panel.
+transferListEl.addEventListener('dragover', function(e){
+  if (!transferDeck) return;
+  e.preventDefault();
+  transferListEl.classList.add('drop-target');
+});
+transferListEl.addEventListener('dragleave', function(){ transferListEl.classList.remove('drop-target'); });
+transferListEl.addEventListener('drop', function(e){
+  e.preventDefault();
+  transferListEl.classList.remove('drop-target');
+  if (!transferDeck) return;
+  var raw = e.dataTransfer.getData('text/plain');
+  if (!raw) return;
+  var data;
+  try { data = JSON.parse(raw); } catch(err){ return; }
+  if (data.kind === 'card') {
+    pushOutCards([data.noteId]);
+  } else if (data.kind === 'cards') {
+    pushOutCards(data.noteIds || []);
+  }
+});
+
+// Drop zone: cards dragged from the transfer panel onto the MAIN sidebar's
+// unplaced area are a pull-in (lands unplaced, same as dropping on canvas).
+document.getElementById('sidebarList').addEventListener('dragover', function(e){
+  var types = e.dataTransfer.types;
+  e.preventDefault();
+});
+document.getElementById('sidebarList').addEventListener('drop', function(e){
+  e.preventDefault();
+  var raw = e.dataTransfer.getData('text/plain');
+  if (!raw) return;
+  var data;
+  try { data = JSON.parse(raw); } catch(err){ return; }
+  if (data.kind === 'transfer-pull-card') {
+    pullInCards([data.noteId]);
+  } else if (data.kind === 'transfer-pull-cards') {
+    pullInCards(data.noteIds || []);
+  }
+});
+
+// ── Orphan review banner ─────────────────────────────────────────────────
+var currentOrphanIds = [];
+
+function checkForOrphans() {
+  fetch('/api/canvas-orphans?deck=' + encodeURIComponent(deck)).then(function(r){ return r.json(); }).then(function(d){
+    currentOrphanIds = (d.orphanNodeIds || []).filter(function(id){ return nodes.some(function(n){ return n.id === id; }); });
+    var banner = document.getElementById('orphanBanner');
+    if (currentOrphanIds.length > 0) {
+      document.getElementById('orphanBannerText').textContent = currentOrphanIds.length + ' orphaned node' + (currentOrphanIds.length === 1 ? '' : 's') + ' found — the underlying card' + (currentOrphanIds.length === 1 ? ' was' : 's were') + ' moved to another deck. Review?';
+      banner.classList.add('show');
+      nodes.forEach(function(n){
+        var el = document.getElementById(n.id);
+        if (el) el.classList.toggle('orphaned', currentOrphanIds.indexOf(n.id) !== -1);
+      });
+    } else {
+      banner.classList.remove('show');
+    }
+  }).catch(function(){ /* non-fatal — orphan review is best-effort */ });
+}
+
+document.getElementById('orphanReviewBtn').addEventListener('click', function(){
+  selectedItems = currentOrphanIds.map(function(id){ return { id: id, kind: 'card' }; });
+  render();
+  var first = document.getElementById(currentOrphanIds[0]);
+  if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+});
+
+document.getElementById('orphanRemoveBtn').addEventListener('click', function(){
+  if (!currentOrphanIds.length) return;
+  pushUndoSnapshot();
+  var idSet = {};
+  currentOrphanIds.forEach(function(id){ idSet[id] = true; });
+  nodes = nodes.filter(function(n){ return !idSet[n.id]; });
+  edges = edges.filter(function(e){ return !idSet[e.fromNode] && !idSet[e.toNode]; });
+  selectedItems = selectedItems.filter(function(it){ return !idSet[it.id]; });
+  var count = currentOrphanIds.length;
+  currentOrphanIds = [];
+  document.getElementById('orphanBanner').classList.remove('show');
+  render();
+  scheduleSave();
+  toast('Removed ' + count + ' orphaned node' + (count === 1 ? '' : 's'), 'ok');
+});
+
+document.getElementById('orphanDismissBtn').addEventListener('click', function(){
+  document.getElementById('orphanBanner').classList.remove('show');
+});
+
 // ── Canvas drop zone (sidebar → canvas) ─────────────────────────────────
 var canvasEl = document.getElementById('canvas');
 var canvasWrap = document.getElementById('canvasWrap');
+
+// ── Canvas-only zoom (Ctrl/Cmd + scroll) ─────────────────────────────────
+// Browsers report both ctrl+wheel and pinch-to-zoom gestures as a wheel event
+// with ctrlKey set, so checking ctrlKey/metaKey covers trackpad pinch too.
+// Without preventDefault here the browser zooms the whole page instead.
+var zoomLevel = 1;
+var ZOOM_MIN = 0.25, ZOOM_MAX = 2;
+var zoomIndicatorEl = document.getElementById('zoomIndicator');
+
+function applyZoom() {
+  canvasEl.style.transform = 'scale(' + zoomLevel + ')';
+  zoomIndicatorEl.textContent = Math.round(zoomLevel * 100) + '%';
+}
+
+canvasWrap.addEventListener('wheel', function(e){
+  if (!(e.ctrlKey || e.metaKey)) return; // plain scroll — leave native behavior alone
+  e.preventDefault();
+  var wrapRect = canvasWrap.getBoundingClientRect();
+  // Canvas-space (unscaled) point currently under the cursor, using the OLD zoom
+  var canvasX = (canvasWrap.scrollLeft + (e.clientX - wrapRect.left)) / zoomLevel;
+  var canvasY = (canvasWrap.scrollTop + (e.clientY - wrapRect.top)) / zoomLevel;
+
+  var factor = e.deltaY < 0 ? 1.1 : 0.9;
+  var newZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, zoomLevel * factor));
+  if (newZoom === zoomLevel) return;
+  zoomLevel = newZoom;
+  applyZoom();
+
+  // Re-scroll so that same canvas-space point stays under the cursor
+  canvasWrap.scrollLeft = canvasX * zoomLevel - (e.clientX - wrapRect.left);
+  canvasWrap.scrollTop = canvasY * zoomLevel - (e.clientY - wrapRect.top);
+}, { passive: false });
+
+zoomIndicatorEl.addEventListener('click', function(){
+  zoomLevel = 1;
+  applyZoom();
+});
+
 canvasEl.addEventListener('dragover', function(e){ e.preventDefault(); canvasEl.classList.add('drop-target'); });
 canvasEl.addEventListener('dragleave', function(){ canvasEl.classList.remove('drop-target'); });
 canvasEl.addEventListener('mousedown', function(e){
@@ -638,10 +997,16 @@ canvasEl.addEventListener('drop', function(e){
   if (!raw) return;
   var data;
   try { data = JSON.parse(raw); } catch(err){ return; }
+
+  // Cards dragged in from the second (transfer) sidebar always land unplaced
+  // in this deck, even when dropped directly on the canvas — no auto-placement.
+  if (data.kind === 'transfer-pull-card') { pullInCards([data.noteId]); return; }
+  if (data.kind === 'transfer-pull-cards') { pullInCards(data.noteIds || []); return; }
+
   pushUndoSnapshot();
   var rect = canvasEl.getBoundingClientRect();
-  var x = e.clientX - rect.left;
-  var y = e.clientY - rect.top;
+  var x = (e.clientX - rect.left) / zoomLevel;
+  var y = (e.clientY - rect.top) / zoomLevel;
 
   if (data.kind === 'card') {
     // Use the exact point the card was grabbed at (captured on dragstart) so the
@@ -752,6 +1117,12 @@ function render() {
   nodes.forEach(function(n){ n.type === 'note' ? renderNote(n) : renderNode(n); });
   renderEdges();
   document.getElementById('emptyHint').style.display = (nodes.length === 0 && groups.length === 0) ? 'block' : 'none';
+  if (typeof currentOrphanIds !== 'undefined' && currentOrphanIds.length) {
+    currentOrphanIds.forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.classList.add('orphaned');
+    });
+  }
 }
 
 function groupColor(g, index) { return g.color || GROUP_COLORS[index % GROUP_COLORS.length]; }
@@ -1380,7 +1751,7 @@ function startNodeDrag(e, n) {
   var origX = n.x, origY = n.y;
 
   function onMove(ev) {
-    var dx = ev.clientX - startX, dy = ev.clientY - startY;
+    var dx = (ev.clientX - startX) / zoomLevel, dy = (ev.clientY - startY) / zoomLevel;
     n.x = Math.max(0, origX + dx);
     n.y = Math.max(0, origY + dy);
     el.style.left = n.x + 'px';
@@ -1391,6 +1762,14 @@ function startNodeDrag(e, n) {
     el.classList.remove('dragging');
     document.removeEventListener('mousemove', onMove);
     document.removeEventListener('mouseup', onUp);
+    // Dragged onto the open transfer panel (with a target deck chosen) → push out
+    if (n.type === 'card' && transferOpen && transferDeck) {
+      var transferRect = transferListEl.getBoundingClientRect();
+      if (ev.clientX >= transferRect.left && ev.clientX <= transferRect.right && ev.clientY >= transferRect.top && ev.clientY <= transferRect.bottom) {
+        pushOutCards([n.noteId]);
+        return;
+      }
+    }
     // Dragged back over the sidebar → remove from canvas
     var sidebarRect = document.querySelector('.card-sidebar').getBoundingClientRect();
     if (n.type === 'card' && ev.clientX >= sidebarRect.left && ev.clientX <= sidebarRect.right) {
@@ -1426,7 +1805,7 @@ function startMultiSelectionDrag(e) {
   var origGroupPositions = selGroups.map(function(g){ return { g: g, x: g.x, y: g.y }; });
 
   function onMove(ev) {
-    var dx = ev.clientX - startX, dy = ev.clientY - startY;
+    var dx = (ev.clientX - startX) / zoomLevel, dy = (ev.clientY - startY) / zoomLevel;
     origNodePositions.forEach(function(p, i){
       p.n.x = Math.max(0, p.x + dx);
       p.n.y = Math.max(0, p.y + dy);
@@ -1443,6 +1822,15 @@ function startMultiSelectionDrag(e) {
     nodeEls.forEach(function(el){ if (el) el.classList.remove('dragging'); });
     document.removeEventListener('mousemove', onMove);
     document.removeEventListener('mouseup', onUp);
+    // Dragged onto the open transfer panel (with a target deck chosen) → push out
+    if (transferOpen && transferDeck) {
+      var transferRect = transferListEl.getBoundingClientRect();
+      if (ev.clientX >= transferRect.left && ev.clientX <= transferRect.right && ev.clientY >= transferRect.top && ev.clientY <= transferRect.bottom) {
+        var noteIdsToPush = selNodes.filter(function(n){ return n.type === 'card'; }).map(function(n){ return n.noteId; });
+        if (noteIdsToPush.length) pushOutCards(noteIdsToPush);
+        return;
+      }
+    }
     var sidebarRect = document.querySelector('.card-sidebar').getBoundingClientRect();
     if (ev.clientX >= sidebarRect.left && ev.clientX <= sidebarRect.right) {
       var cardIdsToReturn = selNodes.filter(function(n){ return n.type === 'card'; }).map(function(n){ return n.id; });
@@ -1500,8 +1888,8 @@ function startGroupResize(e, g) {
   var startX = e.clientX, startY = e.clientY;
   var origW = g.width, origH = g.height;
   function onMove(ev) {
-    g.width = Math.max(120, origW + (ev.clientX - startX));
-    g.height = Math.max(80, origH + (ev.clientY - startY));
+    g.width = Math.max(120, origW + (ev.clientX - startX) / zoomLevel);
+    g.height = Math.max(80, origH + (ev.clientY - startY) / zoomLevel);
     render();
   }
   function onUp() {
@@ -1521,8 +1909,8 @@ function startNodeResize(e, n) {
   var startX = e.clientX, startY = e.clientY;
   var origW = n.width || 180, origH = n.height || 90;
   function onMove(ev) {
-    n.width = Math.max(120, origW + (ev.clientX - startX));
-    n.height = Math.max(70, origH + (ev.clientY - startY));
+    n.width = Math.max(120, origW + (ev.clientX - startX) / zoomLevel);
+    n.height = Math.max(70, origH + (ev.clientY - startY) / zoomLevel);
     var el = document.getElementById(n.id);
     if (el) { el.style.width = n.width + 'px'; el.style.height = n.height + 'px'; }
     renderEdges();
@@ -1565,7 +1953,7 @@ function startConnectionDrag(e, sourceId) {
 
   function pointFromEvent(ev) {
     var canvasRect = canvasEl.getBoundingClientRect();
-    return { x: ev.clientX - canvasRect.left, y: ev.clientY - canvasRect.top };
+    return { x: (ev.clientX - canvasRect.left) / zoomLevel, y: (ev.clientY - canvasRect.top) / zoomLevel };
   }
 
   function hoverTarget(ev) {
@@ -1789,6 +2177,46 @@ document.getElementById('confirmPushBtn').addEventListener('click', function(){
 
 // ── Promote group(s) to subdeck ──────────────────────────────────────────
 var promotingGroups = null; // set while the modal is open
+var promoteSiblingDecks = []; // immediate-child subdeck names of `deck`, lowercased, for the live hint
+
+// Fetches /api/decks (cached in allDeckNames) and returns a promise resolving
+// to the immediate-child subdeck names of the current parent deck.
+function refreshPromoteSiblings() {
+  var ready = allDeckNames
+    ? Promise.resolve(allDeckNames)
+    : fetch('/api/decks').then(function(r){ return r.json(); }).then(function(d){
+        allDeckNames = d.decks || [];
+        return allDeckNames;
+      }).catch(function(){ allDeckNames = []; return allDeckNames; });
+
+  return ready.then(function(names){
+    var prefix = deck + '::';
+    promoteSiblingDecks = names
+      .filter(function(n){ return n.indexOf(prefix) === 0; })
+      .map(function(n){ return n.slice(prefix.length); })
+      .filter(function(rest){ return rest.length > 0 && rest.indexOf('::') === -1; }) // immediate children only
+      .map(function(rest){ return rest.toLowerCase(); });
+    updatePromoteNameHint();
+  });
+}
+
+function updatePromoteNameHint() {
+  var hintEl = document.getElementById('promoteNameHint');
+  var name = document.getElementById('promoteSubdeckInput').value.trim();
+  if (!name) { hintEl.style.display = 'none'; return; }
+
+  var match = promoteSiblingDecks.indexOf(name.toLowerCase()) !== -1;
+  hintEl.style.display = 'block';
+  if (match) {
+    hintEl.className = 'modal-hint warn';
+    hintEl.textContent = '⚠ "' + name + '" already exists — new group(s) will be added to its existing map.';
+  } else {
+    hintEl.className = 'modal-hint ok';
+    hintEl.textContent = 'Will create a new subdeck "' + deck + '::' + name + '".';
+  }
+}
+
+document.getElementById('promoteSubdeckInput').addEventListener('input', updatePromoteNameHint);
 
 function openPromoteModal(selGroups) {
   selGroups = (selGroups || []).filter(Boolean);
@@ -1814,6 +2242,7 @@ function openPromoteModal(selGroups) {
   }
 
   document.getElementById('promoteModal').classList.add('open');
+  refreshPromoteSiblings(); // async; updates the hint once resolved (and immediately if already cached)
   setTimeout(function(){ document.getElementById('promoteSubdeckInput').focus(); }, 50);
 }
 
@@ -1846,6 +2275,7 @@ document.getElementById('confirmPromoteBtn').addEventListener('click', function(
     if (d.hubNotesCarried) msg += ' (+' + d.hubNotesCarried + ' connected note' + (d.hubNotesCarried === 1 ? '' : 's') + ' carried over)';
     toast(msg, 'ok');
     promotingGroups = null;
+    allDeckNames = null; // deck list just changed (new subdeck may have been created) — refetch next time the modal opens
     // The parent canvas is deliberately left untouched — cards physically
     // moved to the subdeck, but Anki's deck:"Parent" search already
     // includes subdeck cards, so this map's own card lookups stay valid
