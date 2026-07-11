@@ -83,6 +83,9 @@ aside.transfer-sidebar.open { display: flex; }
 .deck-combo-panel.open { display: block; }
 .deck-combo-group-label { font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); padding: 6px 8px 3px; }
 .deck-combo-item { padding: 6px 8px 6px 5px; border-radius: 5px; font-size: 11.5px; color: var(--text); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 3px solid transparent; }
+.deck-combo-item.deck-combo-item-twoline { white-space: normal; padding-top: 4px; padding-bottom: 4px; }
+.deck-combo-item-leaf { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.deck-combo-item-parent { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10px; color: var(--text-muted, #8a8a90); margin-top: 1px; }
 .deck-combo-item.depth-0 { border-left-color: var(--deck-depth-0, #6ea8fe); }
 .deck-combo-item.depth-1 { border-left-color: var(--deck-depth-1, #4fd1a5); }
 .deck-combo-item.depth-2 { border-left-color: var(--deck-depth-2, #f2c94c); }
@@ -96,7 +99,8 @@ aside.transfer-sidebar.open { display: flex; }
 .deck-combo-legend-dot.depth-3 { background: var(--deck-depth-3, #f2789f); }
 .deck-combo-legend-dot.depth-4plus { background: var(--deck-depth-4plus, #b39ddb); }
 .deck-combo-item:hover, .deck-combo-item.active { background: color-mix(in srgb, var(--accent2) 18%, var(--surface2)); }
-.deck-combo-item.recent-item::before { content: "★ "; color: var(--accent); font-size: 10px; }
+.deck-combo-item.recent-item:not(.deck-combo-item-twoline)::before { content: "★ "; color: var(--accent); font-size: 10px; }
+.deck-combo-item.recent-item.deck-combo-item-twoline .deck-combo-item-leaf::before { content: "★ "; color: var(--accent); font-size: 10px; }
 .deck-combo-empty { padding: 10px 8px; color: var(--muted); font-size: 11px; text-align: center; }
 .deck-combo-clear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 2px 4px; display: none; line-height: 1; }
 .deck-combo-clear.show { display: block; }
@@ -967,7 +971,9 @@ function deckLabel(fullName) {
   // Show just the leaf segment, indented by nesting depth; full path stays
   // in the title attribute (tooltip) and is still what's matched on search.
   var parts = fullName.split('::');
-  return { leaf: parts[parts.length - 1], depth: parts.length - 1, full: fullName };
+  var depth = parts.length - 1;
+  var parent = depth >= 1 ? parts[parts.length - 2] : null;
+  return { leaf: parts[parts.length - 1], depth: depth, parent: parent, full: fullName };
 }
 
 function loadTransferDeckOptions() {
@@ -1040,9 +1046,21 @@ function buildComboItem(name, isRecent) {
   var lbl = deckLabel(name);
   var el = document.createElement('div');
   el.className = 'deck-combo-item ' + deckDepthClass(lbl.depth) + (isRecent ? ' recent-item' : '');
-  el.textContent = lbl.leaf;
   el.title = lbl.full;
   el.dataset.deck = name;
+  if (lbl.depth >= 3 && lbl.parent) {
+    var leafLine = document.createElement('div');
+    leafLine.className = 'deck-combo-item-leaf';
+    leafLine.textContent = lbl.leaf;
+    var parentLine = document.createElement('div');
+    parentLine.className = 'deck-combo-item-parent';
+    parentLine.textContent = lbl.parent;
+    el.classList.add('deck-combo-item-twoline');
+    el.appendChild(leafLine);
+    el.appendChild(parentLine);
+  } else {
+    el.textContent = lbl.leaf;
+  }
   el.addEventListener('mousedown', function(e){
     e.preventDefault(); // keep input focus behavior predictable
     chooseTransferDeck(name);
