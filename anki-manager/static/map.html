@@ -140,6 +140,7 @@ aside.transfer-sidebar.open { display: flex; }
 .group-frame.canvas-selected { box-shadow: 0 0 0 2px var(--accent2); }
 .note-node.canvas-selected { box-shadow: 0 0 0 2px var(--accent2); }
 svg.edge-layer line.edge-selected { stroke-width: 3.5; stroke-opacity: 1; }
+.lasso-box { position: absolute; border: 1px dashed rgba(255,255,255,0.75); background: rgba(255,255,255,0.06); pointer-events: none; z-index: 60; }
 .card-front { overflow: hidden; white-space: normal; word-break: break-word; overflow-wrap: break-word; }
 .card-node .card-full { display: none; position: absolute; top: calc(100% + 6px); left: 0; width: 260px; background: var(--surface); border: 1px solid var(--accent2); border-radius: 8px; padding: 10px 12px; z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.5); font-size: 11px; line-height: 1.6; }
 .card-node:hover .card-full { display: block; }
@@ -1269,11 +1270,107 @@ zoomIndicatorEl.addEventListener('click', function(){
 
 canvasEl.addEventListener('dragover', function(e){ e.preventDefault(); canvasEl.classList.add('drop-target'); });
 canvasEl.addEventListener('dragleave', function(){ canvasEl.classList.remove('drop-target'); });
+// ── Lasso (rubber-band) selection: Shift + drag on empty canvas ─────────
+// Coordinates are converted to canvas-space (unscaled by zoomLevel), the
+// same space nodes/groups store x/y/width/height in — see the drop handler
+// above for the identical conversion.
+function rectsOverlap(a, b) {
+  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+function pointInRect(px, py, r) { return px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h; }
+// Segment vs axis-aligned rect intersection: true if either endpoint is inside
+// the rect, or the segment crosses any of the rect's four edges.
+function segIntersect(p1x,p1y,p2x,p2y, q1x,q1y,q2x,q2y) {
+  function ccw(ax,ay,bx,by,cx,cy){ return (cy-ay)*(bx-ax) - (by-ay)*(cx-ax); }
+  var d1 = ccw(q1x,q1y,q2x,q2y,p1x,p1y), d2 = ccw(q1x,q1y,q2x,q2y,p2x,p2y);
+  var d3 = ccw(p1x,p1y,p2x,p2y,q1x,q1y), d4 = ccw(p1x,p1y,p2x,p2y,q2x,q2y);
+  return ((d1>0&&d2<0)||(d1<0&&d2>0)) && ((d3>0&&d4<0)||(d3<0&&d4>0));
+}
+function edgeIntersectsBox(edge, box) {
+  var a = getAnchorRect(edge.fromNode), b = getAnchorRect(edge.toNode);
+  if (!a || !b) return false;
+  var acx = a.x + a.w/2, acy = a.y + a.h/2;
+  var bcx = b.x + b.w/2, bcy = b.y + b.h/2;
+  var pa = rectBorderPoint(a, bcx, bcy);
+  var pb = rectBorderPoint(b, acx, acy);
+  if (pointInRect(pa.x, pa.y, box) || pointInRect(pb.x, pb.y, box)) return true;
+  var x2 = box.x + box.w, y2 = box.y + box.h;
+  return segIntersect(pa.x,pa.y,pb.x,pb.y, box.x,box.y,x2,box.y) ||
+         segIntersect(pa.x,pa.y,pb.x,pb.y, x2,box.y,x2,y2) ||
+         segIntersect(pa.x,pa.y,pb.x,pb.y, x2,y2,box.x,y2) ||
+         segIntersect(pa.x,pa.y,pb.x,pb.y, box.x,y2,box.x,box.y);
+}
+
+var lassoBoxEl = null;
+
+function canvasPoint(e) {
+  var rect = canvasEl.getBoundingClientRect();
+  return { x: (e.clientX - rect.left) / zoomLevel, y: (e.clientY - rect.top) / zoomLevel };
+}
+
 canvasEl.addEventListener('mousedown', function(e){
-  if (e.target === canvasEl) {
-    if (selectedItems.length) clearItemSelection();
-    if (selectedEdgeIds.length) clearEdgeSelection();
+  if (e.target !== canvasEl) return;
+
+  if (e.shiftKey) {
+    var start = canvasPoint(e);
+    var additive = true; // shift always adds to / builds on the current selection
+    var moved = false;
+
+    lassoBoxEl = document.createElement('div');
+    lassoBoxEl.className = 'lasso-box';
+    canvasEl.appendChild(lassoBoxEl);
+
+    function updateBox(p) {
+      var x = Math.min(start.x, p.x), y = Math.min(start.y, p.y);
+      var w = Math.abs(p.x - start.x), h = Math.abs(p.y - start.y);
+      lassoBoxEl.style.left = x + 'px';
+      lassoBoxEl.style.top = y + 'px';
+      lassoBoxEl.style.width = w + 'px';
+      lassoBoxEl.style.height = h + 'px';
+      return { x: x, y: y, w: w, h: h };
+    }
+
+    function onMove(ev) {
+      moved = true;
+      updateBox(canvasPoint(ev));
+    }
+
+    function onUp(ev) {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      var box = updateBox(canvasPoint(ev));
+      if (lassoBoxEl) { lassoBoxEl.remove(); lassoBoxEl = null; }
+      if (!moved || (box.w < 3 && box.h < 3)) return; // treat as a non-drag shift-click — no-op
+
+      var hitGroups = groups.filter(function(g){ return rectsOverlap({x:g.x,y:g.y,w:g.width,h:g.height}, box); });
+      var hitGroupIds = {};
+      hitGroups.forEach(function(g){ hitGroupIds[g.id] = true; });
+      var hitNodes = nodes.filter(function(n){
+        var el = document.getElementById(n.id);
+        var w = el ? el.offsetWidth : (n.width || 180);
+        var h = el ? el.offsetHeight : (n.height || 70);
+        return rectsOverlap({x:n.x,y:n.y,w:w,h:h}, box);
+      });
+      var hitEdges = edges.filter(function(ed){ return edgeIntersectsBox(ed, box); });
+
+      if (!additive) { selectedItems = []; selectedEdgeIds = []; }
+
+      hitGroups.forEach(function(g){ if (!isItemSelected(g.id,'group')) selectedItems.push({id:g.id, kind:'group'}); });
+      hitNodes.forEach(function(n){ var k = n.type === 'note' ? 'note' : 'card'; if (!isItemSelected(n.id,k)) selectedItems.push({id:n.id, kind:k}); });
+      hitEdges.forEach(function(ed){ if (selectedEdgeIds.indexOf(ed.id) === -1) selectedEdgeIds.push(ed.id); });
+
+      render();
+      renderEdges();
+    }
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    e.preventDefault();
+    return;
   }
+
+  if (selectedItems.length) clearItemSelection();
+  if (selectedEdgeIds.length) clearEdgeSelection();
 });
 canvasEl.addEventListener('drop', function(e){
   e.preventDefault();

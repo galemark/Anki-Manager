@@ -1,0 +1,464 @@
+{
+  "nodes": [
+    {
+      "id": "n_8vi6elp",
+      "type": "card",
+      "noteId": 1765357762309,
+      "x": 390.1850010720407,
+      "y": 469.61624582904096,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_mvdev29",
+      "type": "card",
+      "noteId": 1765357762311,
+      "x": 588.1546097819189,
+      "y": 473.25013005109895,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_7fwzspp",
+      "type": "card",
+      "noteId": 1765357762314,
+      "x": 801.3511208676912,
+      "y": 473.99780444613225,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_1zzse1p",
+      "type": "card",
+      "noteId": 1765357762316,
+      "x": 1039.2865682606237,
+      "y": 553.271398591819,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_pq8oba5",
+      "type": "card",
+      "noteId": 1765357762319,
+      "x": 789.7737753341873,
+      "y": 760.1054346898713,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_dnylmmu",
+      "type": "card",
+      "noteId": 1765357762320,
+      "x": 551.9657125290871,
+      "y": 625.4881068304994,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_o1n7dtp",
+      "type": "card",
+      "noteId": 1765357771947,
+      "x": 1062.1831030903513,
+      "y": 365.79641655584555,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_xinmk65",
+      "type": "card",
+      "noteId": 1765357771948,
+      "x": 802.6737713671159,
+      "y": 591.0663132953018,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_hylu3n9",
+      "type": "card",
+      "noteId": 1765357762318,
+      "x": 588.6299918734107,
+      "y": 764.9501045707493,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_sby2aui",
+      "type": "card",
+      "noteId": 1765357762322,
+      "x": 389.17516794048356,
+      "y": 954.9469871774686,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_zajagwq",
+      "type": "card",
+      "noteId": 1765357771945,
+      "x": 385.6226806021041,
+      "y": 137.43519449816722,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_141ksq7",
+      "type": "card",
+      "noteId": 1765357771946,
+      "x": 390.55748135301485,
+      "y": 298.1606349718295,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_j36tviw",
+      "type": "card",
+      "noteId": 1765357762306,
+      "x": 632.507898863912,
+      "y": 197.02279380908203,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_42bv0cy",
+      "type": "card",
+      "noteId": 1765357762308,
+      "x": 122.30005122407749,
+      "y": 292.5354036307608,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_j8rvfk5",
+      "type": "card",
+      "noteId": 1765357762321,
+      "x": 195.47362391969716,
+      "y": 857.3054379696764,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_119d6gs",
+      "type": "card",
+      "noteId": 1765357771949,
+      "x": 1041.256245819444,
+      "y": 666.7800097591848,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_ojovrgp",
+      "type": "card",
+      "noteId": 1765357762305,
+      "x": 633.6521220262316,
+      "y": 110.46840645310249,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_u2w8s9n",
+      "type": "card",
+      "noteId": 1765357762313,
+      "x": 864.3076067710024,
+      "y": 341.7123473451493,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_zg16ev3",
+      "type": "card",
+      "noteId": 1765357771952,
+      "x": 106.54071302677642,
+      "y": 715.8178806968608,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_9cvp6gb",
+      "type": "card",
+      "noteId": 1765357771951,
+      "x": 389.7319540538123,
+      "y": 788.4276791794509,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_9sz7rci",
+      "type": "card",
+      "noteId": 1765357762307,
+      "x": 142.9052835430614,
+      "y": 208.25299987559447,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_r2auz86",
+      "type": "card",
+      "noteId": 1765357981171,
+      "x": 320.1389247569142,
+      "y": 628.3658308538184,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_j4obf9r",
+      "type": "card",
+      "noteId": 1765357762312,
+      "x": 119.62258907456976,
+      "y": 371.8950543991232,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    },
+    {
+      "id": "n_jl4zpuw",
+      "type": "card",
+      "noteId": 1765357762310,
+      "x": 140.16494435214202,
+      "y": 454.74215995056875,
+      "width": 180,
+      "height": 70,
+      "groupId": "g_bb54a2c"
+    }
+  ],
+  "groups": [
+    {
+      "id": "g_bb54a2c",
+      "label": "Normal Formation of Bilirubin",
+      "x": 60,
+      "y": 60.0,
+      "width": 1208.1871659488932,
+      "height": 1006.6122834384372,
+      "color": "#d4a853"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_e2d8160",
+      "fromNode": "n_8vi6elp",
+      "toNode": "n_mvdev29",
+      "label": "",
+      "color": null,
+      "lineStyle": "solid",
+      "direction": "forward"
+    },
+    {
+      "id": "e_f2ce7d0",
+      "fromNode": "n_mvdev29",
+      "toNode": "n_7fwzspp",
+      "label": "",
+      "color": null,
+      "lineStyle": "solid",
+      "direction": "forward"
+    },
+    {
+      "id": "e_802a6df",
+      "fromNode": "n_7fwzspp",
+      "toNode": "n_o1n7dtp",
+      "label": "",
+      "color": null,
+      "lineStyle": "dashed",
+      "direction": "none"
+    },
+    {
+      "id": "e_8567248",
+      "fromNode": "n_7fwzspp",
+      "toNode": "n_xinmk65",
+      "label": "",
+      "color": null,
+      "lineStyle": "solid",
+      "direction": "forward"
+    },
+    {
+      "id": "e_41bf247",
+      "fromNode": "n_xinmk65",
+      "toNode": "n_1zzse1p",
+      "label": "",
+      "color": null,
+      "lineStyle": "dashed",
+      "direction": "none"
+    },
+    {
+      "id": "e_df30ea5",
+      "fromNode": "n_xinmk65",
+      "toNode": "n_dnylmmu",
+      "label": "",
+      "color": null,
+      "lineStyle": "solid",
+      "direction": "forward"
+    },
+    {
+      "id": "e_1de43b8",
+      "fromNode": "n_dnylmmu",
+      "toNode": "n_pq8oba5",
+      "label": "",
+      "color": null,
+      "lineStyle": "dashed",
+      "direction": "none"
+    },
+    {
+      "id": "e_81ec52b",
+      "fromNode": "n_dnylmmu",
+      "toNode": "n_hylu3n9",
+      "label": "",
+      "color": null,
+      "lineStyle": "dashed",
+      "direction": "none"
+    },
+    {
+      "id": "e_97ea47a",
+      "fromNode": "n_zajagwq",
+      "toNode": "n_141ksq7",
+      "label": "",
+      "color": null,
+      "lineStyle": "solid",
+      "direction": "forward"
+    },
+    {
+      "id": "e_5fbc1d4",
+      "fromNode": "n_141ksq7",
+      "toNode": "n_8vi6elp",
+      "label": "",
+      "color": null,
+      "lineStyle": "solid",
+      "direction": "forward"
+    },
+    {
+      "id": "e_0c3f779",
+      "fromNode": "n_zajagwq",
+      "toNode": "n_j36tviw",
+      "label": "",
+      "color": null,
+      "lineStyle": "dashed",
+      "direction": "none"
+    },
+    {
+      "id": "e_d0dccf8",
+      "fromNode": "n_141ksq7",
+      "toNode": "n_42bv0cy",
+      "label": "",
+      "color": null,
+      "lineStyle": "dashed",
+      "direction": "none"
+    },
+    {
+      "id": "e_f6d1b6e",
+      "fromNode": "n_xinmk65",
+      "toNode": "n_119d6gs",
+      "label": "",
+      "color": null,
+      "lineStyle": "dashed",
+      "direction": "none"
+    },
+    {
+      "id": "e_b03a793",
+      "fromNode": "n_zajagwq",
+      "toNode": "n_ojovrgp",
+      "label": "",
+      "color": null,
+      "lineStyle": "dashed",
+      "direction": "none"
+    },
+    {
+      "id": "e_0cd7801",
+      "fromNode": "n_7fwzspp",
+      "toNode": "n_u2w8s9n",
+      "label": "",
+      "color": null,
+      "lineStyle": "dashed",
+      "direction": "none"
+    },
+    {
+      "id": "e_ffc9f68",
+      "fromNode": "n_141ksq7",
+      "toNode": "n_9sz7rci",
+      "label": "",
+      "color": null,
+      "lineStyle": "dashed",
+      "direction": "none"
+    },
+    {
+      "id": "e_b3b7f79",
+      "fromNode": "n_9cvp6gb",
+      "toNode": "n_sby2aui",
+      "label": "",
+      "color": null,
+      "lineStyle": "dashed",
+      "direction": "none"
+    },
+    {
+      "id": "e_ec097c9",
+      "fromNode": "n_dnylmmu",
+      "toNode": "n_r2auz86",
+      "label": "",
+      "color": null,
+      "lineStyle": "solid",
+      "direction": "forward"
+    },
+    {
+      "id": "e_1751bbf",
+      "fromNode": "n_r2auz86",
+      "toNode": "n_9cvp6gb",
+      "label": "",
+      "color": null,
+      "lineStyle": "solid",
+      "direction": "forward"
+    },
+    {
+      "id": "e_8e2f3bf",
+      "fromNode": "n_r2auz86",
+      "toNode": "n_zg16ev3",
+      "label": "",
+      "color": null,
+      "lineStyle": "solid",
+      "direction": "forward"
+    },
+    {
+      "id": "e_ee5f1fa",
+      "fromNode": "n_r2auz86",
+      "toNode": "n_j8rvfk5",
+      "label": "",
+      "color": null,
+      "lineStyle": "solid",
+      "direction": "forward"
+    },
+    {
+      "id": "e_824833c",
+      "fromNode": "n_141ksq7",
+      "toNode": "n_j4obf9r",
+      "label": "",
+      "color": null,
+      "lineStyle": "dashed",
+      "direction": "none"
+    },
+    {
+      "id": "e_a8b9a2f",
+      "fromNode": "n_141ksq7",
+      "toNode": "n_jl4zpuw",
+      "label": "",
+      "color": null,
+      "lineStyle": "dashed",
+      "direction": "none"
+    }
+  ]
+}
